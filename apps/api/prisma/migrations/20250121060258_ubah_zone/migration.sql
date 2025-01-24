@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Kantor" ALTER COLUMN "createdAt" SET DATA TYPE TIMESTAMPTZ;

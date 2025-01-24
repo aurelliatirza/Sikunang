@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Karyawan {
+  nik                 Int    @id
+  namaKaryawan        String
+  jabatan             String
+  nik_SPV             Int? 
+  nik_kabag           Int?
+  nik_direkturBisnis  Int?
+  id_kantor           Int
+  kantor              Kantor   @relation(fields: [id_kantor], references: [id_kantor])
+
+  // Relasi dengan diri sendiri
+  supervisor          Karyawan? @relation("Supervisor", fields: [nik_SPV], references: [nik])
+  kepalaBagian        Karyawan? @relation("Kabag", fields: [nik_kabag], references: [nik])
+  direkturBisnis      Karyawan? @relation("DirekturBisnis", fields: [nik_direkturBisnis], references: [nik])
+
+  // Menambahkan field relasi terbalik tanpa fields dan references
+  subordinates        Karyawan[] @relation("Supervisor")
+  kepalaBagianSubs    Karyawan[] @relation("Kabag")
+  direkturBisnisSubs  Karyawan[] @relation("DirekturBisnis")
+
+  createdAt           DateTime  @default(now()) @db.Timestamptz
+  updatedAt           DateTime? @updatedAt @db.Timestamptz
+
+  // Relasi terbalik ke model User
+  user                User?     @relation("KaryawanUser")
+}
+
+model Kantor {
+  id_kantor   Int       @id @default(autoincrement())
+  jenis_kantor String
+  karyawan    Karyawan[] @relation
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  nik       Int    @unique
+  username  String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+
+  // Relasi dengan model Karyawan
+  karyawan  Karyawan @relation("KaryawanUser", fields: [nik], references: [nik])  // Menyediakan fields dan references di sini
+}
