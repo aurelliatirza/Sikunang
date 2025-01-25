@@ -26,7 +26,7 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
   return (
     <div
       className={`${
-        isSidebarOpen ? "w-72 sm:w-80 lg:w-80" : "w-0"
+        isSidebarOpen ? "w-48 sm:w-48 lg:w-48" : "w-0"
       } flex flex-col bg-white text-gray-800 fixed inset-y-0 left-0 top-0 overflow-y-auto shadow-md transition-all duration-300 z-50`}
     >
       {/* Header */}

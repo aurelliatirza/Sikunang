@@ -22,7 +22,7 @@ export const DashboardWrapper = ({ children }: DashboardWrapperProps) => {
       {/* Main Content */}
       <main
         className={`flex flex-col flex-1 bg-gray-50 overflow-auto transition-all duration-300 ${
-          isSidebarOpen ? "ml-72 sm:ml-80 lg:ml-80" : "ml-0"
+          isSidebarOpen ? "ml-48 sm:ml-48 lg:ml-48" : "ml-0"
         }`}
       >
         {/* Oper fungsi handleSidebarToggle ke DashboardHeader */}
