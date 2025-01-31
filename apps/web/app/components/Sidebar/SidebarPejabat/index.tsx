@@ -12,11 +12,15 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
 
   const links = [
-    { href: "/dashboard", label: "Dashboard", icon: <FaDesktop /> },
+    { href: "/dashboardPejabat", label: "Dashboard", icon: <FaDesktop /> },
     { href: "/marketing", label: "Marketing", icon: <FaChartLine /> },
     { href: "/nasabah", label: "Nasabah", icon: <FaUser /> },
     { href: "/kredit", label: "Kredit", icon: <FaCoins /> },
   ];
+
+  // Periksa apakah berada di jalur marketing, nasabah atau turunannya
+  const isMarketingPage = pathname.startsWith("/marketing");
+  const isNasabahPage = pathname.startsWith("/nasabah");
 
   const bottomLinks = [
     { href: "/profile", label: "Profile", icon: <FaUserCircle /> },
@@ -40,7 +44,7 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
           <Link key={link.href} href={link.href}>
             <div
               className={`${
-                pathname === link.href
+                pathname === link.href || (link.href === "/marketing" && isMarketingPage) || (link.href === "/nasabah" && isNasabahPage)
                   ? "text-blue-600 bg-gray-100"
                   : "text-gray-500 hover:text-blue-600"
               } flex items-center px-4 py-3 rounded-md cursor-pointer transition-all`}

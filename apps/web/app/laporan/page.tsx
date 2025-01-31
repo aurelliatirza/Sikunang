@@ -1,13 +1,12 @@
 "use client";
-
 import React from "react";
-import MarketingHeader from "../components/Header/HeaderPejabat/MarketingHeader";
-import Sidebar from "../components/Sidebar/SidebarPejabat";
-import MarketingTable from "../components/Cards/marketingTable";
+import LaporanHeader from "../components/Header/HeaderMarketing/LaporanHeader";
+import Sidebar from "../components/Sidebar/SidebarMarketing";
+import LaporanTable from "../components/Cards/laporanTable";
 import Footer from "../components/Footers";
 import CetakButton from "../components/Buttons/cetakButton";
 
-const MarketingPage = () => {
+const LaporanPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   const handleSidebarToggle = () => {
@@ -27,13 +26,13 @@ const MarketingPage = () => {
       >
         {/* Sticky Header */}
         <div className="sticky top-0 z-50 bg-gray-50 shadow-md">
-          <MarketingHeader onSidebarToggle={handleSidebarToggle} />
+          <LaporanHeader onSidebarToggle={handleSidebarToggle} />
         </div>
 
         {/* Wrapper untuk tabel dengan overflow-x-auto */}
         <div className="flex-grow overflow-hidden relative">
           <div className="overflow-x-auto w-full mt-4">
-            <MarketingTable />
+            <LaporanTable />
           </div>
         </div>
 
@@ -51,4 +50,4 @@ const MarketingPage = () => {
   );
 };
 
-export default MarketingPage;
+export default LaporanPage;

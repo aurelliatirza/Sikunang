@@ -1,8 +1,7 @@
-//Buat semua pages
-
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+// import TrackHistory from "./TrackHistory";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,6 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {/* TrackHistory ditambahkan di sini */}
+        {/* <TrackHistory /> */}
+        
+        {/* Konten halaman lainnya */}
         {children}
       </body>
     </html>

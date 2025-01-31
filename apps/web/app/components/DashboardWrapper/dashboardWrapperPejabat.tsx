@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import DashboardHeader from "../components/Header/DashboardHeader";
+import Sidebar from "../Sidebar/SidebarPejabat";
+import DashboardHeader from "../Header/DashboardHeader";
 
 interface DashboardWrapperProps {
   children: React.ReactNode;

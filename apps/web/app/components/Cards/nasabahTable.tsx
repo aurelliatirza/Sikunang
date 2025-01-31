@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const NasabahTable: React.FC = () => {
   const data = [
@@ -56,9 +57,11 @@ const NasabahTable: React.FC = () => {
                 <td className="border px-4 py-2">{item.jumlahKunjungan}</td>
                 <td className="border px-4 py-2">{item.ao}</td>
                 <td className="border px-4 py-2">
-                  <button className="text-blue-500 hover:text-blue-700 hover:underline">
-                    Lihat Selengkapnya
-                  </button>
+                  <Link href="/nasabah/detailNasabah">
+                    <button className="text-blue-500 hover:text-blue-700 hover:underline">
+                      Lihat Selengkapnya
+                    </button>
+                  </Link>
                 </td>
               </tr>
             ))}

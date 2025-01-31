@@ -1,7 +1,7 @@
-import Link from "next/link";
-import React from "react";
+import { MdEditSquare } from "react-icons/md";
+import { RiDeleteBin6Fill } from "react-icons/ri";
 
-const MarketingTable: React.FC = () => {
+const LaporanTable: React.FC = () => {
   const data = [
     {
       no: 1,
@@ -79,11 +79,14 @@ const MarketingTable: React.FC = () => {
               <td className="px-6 py-3 text-center border-l border-white">{item.hasilKunjungan}</td>
               <td className="px-6 py-3 text-center border-l border-white">{item.namaAO}</td>
               <td className="px-6 py-4 text-center border-l border-white">
-                <Link href="/marketing/detailKunjungan">
-                  <button className="text-blue-500 hover:text-blue-700 hover:underline">
-                      Lihat Selengkapnya
+                <div className="flex justify-center space-x-2">
+                  <button className="text-yellow-500 hover:text-yellow-600">
+                    <MdEditSquare className="w-6 h-6" />
                   </button>
-                </Link>
+                  <button className="text-red-500 hover:text-red-700">
+                    <RiDeleteBin6Fill className="w-6 h-6" />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -93,4 +96,4 @@ const MarketingTable: React.FC = () => {
   );
 };
 
-export default MarketingTable;
+export default LaporanTable;

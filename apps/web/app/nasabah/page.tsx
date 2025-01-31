@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import NasabahTable from "../components/Cards/nasabahTable";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Sidebar/SidebarPejabat";
 import Footer from "../components/Footers";
 import CetakButton from "../components/Buttons/cetakButton";
 import NasabahNavbar from "../components/Navbar/nasabahNavbar";
@@ -15,35 +15,36 @@ const NasabahPage = () => {
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
-      {/* Sidebar */}
-      <Sidebar isSidebarOpen={isSidebarOpen} />
+        {/* Sidebar */}
+        <Sidebar isSidebarOpen={isSidebarOpen} />
 
-      {/* Main Content */}
-      <main
-        className={`flex flex-col flex-1 bg-gray-50 transition-all duration-300 ${
-          isSidebarOpen ? "ml-48" : "ml-0"
-        }`}
-      >
-        {/* Navbar */}
-    
-        <NasabahNavbar onSidebarToggle={handleSidebarToggle} />
+        {/* Main Content */}
+        <main
+            className={`flex flex-col flex-1 bg-gray-50 overflow-auto transition-all duration-300 ${
+                isSidebarOpen ? "ml-48" : "ml-0"
+            }`}
+        >
+            {/* Navbar */}
+            <NasabahNavbar onSidebarToggle={handleSidebarToggle} />
 
-        {/* Wrapper konten utama */}
-        <div className="flex flex-col flex-grow px-4 py-4">
-          {/* Tabel Nasabah */}
-          <div className="overflow-x-auto w-full">
-            <NasabahTable />
-          </div>
+            {/* Wrapper konten utama */}
+            <div className="flex flex-col flex-grow px-4 py-4">
+                {/* Detail Nasabah */}
+                <div className="overflow-x-auto w-full flex-grow">
+                    <div className="min-w-[1200px]"> {/* Set lebar minimum */}
+                        <NasabahTable />
+                    </div>
+                </div>
+            </div>
 
-          {/* Tombol Cetak */}
-          <div className="mt-3 flex justify-end">
-            <CetakButton />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <Footer />
-      </main>
+            {/* Wrapper untuk footer */}
+            <div className="mt-auto w-full">
+                {/* Sticky Footer */}
+                <div className="sticky bottom-0 w-full bg-gray-50 shadow-md">
+                    <Footer />
+                </div>
+            </div>
+        </main>
     </div>
   );
 };
