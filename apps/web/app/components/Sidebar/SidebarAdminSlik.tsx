@@ -1,29 +1,28 @@
 "use client";
 
-import { usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { FaDesktop, FaFileAlt , FaCoins, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaDesktop, FaSignOutAlt, FaUserCircle, FaCoins } from "react-icons/fa";
 
-interface SidebarProps {
-  isSidebarOpen: boolean;
+interface SidebarProps{
+    isSidebarOpen: boolean;
 }
 
-const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
+const SidebarHRD = ({isSidebarOpen}: SidebarProps)=> {
     const pathname = usePathname();
 
     const links = [
-        { href: "/dashboardMarketing", label: "Dashboard", icon: <FaDesktop /> },
-        { href: "/laporan", label: "Laporan", icon: <FaFileAlt /> },
-        { href: "/kreditMarketing", label: "Kredit", icon: <FaCoins /> },
+        { href: "/dashboardAdminSlik", label: "Dashboard", icon: <FaDesktop /> },
+        { href: "/kreditAdminSlik", label: "Kredit", icon: <FaCoins /> },
     ];
 
     const bottomLinks = [
         { href: "/profile", label: "Profile", icon: <FaUserCircle /> },
-        { href: "/logout", label: "Logout", icon: <FaSignOutAlt />, isLogout: true },
+        { href: "/logout", label: "Logout", icon: <FaSignOutAlt/> }
     ];
 
-    // Periksa apakah berada di jalur laporan atau turunannya
-    const isLaporanPage = pathname.startsWith("/laporan");
+    //periksa apakah berada di jalur karyawan atau turunanannya
+    const isKaryawanPage = pathname.startsWith("/karyawan");
 
     return (
         <div
@@ -42,7 +41,7 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
                     <Link key={link.href} href={link.href}>
                         <div
                             className={`${
-                                pathname === link.href || (link.href === "/laporan" && isLaporanPage)
+                                pathname === link.href
                                     ? "text-blue-600 bg-gray-100"
                                     : "text-gray-500 hover:text-blue-600"
                             } flex items-center px-4 py-3 rounded-md cursor-pointer transition-all`}
@@ -78,4 +77,4 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
     );
 };
 
-export default Sidebar;
+export default SidebarHRD;

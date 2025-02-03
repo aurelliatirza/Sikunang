@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import KreditHeader from "../../components/Header/kreditHeader";
-import Sidebar from "../../components/Sidebar/SidebarPejabat";
+import SidebarAdminSlik from "../../components/Sidebar/SidebarAdminSlik"
 import PengajuanTable from "../../components/Table.tsx/PengajuanTable";
 import SlikTable from "../../components/Table.tsx/SlikTable";
 import AnalisisSlikTable from "../../components/Table.tsx/AnalisisSlikTable";
@@ -21,7 +21,7 @@ const KreditMarketingPage = () => {
     return (
         <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
             {/* Sidebar */}
-            <Sidebar isSidebarOpen={isSidebarOpen} />
+            <SidebarAdminSlik isSidebarOpen={isSidebarOpen} />
 
             {/* Main Content */}
             <main

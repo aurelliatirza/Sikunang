@@ -3,7 +3,7 @@
 import React from "react";
 import MarketingHeader from "../components/Header/HeaderPejabat/MarketingHeader";
 import Sidebar from "../components/Sidebar/SidebarPejabat";
-import MarketingTable from "../components/Cards/marketingTable";
+import MarketingTable from "../components/Table.tsx/marketingTable";
 import Footer from "../components/Footers";
 import CetakButton from "../components/Buttons/cetakButton";
 

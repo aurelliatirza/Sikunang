@@ -5,7 +5,7 @@ interface NavbarProps {
   onSidebarToggle: () => void;
 }
 
-const nasabahNavbar = ({ onSidebarToggle }: NavbarProps) => {
+const karyawanNavbar = ({ onSidebarToggle }: NavbarProps) => {
   return (
     <div className="h-24 bg-blue-400 w-full mx-auto items-center flex justify-between flex-wrap md:flex-nowrap md:px-6 px-4">
       {/* Bagian kiri: Tombol hamburger */}
@@ -16,7 +16,7 @@ const nasabahNavbar = ({ onSidebarToggle }: NavbarProps) => {
         >
           ☰
         </button>
-        <h1 className="text-white text-lg uppercase font-semibold">Nasabah</h1>
+        <h1 className="text-white text-lg uppercase font-semibold">Karyawan</h1>
       </div>
 
       {/* Bagian kanan: Search dan Profil */}
@@ -31,4 +31,4 @@ const nasabahNavbar = ({ onSidebarToggle }: NavbarProps) => {
   );
 };
 
-export default nasabahNavbar;
+export default karyawanNavbar;

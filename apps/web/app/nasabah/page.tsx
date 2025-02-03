@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import NasabahTable from "../components/Cards/nasabahTable";
+import NasabahTable from "../components/Table.tsx/nasabahTable";
 import Sidebar from "../components/Sidebar/SidebarPejabat";
 import Footer from "../components/Footers";
 import CetakButton from "../components/Buttons/cetakButton";

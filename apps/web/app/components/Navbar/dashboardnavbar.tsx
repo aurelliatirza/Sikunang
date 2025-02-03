@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUserCircle, FaSearch, FaBars } from "react-icons/fa";
+import { FaUserCircle, FaSearch } from "react-icons/fa";
 
 interface NavbarProps {
   onSidebarToggle: () => void;

@@ -2,12 +2,12 @@
 import React, { useState } from "react";
 import KreditHeader from "../../components/Header/kreditHeader";
 import Sidebar from "../../components/Sidebar/SidebarMarketing";
-import PengajuanTable from "../../components/Cards/PengajuanTable";
-import SlikTable from "../../components/Cards/SlikTable";
-import AnalisisSlikTable from "../../components/Cards/AnalisisSlikTable";
-import VisitTable from "../../components/Cards/VisitTable";
-import ProposalTable from "../../components/Cards/ProposalTable";
-import PersetujuanTable from "../../components/Cards/PersetujuanTable";
+import PengajuanTable from "../../components/Table.tsx/PengajuanTable";
+import SlikTable from "../../components/Table.tsx/SlikTable";
+import AnalisisSlikTable from "../../components/Table.tsx/AnalisisSlikTable";
+import VisitTable from "../../components/Table.tsx/VisitTable";
+import ProposalTable from "../../components/Table.tsx/ProposalTable";
+import PersetujuanTable from "../../components/Table.tsx/PersetujuanTable";
 import Footer from "../../components/Footers";
 
 const KreditMarketingPage = () => {

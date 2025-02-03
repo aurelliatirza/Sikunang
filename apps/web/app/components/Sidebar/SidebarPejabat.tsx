@@ -8,7 +8,7 @@ interface SidebarProps {
   isSidebarOpen: boolean;
 }
 
-const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
+const SidebarPejabat = ({ isSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
 
   const links = [
@@ -80,4 +80,4 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
   );
 };
 
-export default Sidebar;
+export default SidebarPejabat;

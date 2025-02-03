@@ -4,11 +4,11 @@ import Navbar from "../../Navbar/laporanNavbar";
 import AddLaporanButton from "../../Buttons/addLaporanbutton";
 
 
-interface DashboardHeaderProps {
+interface LaporanHeaderProps {
   onSidebarToggle: () => void;
 }
 
-const MarketingHeader = ({ onSidebarToggle }: DashboardHeaderProps) => {
+const MarketingHeader = ({ onSidebarToggle }: LaporanHeaderProps) => {
   return (
     <>
       {/* Oper properti onSidebarToggle ke Navbar */}
