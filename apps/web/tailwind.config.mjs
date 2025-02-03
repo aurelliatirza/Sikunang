@@ -12,7 +12,7 @@ export default {
         white: "#ffffff",
         black: "#000000",
         blue: {
-          100: "#E4F1FC", //untuk kard di login dan signup
+          100: "#E4F1FC", //untuk card di login dan signup
           200: "#3861A1", //untuk button di login dan signup saat belum di hover
           300: "#0A3981",  //untuk button di login dan signup saat di hover
           400: "#2C72CB",  //untuk di page lainnya bagian atas (header), dan badge di tabel

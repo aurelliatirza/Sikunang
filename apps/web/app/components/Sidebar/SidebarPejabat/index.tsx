@@ -15,7 +15,7 @@ const Sidebar = ({ isSidebarOpen }: SidebarProps) => {
     { href: "/dashboardPejabat", label: "Dashboard", icon: <FaDesktop /> },
     { href: "/marketing", label: "Marketing", icon: <FaChartLine /> },
     { href: "/nasabah", label: "Nasabah", icon: <FaUser /> },
-    { href: "/kredit", label: "Kredit", icon: <FaCoins /> },
+    { href: "/kreditPejabat", label: "Kredit", icon: <FaCoins /> },
   ];
 
   // Periksa apakah berada di jalur marketing, nasabah atau turunannya
