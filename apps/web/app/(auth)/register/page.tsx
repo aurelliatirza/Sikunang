@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import RegisterCard from "../../components/Table.tsx/RegisterCard";
+import RegisterCard from "../../components/Cards/RegisterCard";
 import Footer from "../../components/Footers";
 
 const RegisterPage = () => {

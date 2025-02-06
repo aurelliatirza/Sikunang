@@ -44,10 +44,10 @@ model Kantor {
 
 model User {
   id        Int       @id @default(autoincrement())
-  nik       Int    @unique
+  nik       Int       @unique
   username  String    @unique
   password  String
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Jakarta'"))
 
   // Relasi dengan model Karyawan
   karyawan  Karyawan @relation("KaryawanUser", fields: [nik], references: [nik])  // Menyediakan fields dan references di sini

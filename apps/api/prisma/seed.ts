@@ -1,22 +1,9 @@
+// filepath: /Users/tirzaaurellia/Documents/PKL/Sikunang/apps/api/prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
-import { DateTime } from 'luxon';
+import { Kantor } from './Kantor';
+import { Karyawan } from './Karyawan';
 
 const prisma = new PrismaClient();
-
-const Kantor = [
-  { id_kantor: 1, jenis_kantor: 'Kantor Pusat' },
-  { id_kantor: 2, jenis_kantor: 'Kantor Cabang'},
-  { id_kantor: 3, jenis_kantor: 'Kantor Kas'},
-];
-
-const Karyawan = [
-  { nik: 456, namaKaryawan: 'Tirza Aurellia', jabatan: 'direkturBisnis', id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-  { nik: 337, namaKaryawan: 'Suratih', jabatan: 'kabag', nik_direkturBisnis: 456, id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-  { nik: 201, namaKaryawan: 'Prismamul', jabatan: 'spv', nik_kabag: 337, nik_direkturBisnis: 456, id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-  { nik: 202, namaKaryawan: 'Adit', jabatan: 'spv', nik_kabag: 337, nik_direkturBisnis: 456, id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-  { nik: 101, namaKaryawan: 'Mulyono', jabatan: 'marketing', nik_SPV: 201, nik_kabag: 337, nik_direkturBisnis: 456, id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-  { nik: 102, namaKaryawan: 'Sugeng', jabatan: 'marketing', nik_SPV: 202, nik_kabag: 337, nik_direkturBisnis: 456, id_kantor: 1, createdAt: DateTime.now().setZone('Asia/Jakarta').toJSDate() },
-];
 
 async function main() {
   // Insert data untuk tabel Kantor
