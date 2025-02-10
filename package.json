@@ -21,6 +21,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@nestjs/mapped-types": "*",
     "zod": "^3.24.1"
   }
 }

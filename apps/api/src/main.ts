@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as cors from 'cors'; // Pastikan cors diimport dengan benar
 
 async function bootstrap() {
   process.env.TZ = 'Asia/Jakarta';

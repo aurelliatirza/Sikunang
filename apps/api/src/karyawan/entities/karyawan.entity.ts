@@ -1,1 +1,1 @@
-export class Karyawan {}
+// export class Karyawan {}

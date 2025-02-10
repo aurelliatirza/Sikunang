@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterSchema } from "../../../lib/type";
 import { z } from "zod";
-import router from "next/router";
+import { useRouter } from "next/navigation";
+import { Alert, CircularProgress } from "@mui/material";
 
 type RegisterFormInputs = z.infer<typeof RegisterSchema>;
 
@@ -21,8 +22,13 @@ const RegisterCard = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const router = useRouter();
 
     const onSubmit = async (data: RegisterFormInputs) => {
+        setLoading(true);
+        setAlert(null); // Reset alert sebelum request baru
+        
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
                 method: "POST",
@@ -31,27 +37,33 @@ const RegisterCard = () => {
                 },
                 body: JSON.stringify(data),
             });
-    
-            if (!response.ok) {
-                const errorBody = await response.json();
-                console.error("Error Response:", errorBody);
-                throw new Error("Registration failed");
-            }
-    
+
             const result = await response.json();
-            console.log("Registration Success:", result);
+
+            if (!response.ok) {
+                setAlert({ type: "error", message: result.message || "Registrasi gagal." });
+                return;
+            }
+
+            setAlert({ type: "success", message: "Registrasi berhasil." });
+            setTimeout(() => router.push("/login"), 2000);
         } catch (error) {
             console.error("Error during registration:", error);
+        } finally {
+            setLoading(false);
         }
     };
-    
-    
-      
-      
 
     return (
         <div className="bg-blue-100 p-6 rounded-2xl shadow-lg w-full max-w-md mx-auto sm:p-8">
             <h2 className="text-center font-bold text-xl text-gray-700">Register</h2>
+
+            {alert && (
+                <Alert severity={alert.type} className="mt-3">
+                    {alert.message}
+                </Alert>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-600">NIK</label>
@@ -92,11 +104,13 @@ const RegisterCard = () => {
 
                 <button
                     type="submit"
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg w-full mt-2 transition duration-200"
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-3 rounded-lg w-full mt-2 transition duration-200 flex justify-center items-center"
+                    disabled={loading}
                 >
-                    Register
+                    {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
                 </button>
             </form>
+
             <div className="text-center mt-4">
                 <span className="text-gray-600">Sudah punya akun? </span>
                 <Link href="/auth/login">

@@ -7,11 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  AKTIF
+  NON_AKTIF
+}
 
 model Karyawan {
   nik                 Int    @id
   namaKaryawan        String
   jabatan             String
+  status              Status @default(AKTIF)
   nik_SPV             Int? 
   nik_kabag           Int?
   nik_direkturBisnis  Int?
