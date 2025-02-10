@@ -11,6 +11,7 @@ async function bootstrap() {
     origin: 'http://localhost:3000', // Ganti dengan URL frontend Anda
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type, Accept, Authorization', // jika diperlukan
+    credentials: true,
   });
 
   app.useGlobalPipes(new ValidationPipe({

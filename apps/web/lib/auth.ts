@@ -1,10 +1,10 @@
 "use server";
 
-import { FormState } from "./type";
-import { RegisterSchema } from "./type";
+import { createSession } from "./session";
+import { FormState, LoginSchema, RegisterSchema } from "./type";
 import { redirect } from "next/navigation";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000"; // Ganti dengan URL backend-mu
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000"; // Ganti dengan URL backend-mu
 
 export async function Register(
     state: FormState,
@@ -42,4 +42,58 @@ export async function Register(
     return {
         message: "Terjadi kesalahan",
     };
+}
+
+
+export async function login(state: FormState, formData: FormData): Promise<FormState> {
+    const validateField = LoginSchema.safeParse({
+        username: formData.get("username"),
+        password: formData.get("password"),
+    });
+
+    if (!validateField.success) {
+        return { error: validateField.error.flatten().fieldErrors };
+    }
+
+    const response = await fetch(`${BACKEND_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(validateField.data),
+    });
+
+    if (response.ok) {
+        const result = await response.json();
+
+        // ✅ Simpan session setelah login sukses
+        await createSession({
+            userId: result.id.toString(),
+            username: result.name,
+            jabatan: result.jabatan,  // Pastikan backend mengembalikan jabatan
+        });
+
+        // ✅ Redirect sesuai jabatan
+        switch (result.jabatan) {
+            case "marketing":
+                redirect("/dashboardMarketing");
+                break;
+            case "adminSlik":
+                redirect("/dashboardAdmin");
+                break;
+            case "hrd":
+                redirect("/dashboardHRD");
+                break;
+            default:
+                redirect("/dashboardPejabat");
+                break;
+        }
+
+
+        return { message: "Login successful" };
+    } else {
+        return {
+            error: {
+                message: response.status === 401 ? "Invalid Credentials!" : response.statusText,
+            },
+        };
+    }
 }

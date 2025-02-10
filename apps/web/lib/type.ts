@@ -1,14 +1,15 @@
 import { z } from "zod";
 
 
-export type FormState = {
+export interface FormState {
     error?: {
         nik?: string[];
         username?: string[];
         password?: string[];
+        message?: string;
     };
     message?: string;
-};
+}
 
 
 
@@ -29,4 +30,13 @@ export const RegisterSchema = z.object({
         .regex(/[A-Z]/, { message: "password harus mengandung huruf alfabet besar" })
         .regex(/[0-9]/, { message: "password harus mengandung angka di dalamnya" })
         .trim(),
+});
+
+
+export const LoginSchema = z.object({
+    username: z
+    .string()
+    .min(4, { message: "username minimal memiliki 4 karakter" })
+    .trim(),
+    password: z.string().min(1, { message: "Password tidak boleh kosong"})
 });
