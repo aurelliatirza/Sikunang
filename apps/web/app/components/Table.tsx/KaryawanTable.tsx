@@ -4,17 +4,17 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import { Chip } from "@mui/material";
 import EditKaryawanDialog from "../Dialog/editKaryawanDialog";
 
-type Status = "AKTIF" | "NON_AKTIF";
+
 
 interface Karyawan {
   nik: number;
   namaKaryawan: string;
   jabatan: string;
-  status: Status;
-  kantor: { id_kantor: number; jenis_kantor: string };
-  supervisor?: { nik: number; namaKaryawan: string };
-  kepalaBagian?: { nik: number; namaKaryawan: string };
-  direkturBisnis?: { nik: number; namaKaryawan: string };
+  status: string;
+  kantor: { id_kantor: number; jenis_kantor: string }
+  supervisor?: { nik: number; namaKaryawan: string } | null;
+  kepalaBagian?: { nik: number; namaKaryawan: string } | null;
+  direkturBisnis?: { nik: number; namaKaryawan: string } | null;
 }
 
 const jabatanOptions = [
@@ -26,6 +26,10 @@ const jabatanOptions = [
   { label: "Direktur Bisnis", value: "direkturBisnis" },
 ];
 
+const statusOption = [
+  { label: "AKTIF", value: "aktif" },
+  { label: "NON AKTIF", value: "non_aktif" },
+];
 const KaryawanTable: React.FC = () => {
   const [karyawan, setKaryawan] = useState<Karyawan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -64,11 +68,12 @@ const KaryawanTable: React.FC = () => {
       namaKaryawan: updatedKaryawan.namaKaryawan,
       jabatan: updatedKaryawan.jabatan,
       status: updatedKaryawan.status,
-      nik_SPV: updatedKaryawan.supervisor?.nik,
-      nik_kabag: updatedKaryawan.kepalaBagian?.nik,
-      nik_direkturBisnis: updatedKaryawan.direkturBisnis?.nik,
+      nik_SPV: updatedKaryawan.supervisor ? updatedKaryawan.supervisor.nik : null,
+      nik_kabag: updatedKaryawan.kepalaBagian ? updatedKaryawan.kepalaBagian.nik : null,
+      nik_direkturBisnis: updatedKaryawan.direkturBisnis ? updatedKaryawan.direkturBisnis.nik : null,
       id_kantor: updatedKaryawan.kantor.id_kantor,
     };
+    
 
     try {
       const response = await fetch(`http://localhost:8000/karyawan/${updatedKaryawan.nik}`, {
@@ -91,21 +96,16 @@ const KaryawanTable: React.FC = () => {
 
   if (loading) return <p>Loading data...</p>;
 
-  const getStatusLabel = (status: Status) => {
-    switch (status) {
-      case "AKTIF":
-        return "AKTIF";
-      case "NON_AKTIF":
-        return "NON AKTIF";
-      default:
-        return status;
-    }
-  };
 
   const getJabatanLabel = (jabatan: string) => {
     const option = jabatanOptions.find((option) => option.value === jabatan);
     return option ? option.label : jabatan;
   };
+
+  const getStatusLabel = (status: string) => {
+    const option = statusOption.find((option) => option.value === status);
+    return option ? option.label : status;
+  }
 
   return (
     <div className="overflow-x-auto w-full">

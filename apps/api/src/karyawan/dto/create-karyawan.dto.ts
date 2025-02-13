@@ -10,6 +10,10 @@ export class CreateKaryawanDto {
     @IsString()
     jabatan: string;
 
+    // Tambahkan field status
+    @IsString()
+    status: string; // Contoh: "AKTIF" atau "NON AKTIF"
+
     @IsOptional()
     @IsNumber()
     nik_SPV?: number;

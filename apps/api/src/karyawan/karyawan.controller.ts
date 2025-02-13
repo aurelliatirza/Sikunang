@@ -36,10 +36,18 @@ export class KaryawanController {
     return this.karyawanService.findOne(+id);
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() updateKaryawanDto: UpdateKaryawanDto) {
-    return this.karyawanService.update(+id, updateKaryawanDto);
+  @Put(':nik')
+  async update(
+    @Param('nik') nik: string,
+    @Body() updateKaryawanDto: UpdateKaryawanDto,
+  ) {
+    console.log("Payload yang diterima:", updateKaryawanDto);
+    const updated = await this.karyawanService.update(+nik, updateKaryawanDto);
+    console.log("Data yang diupdate:", updated);
+    return updated;
   }
+  
+  
 
   @Delete(':id')
   remove(@Param('id') id: string) {

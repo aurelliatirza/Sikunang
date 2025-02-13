@@ -7,6 +7,12 @@ interface Kantor {
   jenis_kantor: string;
 }
 
+interface Karyawan {
+  nik: number;
+  namaKaryawan: string;
+  jabatan: string;
+}
+
 const jabatanOptions = [
   { label: "HRD", value: "hrd" },
   { label: "Admin Slik", value: "adminSlik" },
@@ -29,6 +35,7 @@ const AddKaryawanCard: React.FC = () => {
   });
 
   const [kantorList, setKantorList] = useState<Kantor[]>([]);
+  const [karyawanList, setKaryawanList] = useState<Karyawan[]>([]);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -43,7 +50,19 @@ const AddKaryawanCard: React.FC = () => {
       }
     };
 
+    const fetchKaryawan = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/karyawan");
+        const data = await response.json();
+        setKaryawanList(data)
+      } catch (error) {
+        console.log("Error fetching Karyawan Data:", error);
+      }
+
+    }
+
     fetchKantor();
+    fetchKaryawan();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -95,6 +114,10 @@ const AddKaryawanCard: React.FC = () => {
     }
   };
 
+  const filterKaryawanByJabatan = (jabatan: string) => {
+    return karyawanList.filter((karyawan) => karyawan.jabatan === jabatan);
+  }
+
   return (
     <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6">
       <div className="bg-blue-100 p-4 rounded-xl shadow-md w-full">
@@ -124,13 +147,34 @@ const AddKaryawanCard: React.FC = () => {
           </select>
 
           <label className="block text-sm font-medium mt-3">Nama SPV</label>
-          <input name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" type="number" />
+          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+            <option value="">Pilih SPV</option>
+            {filterKaryawanByJabatan("spv").map((karyawan) => (
+              <option key={karyawan.nik} value={karyawan.nik}>
+                {karyawan.namaKaryawan}
+              </option>
+            ))}
+          </select>
 
           <label className="block text-sm font-medium mt-3">Nama Kabag</label>
-          <input name="nik_kabag" value={formData.nik_kabag} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" type="number" />
+          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+            <option value="">Pilih Kabag</option>
+            {filterKaryawanByJabatan("kabag").map((karyawan) => (
+              <option key={karyawan.nik} value={karyawan.nik}>
+                {karyawan.namaKaryawan}
+              </option>
+            ))}
+          </select>
 
           <label className="block text-sm font-medium mt-3">Nama Direktur Bisnis</label>
-          <input name="nik_direkturBisnis" value={formData.nik_direkturBisnis} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" type="number" />
+          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+            <option value="">Pilih Direktur Bisnis</option>
+            {filterKaryawanByJabatan("direkturBisnis").map((karyawan) => (
+              <option key={karyawan.nik} value={karyawan.nik}>
+                {karyawan.namaKaryawan}
+              </option>
+            ))}
+          </select>
 
           <label className="block text-sm font-medium mt-3">Jenis Kantor</label>
           <select name="id_kantor" value={formData.id_kantor} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">

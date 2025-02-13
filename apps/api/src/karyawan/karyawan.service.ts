@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateKaryawanDto } from './dto/create-karyawan.dto';
 import { UpdateKaryawanDto } from './dto/update-karyawan.dto';
@@ -46,16 +46,22 @@ export class KaryawanService {
 
   async update(id: number, updateKaryawanDto: UpdateKaryawanDto) {
     try {
+      // Pisahkan field 'nik' dari data update
+      const { nik, ...data } = updateKaryawanDto;
+      console.log("Updating karyawan with nik:", id);
+      console.log("Data to update:", data);
+
       const updatedKaryawan = await this.prisma.karyawan.update({
         where: { nik: id },
-        data: updateKaryawanDto,
+        data: data,
       });
       return { message: "Karyawan berhasil diperbarui", data: updatedKaryawan };
     } catch (error) {
       console.error("Error updating karyawan:", error);
-      throw new Error("Gagal memperbarui karyawan, pastikan ID benar");
+      throw new NotFoundException("Gagal memperbarui karyawan, pastikan ID benar");
     }
   }
+
   
   async remove(id: number) {
     return this.prisma.karyawan.delete({
