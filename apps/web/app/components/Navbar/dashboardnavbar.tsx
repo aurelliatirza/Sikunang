@@ -1,19 +1,47 @@
-import React from "react";
-import { FaUserCircle, FaSearch } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+
 
 interface NavbarProps {
   onSidebarToggle: () => void;
 }
 
-const dashboardNavbar = ({ onSidebarToggle }: NavbarProps) => {
+const DashboardNavbar = ({ onSidebarToggle }: NavbarProps) => {
+  const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/auth/profile", {
+          method: "GET",
+          credentials: "include", // ✅ Wajib untuk mengirim cookie!
+        });
+  
+        console.log("Response Status:", response.status, response.statusText); // ✅ Debugging status
+  
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error("Unauthorized: Token mungkin tidak terkirim atau invalid.");
+          }
+          throw new Error(`Gagal mengambil data user: ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+        console.log("User Data:", data); // ✅ Debugging data yang diterima
+        setNamaKaryawan(data.name); // Simpan nama user dari response
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+  
+    fetchUserProfile();
+  }, []);
+  
+
   return (
     <div className="h-24 bg-blue-400 w-full mx-auto items-center flex justify-between flex-wrap md:flex-nowrap md:px-6 px-4">
       {/* Bagian kiri: Tombol hamburger */}
       <div className="flex items-center space-x-2">
-        <button
-          className="text-white text-2xl" // Tombol hamburger selalu terlihat
-          onClick={onSidebarToggle}
-        >
+        <button className="text-white text-2xl" onClick={onSidebarToggle}>
           ☰
         </button>
         <h1 className="text-white text-lg uppercase font-semibold">Dashboard</h1>
@@ -21,27 +49,13 @@ const dashboardNavbar = ({ onSidebarToggle }: NavbarProps) => {
 
       {/* Bagian kanan: Search dan Profil */}
       <div className="flex items-center space-x-4">
-        {/* Kotak Search */}
-        <form className="flex items-center">
-          <div className="relative flex items-center">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <FaSearch className="text-gray-500 text-sm sm:text-base md:text-lg" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
-            />
-          </div>
-        </form>
-
-        {/* Ikon Profil */}
-        <div className="relative flex items-center justify-center w-10 h-10 sm:w-10 sm:h-10 md:w-14 md:h-14 max-w-full rounded-full bg-blue-400 overflow-hidden text-white text-xs sm:text-sm md:text-lg">
-          <FaUserCircle size={32} />
+        {/* Nama Karyawan */}
+        <div className="bg-white px-4 py-2 rounded-full text-blue-600 font-semibold shadow">
+          {namaKaryawan || "Loading..."}
         </div>
       </div>
     </div>
   );
 };
 
-export default dashboardNavbar;
+export default DashboardNavbar;

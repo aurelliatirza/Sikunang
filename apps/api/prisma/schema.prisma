@@ -7,24 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Karyawan {
-  nik                 Int    @id
+  nik                 Int       @id
   namaKaryawan        String
   jabatan             String
-  status              String @default("AKTIF")
-  nik_SPV             Int? 
+  status              String    @default("AKTIF")
+  nik_SPV             Int?
   nik_kabag           Int?
   nik_direkturBisnis  Int?
   id_kantor           Int
-  kantor              Kantor   @relation(fields: [id_kantor], references: [id_kantor])
+  kantor              Kantor    @relation(fields: [id_kantor], references: [id_kantor])
 
   // Relasi dengan diri sendiri
   supervisor          Karyawan? @relation("Supervisor", fields: [nik_SPV], references: [nik])
   kepalaBagian        Karyawan? @relation("Kabag", fields: [nik_kabag], references: [nik])
   direkturBisnis      Karyawan? @relation("DirekturBisnis", fields: [nik_direkturBisnis], references: [nik])
 
-  // Menambahkan field relasi terbalik tanpa fields dan references
+  // Relasi terbalik (child) dari relasi di atas
   subordinates        Karyawan[] @relation("Supervisor")
   kepalaBagianSubs    Karyawan[] @relation("Kabag")
   direkturBisnisSubs  Karyawan[] @relation("DirekturBisnis")
@@ -32,15 +31,18 @@ model Karyawan {
   createdAt           DateTime  @default(now()) @db.Timestamptz
   updatedAt           DateTime? @updatedAt @db.Timestamptz
 
-  // Relasi terbalik ke model User
+  // Relasi dengan model User (satu ke satu)
   user                User?     @relation("KaryawanUser")
+
+  // Opsional: Relasi dengan Kunjungan (jika karyawan melakukan banyak kunjungan)
+  kunjungan          Kunjungan[] @relation("KaryawanKunjungan")
 }
 
 model Kantor {
-  id_kantor   Int       @id @default(autoincrement())
+  id_kantor    Int        @id @default(autoincrement())
   jenis_kantor String
-  karyawan    Karyawan[] @relation
-  createdAt   DateTime  @default(now()) @db.Timestamptz
+  karyawan     Karyawan[]
+  createdAt    DateTime   @default(now()) @db.Timestamptz
 }
 
 model User {
@@ -48,8 +50,65 @@ model User {
   nik       Int       @unique
   username  String    @unique
   password  String
-  createdAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Jakarta'"))
+  createdAt DateTime  @default(now()) @db.Timestamptz
 
-  // Relasi dengan model Karyawan
-  karyawan  Karyawan @relation("KaryawanUser", fields: [nik], references: [nik])  // Menyediakan fields dan references di sini
+  // Relasi dengan model Karyawan (satu ke satu)
+  karyawan  Karyawan  @relation("KaryawanUser", fields: [nik], references: [nik])
+}
+
+model Nasabah {
+  id_nasabah  Int        @id @default(autoincrement())
+  namaNasabah String
+  alamat      String
+  no_telp     String
+  namaUsaha   String
+
+  // Relasi dengan Kunjungan (satu nasabah bisa memiliki banyak kunjungan)
+  kunjungan  Kunjungan[]
+}
+
+model Kota {
+  id_kota   Int          @id @default(autoincrement())
+  namaKota  String  
+  createdAt DateTime     @default(now()) @db.Timestamptz
+
+  // Relasi: Satu Kota memiliki banyak Kecamatan
+  kecamatans Kecamatan[]
+}
+
+model Kecamatan {
+  id_kecamatan  Int        @id @default(autoincrement())
+  namaKecamatan String
+  id_kota       Int
+
+  // Relasi ke Kota
+  kota          Kota       @relation(fields: [id_kota], references: [id_kota])
+  
+  // Relasi: Satu Kecamatan memiliki banyak Kelurahan
+  kelurahans    Kelurahan[]
+}
+
+model Kelurahan {
+  id_kelurahan  Int         @id @default(autoincrement())
+  namaKelurahan String
+  id_kecamatan  Int
+
+  // Relasi ke Kecamatan
+  kecamatan     Kecamatan   @relation(fields: [id_kecamatan], references: [id_kecamatan])
+}
+
+model Kunjungan {
+  id_kunjungan   Int       @id @default(autoincrement())
+  id_nasabah     Int
+  nik            Int
+  hasilKunjungan String
+  // Menggunakan String untuk menyimpan path atau URL foto (alternatif: Bytes jika ingin menyimpan data biner)
+  foto_kunjungan String
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @db.Timestamptz
+
+  // Relasi ke Nasabah
+  nasabah        Nasabah   @relation(fields: [id_nasabah], references: [id_nasabah])
+  // Relasi ke Karyawan
+  karyawan       Karyawan  @relation("KaryawanKunjungan", fields: [nik], references: [nik])
 }

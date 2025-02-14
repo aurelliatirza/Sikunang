@@ -1,7 +1,8 @@
-import { Controller, Post, Body, UseGuards, Request, Res } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Res, Get, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { Response } from 'express';
 
 @Controller('auth') // Base path: /auth
@@ -34,6 +35,15 @@ export class AuthController {
       jabatan: user.jabatan,
     });
   }
-  
 
+  @UseGuards(JwtAuthGuard) // ✅ Gunakan JWT Auth Guard
+  @Get('profile')
+  async getProfile(@Request() req) {
+    console.log("User jwt profile requested:", req.user); // Debug log
+    if (!req.user) {
+      throw new UnauthorizedException("User tidak ditemukan");
+    }
+    return req.user; // ✅ JWT payload akan otomatis masuk ke sini
+  }
+  
 }

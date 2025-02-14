@@ -35,7 +35,7 @@ const AddLaporanCard = () => {
           <input className="w-full p-2 border rounded-md mt-1" type="text" />
 
           <label className="block text-sm font-medium mt-3">Foto</label>
-          <textarea className="w-full p-2 border rounded-md mt-1"></textarea>
+          <input type="file" accept="image/*" />
 
           <div className="flex justify-between mt-4">
             <Link href="/laporan">

@@ -97,3 +97,23 @@ export async function login(state: FormState, formData: FormData): Promise<FormS
         };
     }
 }
+
+// const fetchUserProfile = async () => {
+//     try {
+//       const response = await fetch("http://localhost:3000/auth/profile", {
+//         method: "GET",
+//         credentials: "include", // Kirim cookie HTTP-only
+//       });
+  
+//       if (!response.ok) {
+//         throw new Error("Gagal mengambil data user");
+//       }
+  
+//       const data = await response.json();
+//       return data; // { id, nik, name, jabatan }
+//     } catch (error) {
+//       console.error("Error fetching user profile:", error);
+//       return null;
+//     }
+//   };
+  
