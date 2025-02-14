@@ -146,8 +146,14 @@ const AddKaryawanCard: React.FC = () => {
             ))}
           </select>
 
+          {/* Dropdown SPV */}
           <label className="block text-sm font-medium mt-3">Nama SPV</label>
-          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+          <select
+            name="nik_SPV"
+            value={formData.nik_SPV}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+          >
             <option value="">Pilih SPV</option>
             {filterKaryawanByJabatan("spv").map((karyawan) => (
               <option key={karyawan.nik} value={karyawan.nik}>
@@ -156,8 +162,14 @@ const AddKaryawanCard: React.FC = () => {
             ))}
           </select>
 
+          {/* Dropdown Kabag */}
           <label className="block text-sm font-medium mt-3">Nama Kabag</label>
-          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+          <select
+            name="nik_kabag"
+            value={formData.nik_kabag}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+          >
             <option value="">Pilih Kabag</option>
             {filterKaryawanByJabatan("kabag").map((karyawan) => (
               <option key={karyawan.nik} value={karyawan.nik}>
@@ -166,8 +178,14 @@ const AddKaryawanCard: React.FC = () => {
             ))}
           </select>
 
+          {/* Dropdown Direktur Bisnis */}
           <label className="block text-sm font-medium mt-3">Nama Direktur Bisnis</label>
-          <select name="nik_SPV" value={formData.nik_SPV} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+          <select
+            name="nik_direkturBisnis"
+            value={formData.nik_direkturBisnis}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+          >
             <option value="">Pilih Direktur Bisnis</option>
             {filterKaryawanByJabatan("direkturBisnis").map((karyawan) => (
               <option key={karyawan.nik} value={karyawan.nik}>
@@ -176,8 +194,9 @@ const AddKaryawanCard: React.FC = () => {
             ))}
           </select>
 
+          {/* Kantor */}
           <label className="block text-sm font-medium mt-3">Jenis Kantor</label>
-          <select name="id_kantor" value={formData.id_kantor} onChange={handleChange} className="w-full p-2 border rounded-md mt-1">
+          <select name="id_kantor" value={formData.id_kantor} onChange={handleChange} className="w-full p-2 border rounded-md mt-1 required">
             <option value="" disabled>Pilih Kantor</option>
             {kantorList.map((kantor) => (
               <option key={kantor.id_kantor} value={kantor.id_kantor}>
