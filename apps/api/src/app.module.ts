@@ -7,6 +7,9 @@ import { UserModule } from './user/user.module';
 import { KaryawanModule } from './karyawan/karyawan.module';
 import { KantorModule } from './kantor/kantor.module';
 import { ConfigModule } from '@nestjs/config';
+import { KabupatenKotaModule } from './kabupaten-kota/kabupaten-kota.module';
+import { KecamatanModule } from './kecamatan/kecamatan.module';
+import { DesaKelurahanModule } from './desa-kelurahan/desa-kelurahan.module';
 
 @Module({
   imports: [
@@ -15,6 +18,9 @@ import { ConfigModule } from '@nestjs/config';
     UserModule,
     KaryawanModule,
     KantorModule,
+    KabupatenKotaModule,
+    KecamatanModule,
+    DesaKelurahanModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

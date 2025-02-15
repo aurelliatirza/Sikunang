@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Alert, CircularProgress } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 interface Kantor {
   id_kantor: number;
@@ -23,6 +24,7 @@ const jabatanOptions = [
 ];
 
 const AddKaryawanCard: React.FC = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     nik: "",
     namaKaryawan: "",
@@ -54,12 +56,11 @@ const AddKaryawanCard: React.FC = () => {
       try {
         const response = await fetch("http://localhost:8000/karyawan");
         const data = await response.json();
-        setKaryawanList(data)
+        setKaryawanList(data);
       } catch (error) {
         console.log("Error fetching Karyawan Data:", error);
       }
-
-    }
+    };
 
     fetchKantor();
     fetchKaryawan();
@@ -71,8 +72,15 @@ const AddKaryawanCard: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validasi jika field wajib kosong
+    if (!formData.nik || !formData.namaKaryawan || !formData.jabatan || !formData.id_kantor) {
+      setAlert({ type: "error", message: "NIK, Nama Karyawan, Jabatan, dan Kantor tidak boleh kosong." });
+      return;
+    }
+
     setLoading(true);
-    setAlert(null); // Reset alert before new request
+    setAlert(null); // Reset alert sebelum request baru
 
     try {
       // Check for duplicate NIK
@@ -106,6 +114,7 @@ const AddKaryawanCard: React.FC = () => {
       }
 
       setAlert({ type: "success", message: "Karyawan berhasil ditambahkan." });
+      setTimeout(() => router.push("/karyawan"), 1000);
     } catch (error) {
       console.error("Error:", error);
       setAlert({ type: "error", message: "Terjadi kesalahan saat menambahkan karyawan." });
@@ -116,7 +125,7 @@ const AddKaryawanCard: React.FC = () => {
 
   const filterKaryawanByJabatan = (jabatan: string) => {
     return karyawanList.filter((karyawan) => karyawan.jabatan === jabatan);
-  }
+  };
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6">
@@ -131,14 +140,36 @@ const AddKaryawanCard: React.FC = () => {
 
         <form className="mt-4" onSubmit={handleSubmit}>
           <label className="block text-sm font-medium">NIK</label>
-          <input name="nik" value={formData.nik} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" type="number" required />
+          <input
+            name="nik"
+            value={formData.nik}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+            type="number"
+            required
+          />
 
           <label className="block text-sm font-medium mt-3">Nama Karyawan</label>
-          <input name="namaKaryawan" value={formData.namaKaryawan} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" type="text" required />
+          <input
+            name="namaKaryawan"
+            value={formData.namaKaryawan}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+            type="text"
+            required
+          />
 
           <label className="block text-sm font-medium mt-3">Jabatan</label>
-          <select name="jabatan" value={formData.jabatan} onChange={handleChange} className="w-full p-2 border rounded-md mt-1" required>
-            <option value="" disabled>Pilih Jabatan</option>
+          <select
+            name="jabatan"
+            value={formData.jabatan}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+            required
+          >
+            <option value="" disabled>
+              Pilih Jabatan
+            </option>
             {jabatanOptions.map((jabatan) => (
               <option key={jabatan.value} value={jabatan.value}>
                 {jabatan.label}
@@ -194,10 +225,18 @@ const AddKaryawanCard: React.FC = () => {
             ))}
           </select>
 
-          {/* Kantor */}
+          {/* Dropdown Kantor */}
           <label className="block text-sm font-medium mt-3">Jenis Kantor</label>
-          <select name="id_kantor" value={formData.id_kantor} onChange={handleChange} className="w-full p-2 border rounded-md mt-1 required">
-            <option value="" disabled>Pilih Kantor</option>
+          <select
+            name="id_kantor"
+            value={formData.id_kantor}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+            required
+          >
+            <option value="" disabled>
+              Pilih Kantor
+            </option>
             {kantorList.map((kantor) => (
               <option key={kantor.id_kantor} value={kantor.id_kantor}>
                 {kantor.jenis_kantor}
@@ -207,11 +246,18 @@ const AddKaryawanCard: React.FC = () => {
 
           <div className="flex justify-between mt-4">
             <Link href="/karyawan">
-              <button type="button" className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md">
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+              >
                 BATALKAN
               </button>
             </Link>
-            <button type="submit" className="bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-md" disabled={loading}>
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-md"
+              disabled={loading}
+            >
               {loading ? <CircularProgress size={24} color="inherit" /> : "KIRIM"}
             </button>
           </div>

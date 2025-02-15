@@ -8,107 +8,89 @@ datasource db {
 }
 
 model Karyawan {
-  nik                 Int       @id
-  namaKaryawan        String
-  jabatan             String
-  status              String    @default("AKTIF")
-  nik_SPV             Int?
-  nik_kabag           Int?
-  nik_direkturBisnis  Int?
-  id_kantor           Int
-  kantor              Kantor    @relation(fields: [id_kantor], references: [id_kantor])
-
-  // Relasi dengan diri sendiri
-  supervisor          Karyawan? @relation("Supervisor", fields: [nik_SPV], references: [nik])
-  kepalaBagian        Karyawan? @relation("Kabag", fields: [nik_kabag], references: [nik])
-  direkturBisnis      Karyawan? @relation("DirekturBisnis", fields: [nik_direkturBisnis], references: [nik])
-
-  // Relasi terbalik (child) dari relasi di atas
-  subordinates        Karyawan[] @relation("Supervisor")
-  kepalaBagianSubs    Karyawan[] @relation("Kabag")
-  direkturBisnisSubs  Karyawan[] @relation("DirekturBisnis")
-
-  createdAt           DateTime  @default(now()) @db.Timestamptz
-  updatedAt           DateTime? @updatedAt @db.Timestamptz
-
-  // Relasi dengan model User (satu ke satu)
-  user                User?     @relation("KaryawanUser")
-
-  // Opsional: Relasi dengan Kunjungan (jika karyawan melakukan banyak kunjungan)
+  nik                Int         @id
+  namaKaryawan       String
+  jabatan            String
+  status             String      @default("AKTIF")
+  nik_SPV            Int?
+  nik_kabag          Int?
+  nik_direkturBisnis Int?
+  id_kantor          Int
+  createdAt          DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime?   @updatedAt @db.Timestamptz(6)
+  kantor             Kantor      @relation(fields: [id_kantor], references: [id_kantor])
+  supervisor         Karyawan?   @relation("Supervisor", fields: [nik_SPV], references: [nik])
+  subordinates       Karyawan[]  @relation("Supervisor")
+  direkturBisnis     Karyawan?   @relation("DirekturBisnis", fields: [nik_direkturBisnis], references: [nik])
+  direkturBisnisSubs Karyawan[]  @relation("DirekturBisnis")
+  kepalaBagian       Karyawan?   @relation("Kabag", fields: [nik_kabag], references: [nik])
+  kepalaBagianSubs   Karyawan[]  @relation("Kabag")
   kunjungan          Kunjungan[] @relation("KaryawanKunjungan")
+  user               User?       @relation("KaryawanUser")
 }
 
 model Kantor {
   id_kantor    Int        @id @default(autoincrement())
   jenis_kantor String
+  createdAt    DateTime   @default(now()) @db.Timestamptz(6)
   karyawan     Karyawan[]
-  createdAt    DateTime   @default(now()) @db.Timestamptz
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  nik       Int       @unique
-  username  String    @unique
+  id        Int      @id @default(autoincrement())
+  nik       Int      @unique
+  username  String   @unique
   password  String
-  createdAt DateTime  @default(now()) @db.Timestamptz
-
-  // Relasi dengan model Karyawan (satu ke satu)
-  karyawan  Karyawan  @relation("KaryawanUser", fields: [nik], references: [nik])
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  karyawan  Karyawan @relation("KaryawanUser", fields: [nik], references: [nik])
 }
 
 model Nasabah {
-  id_nasabah  Int        @id @default(autoincrement())
+  id_nasabah  Int         @id @default(autoincrement())
   namaNasabah String
   alamat      String
   no_telp     String
   namaUsaha   String
-
-  // Relasi dengan Kunjungan (satu nasabah bisa memiliki banyak kunjungan)
-  kunjungan  Kunjungan[]
+  kunjungan   Kunjungan[]
 }
 
-model Kota {
-  id_kota   Int          @id @default(autoincrement())
-  namaKota  String  
-  createdAt DateTime     @default(now()) @db.Timestamptz
+model Provinsi {
+  id            String          @id @db.Char(2)
+  nama          String          @db.VarChar(255)
+  KabupatenKota KabupatenKota[] @relation("ProvinsiToKabupatenKota")
+}
 
-  // Relasi: Satu Kota memiliki banyak Kecamatan
-  kecamatans Kecamatan[]
+model KabupatenKota {
+  id         String      @id @db.Char(4)
+  provinsiId String      @db.Char(2)
+  nama       String      @db.VarChar(255)
+  Provinsi   Provinsi    @relation("ProvinsiToKabupatenKota", fields: [provinsiId], references: [id])
+  Kecamatan  Kecamatan[] @relation("KabupatenKotaToKecamatan")
 }
 
 model Kecamatan {
-  id_kecamatan  Int        @id @default(autoincrement())
-  namaKecamatan String
-  id_kota       Int
-
-  // Relasi ke Kota
-  kota          Kota       @relation(fields: [id_kota], references: [id_kota])
-  
-  // Relasi: Satu Kecamatan memiliki banyak Kelurahan
-  kelurahans    Kelurahan[]
+  id              String          @id @db.Char(6)
+  kabupatenKotaId String          @db.Char(4)
+  nama            String          @db.VarChar(255)
+  DesaKelurahan   DesaKelurahan[] @relation("KecamatanToDesaKelurahan")
+  KabupatenKota   KabupatenKota   @relation("KabupatenKotaToKecamatan", fields: [kabupatenKotaId], references: [id])
 }
 
-model Kelurahan {
-  id_kelurahan  Int         @id @default(autoincrement())
-  namaKelurahan String
-  id_kecamatan  Int
-
-  // Relasi ke Kecamatan
-  kecamatan     Kecamatan   @relation(fields: [id_kecamatan], references: [id_kecamatan])
+model DesaKelurahan {
+  id          String    @id @db.Char(10)
+  kecamatanId String    @db.Char(6)
+  nama        String    @db.VarChar(255)
+  Kecamatan   Kecamatan @relation("KecamatanToDesaKelurahan", fields: [kecamatanId], references: [id])
 }
 
 model Kunjungan {
-  id_kunjungan   Int       @id @default(autoincrement())
+  id_kunjungan   Int      @id @default(autoincrement())
   id_nasabah     Int
   nik            Int
   hasilKunjungan String
-  // Menggunakan String untuk menyimpan path atau URL foto (alternatif: Bytes jika ingin menyimpan data biner)
   foto_kunjungan String
-  createdAt      DateTime  @default(now()) @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @db.Timestamptz
-
-  // Relasi ke Nasabah
-  nasabah        Nasabah   @relation(fields: [id_nasabah], references: [id_nasabah])
-  // Relasi ke Karyawan
-  karyawan       Karyawan  @relation("KaryawanKunjungan", fields: [nik], references: [nik])
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  nasabah        Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])
+  karyawan       Karyawan @relation("KaryawanKunjungan", fields: [nik], references: [nik])
 }
