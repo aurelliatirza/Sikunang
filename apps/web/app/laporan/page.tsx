@@ -2,7 +2,7 @@
 import React from "react";
 import LaporanHeader from "../components/Header/HeaderMarketing/LaporanHeader";
 import Sidebar from "../components/Sidebar/SidebarMarketing";
-import LaporanTable from "../components/Table.tsx/laporanTable";
+import LaporanTable from "../components/Table/laporanTable";
 import Footer from "../components/Footers";
 import CetakButton from "../components/Buttons/cetakButton";
 

@@ -25,7 +25,7 @@ model Karyawan {
   direkturBisnisSubs Karyawan[]  @relation("DirekturBisnis")
   kepalaBagian       Karyawan?   @relation("Kabag", fields: [nik_kabag], references: [nik])
   kepalaBagianSubs   Karyawan[]  @relation("Kabag")
-  kunjungan          Kunjungan[] @relation("KaryawanKunjungan")
+  nasabah            Nasabah[]   @relation("KaryawanNasabah")  // Relasi ke Nasabah
   user               User?       @relation("KaryawanUser")
 }
 
@@ -46,12 +46,16 @@ model User {
 }
 
 model Nasabah {
-  id_nasabah  Int         @id @default(autoincrement())
-  namaNasabah String
-  alamat      String
-  no_telp     String
-  namaUsaha   String
-  kunjungan   Kunjungan[]
+  id_nasabah            Int         @id @default(autoincrement())
+  namaNasabah           String
+  alamat                String
+  no_telp               String
+  namaUsaha             String
+  nik                   Int
+  desaKelurahanId       String
+  karyawan              Karyawan    @relation("KaryawanNasabah", fields: [nik], references: [nik]) // Relasi ke Karyawan
+  kunjungan             Kunjungan[]
+  desa                  DesaKelurahan @relation("DesaNasabah", fields: [desaKelurahanId], references: [id]) // Relasi ke DesaKelurahan
 }
 
 model Provinsi {
@@ -81,16 +85,15 @@ model DesaKelurahan {
   kecamatanId String    @db.Char(6)
   nama        String    @db.VarChar(255)
   Kecamatan   Kecamatan @relation("KecamatanToDesaKelurahan", fields: [kecamatanId], references: [id])
+  nasabah     Nasabah[] @relation("DesaNasabah")
 }
 
 model Kunjungan {
   id_kunjungan   Int      @id @default(autoincrement())
   id_nasabah     Int
-  nik            Int
   hasilKunjungan String
   foto_kunjungan String
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
-  nasabah        Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])
-  karyawan       Karyawan @relation("KaryawanKunjungan", fields: [nik], references: [nik])
+  nasabah        Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])  // Relasi ke Nasabah
 }

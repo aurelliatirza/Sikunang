@@ -19,16 +19,16 @@ export class KabupatenKotaController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.kabupatenKotaService.findOne(+id);
+    return this.kabupatenKotaService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateKabupatenKotaDto: UpdateKabupatenKotaDto) {
-    return this.kabupatenKotaService.update(+id, updateKabupatenKotaDto);
+    return this.kabupatenKotaService.update(id, updateKabupatenKotaDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.kabupatenKotaService.remove(+id);
+    return this.kabupatenKotaService.remove(id);
   }
 }

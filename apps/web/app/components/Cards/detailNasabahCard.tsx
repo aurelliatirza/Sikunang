@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import DetailNasabahTable from "../Table.tsx/DetailNasabahTable";
+import DetailNasabahTable from "../Table/DetailNasabahTable";
 import Link from "next/link";
 
 const DetailNasabahCard: React.FC = () => {

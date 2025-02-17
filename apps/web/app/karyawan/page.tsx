@@ -4,7 +4,7 @@ import React from "react";
 import KaryawanHeader from "../components/Header/HeaderHRD/karyawanHeader";
 import SidebarHRD from "../components/Sidebar/SidebarHRD";
 import Footer from "../components/Footers";
-import KaryawanTable from "../components/Table.tsx/KaryawanTable";
+import KaryawanTable from "../components/Table/KaryawanTable";
 import AddKaryawanButton from "../components/Buttons/addKaryawanButton";
 
 const KaryawanPage = () => {

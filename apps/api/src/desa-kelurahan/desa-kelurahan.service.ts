@@ -1,26 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { CreateDesaKelurahanDto } from './dto/create-desa-kelurahan.dto';
 import { UpdateDesaKelurahanDto } from './dto/update-desa-kelurahan.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class DesaKelurahanService {
+  constructor (private readonly prisma: PrismaService) {}
+
   create(createDesaKelurahanDto: CreateDesaKelurahanDto) {
-    return 'This action adds a new desaKelurahan';
+    return this.prisma.desaKelurahan.create({
+      data: createDesaKelurahanDto
+    });
   }
 
   findAll() {
-    return `This action returns all desaKelurahan`;
+    return this.prisma.desaKelurahan.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} desaKelurahan`;
+  // Menampilkan kecamatan dari kota/kabupaten terkait
+  async getDesaKelurahanByKecamatan(kecamatanId: string) {
+    return this.prisma.desaKelurahan.findMany({
+      where:{kecamatanId,},
+    })
   }
 
-  update(id: number, updateDesaKelurahanDto: UpdateDesaKelurahanDto) {
-    return `This action updates a #${id} desaKelurahan`;
+  findOne(id: string) {
+    return this.prisma.desaKelurahan.findUnique({
+      where: {id},
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} desaKelurahan`;
+  update(id: string, updateDesaKelurahanDto: UpdateDesaKelurahanDto) {
+    return this.prisma.desaKelurahan.update({
+      where: {id},
+      data: updateDesaKelurahanDto,
+    });
+  }
+
+  remove(id: string) {
+    return this.prisma.desaKelurahan.delete({
+      where: {id},
+    });
   }
 }

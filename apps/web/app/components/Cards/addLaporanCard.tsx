@@ -2,6 +2,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@mui/material";
+import UploadComponent from "../Upload/page";
 
 interface KabupatenKota {
   id: string;
@@ -43,7 +44,7 @@ const AddLaporanCard: React.FC = () => {
   useEffect(() => {
     const fetchKabupatenKota = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kabupatenKota");
+        const response = await fetch("http://localhost:8000/kabupaten-kota");
         const data = await response.json();
     
         console.log("Respons Data KabupatenKota:", data); // Tambahkan ini untuk melihat struktur data
@@ -63,19 +64,26 @@ const AddLaporanCard: React.FC = () => {
     fetchKabupatenKota();
   }, []);
   
-
   useEffect(() => {
     const fetchKecamatan = async () => {
       if (formData.id_kota) {
         try {
-          const response = await fetch(`http://localhost:8000/kecamatan?id_kota=${formData.id_kota}`);
+          const response = await fetch(`http://localhost:8000/kecamatan/filter/${formData.id_kota}`);
           const data = await response.json();
-          setKecamatanList(data);
+
+          // Debugging: log data to check the structure
+          console.log("Respons Data Kecamatan:", data);
+
+          if (Array.isArray(data)) {
+            setKecamatanList(data);
+          } else {
+            console.error("Data Kecamatan tidak berbentuk array:", data);
+            setKecamatanList([]);
+          }
         } catch (error) {
           console.error("Error fetching kecamatan data:", error);
+          setKecamatanList([]);
         }
-      } else {
-        setKecamatanList([]);
       }
     };
 
@@ -86,24 +94,32 @@ const AddLaporanCard: React.FC = () => {
     const fetchDesaKelurahan = async () => {
       if (formData.id_kecamatan) {
         try {
-          const response = await fetch(`http://localhost:8000/desaKelurahan?id_kecamatan=${formData.id_kecamatan}`);
+          const response = await fetch(`http://localhost:8000/desa-kelurahan/filter/${formData.id_kecamatan}`);
           const data = await response.json();
-          setDesaKelurahanList(data);
+
+          // Debugging: log data to check the structure
+          console.log("Respons Data DesaKelurahan:", data);
+
+          if (Array.isArray(data)) {
+            setDesaKelurahanList(data);
+          } else {
+            console.error("Data DesaKelurahan tidak berbentuk array:", data);
+            setDesaKelurahanList([]);
+          }
         } catch (error) {
           console.error("Error fetching desa kelurahan data:", error);
+          setDesaKelurahanList([]);
         }
-      } else {
-        setDesaKelurahanList([]);
       }
     };
 
     fetchDesaKelurahan();
   }, [formData.id_kecamatan]);
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-
+  
     // Reset dependent fields
     if (name === "id_kota") {
       setFormData((prev) => ({
@@ -118,6 +134,7 @@ const AddLaporanCard: React.FC = () => {
       }));
     }
   };
+  
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6">
@@ -208,8 +225,7 @@ const AddLaporanCard: React.FC = () => {
           <label className="block text-sm font-medium mt-3">Hasil Kunjungan</label>
           <input className="w-full p-2 border rounded-md mt-1" type="text" />
 
-          <label className="block text-sm font-medium mt-3">Foto</label>
-          <input type="file" accept="image/*" />
+          <UploadComponent />
 
           <div className="flex justify-between mt-4">
             <Link href="/laporan">

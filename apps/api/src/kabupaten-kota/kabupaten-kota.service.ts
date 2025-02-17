@@ -1,26 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { CreateKabupatenKotaDto } from './dto/create-kabupaten-kota.dto';
 import { UpdateKabupatenKotaDto } from './dto/update-kabupaten-kota.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class KabupatenKotaService {
-  create(createKabupatenKotaDto: CreateKabupatenKotaDto) {
-    return 'This action adds a new kabupatenKota';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createKabupatenKotaDto: CreateKabupatenKotaDto) {
+    return this.prisma.kabupatenKota.create({
+      data: createKabupatenKotaDto,
+    });
+  }
+  async findAll() {
+    return this.prisma.kabupatenKota.findMany();
   }
 
-  findAll() {
-    return `This action returns all kabupatenKota`;
+  async findOne(id: string) {
+    return this.prisma.kabupatenKota.findUnique({
+      where: {id},
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} kabupatenKota`;
+  async update(id: string, updateKabupatenKotaDto: UpdateKabupatenKotaDto) {
+    return this.prisma.kabupatenKota.update({
+      where: {id},
+      data: updateKabupatenKotaDto,
+    })
   }
 
-  update(id: number, updateKabupatenKotaDto: UpdateKabupatenKotaDto) {
-    return `This action updates a #${id} kabupatenKota`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} kabupatenKota`;
+  async remove(id: string) {
+    return this.prisma.kabupatenKota.delete({
+      where: {id},
+    });
   }
 }
