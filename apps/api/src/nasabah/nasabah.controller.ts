@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { NasabahService } from './nasabah.service';
 import { CreateNasabahDto } from './dto/create-nasabah.dto';
 import { UpdateNasabahDto } from './dto/update-nasabah.dto';
@@ -9,13 +9,24 @@ export class NasabahController {
 
   @Post()
   create(@Body() createNasabahDto: CreateNasabahDto) {
-    return this.nasabahService.create(createNasabahDto);
+    return this.nasabahService.createNasabah(createNasabahDto);
   }
 
   @Get()
   findAll() {
     return this.nasabahService.findAll();
   }
+
+  @Get('find-by-data')
+  async findByData(
+      @Query('nama') nama: string,
+      @Query('no_telp') no_telp: string,
+      @Query('alamat') alamat: string
+  ) {
+      return this.nasabahService.findNasabahByData(nama, no_telp, alamat);
+  }
+  
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -28,6 +28,11 @@ export class KaryawanController {
     }
     return this.karyawanService.findAll();
   }
+
+  @Get('/marketing')
+  async getMarketingEmployees() {
+    return this.karyawanService.getEmployeesByRole('marketing');
+  }
   
 
 

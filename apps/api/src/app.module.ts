@@ -10,8 +10,9 @@ import { ConfigModule } from '@nestjs/config';
 import { KabupatenKotaModule } from './kabupaten-kota/kabupaten-kota.module';
 import { KecamatanModule } from './kecamatan/kecamatan.module';
 import { DesaKelurahanModule } from './desa-kelurahan/desa-kelurahan.module';
-import { LaporanKunjunganModule } from './laporan-kunjungan/laporan-kunjungan.module';
+import { KunjunganModule } from './kunjungan/kunjungan.module';
 import { NasabahModule } from './nasabah/nasabah.module';
+
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { NasabahModule } from './nasabah/nasabah.module';
     KabupatenKotaModule,
     KecamatanModule,
     DesaKelurahanModule,
-    LaporanKunjunganModule,
+    KunjunganModule,
     NasabahModule,
   ],
   controllers: [AppController],

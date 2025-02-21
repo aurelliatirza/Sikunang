@@ -44,6 +44,13 @@ export class KaryawanService {
     });
   }
 
+  async getEmployeesByRole(role:string) {
+    return this.prisma.karyawan.findMany({
+      where: { jabatan: role},
+      select: { nik: true, namaKaryawan: true},
+    })
+  }
+
   async update(id: number, updateKaryawanDto: UpdateKaryawanDto) {
     try {
       // Pisahkan field 'nik' dari data update
