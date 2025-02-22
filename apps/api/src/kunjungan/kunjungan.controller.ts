@@ -10,6 +10,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { CreateNasabahDto } from 'src/nasabah/dto/create-nasabah.dto';
+import { Kunjungan } from '@prisma/client';
 
 @Controller('kunjungan')
 export class KunjunganController {
@@ -40,13 +41,9 @@ export class KunjunganController {
     return this.laporanKunjunganService.createKunjungan(kunjunganDto);
   }
   
-  
-
-  
-
   @Get()
-  findAll() {
-      return this.laporanKunjunganService.findAll();
+  async getAllKunjungan(): Promise<Kunjungan[]> {
+    return this.laporanKunjunganService.getAllKunjungan();
   }
 
   @Get(':id_kunjungan')

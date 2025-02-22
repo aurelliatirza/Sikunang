@@ -49,15 +49,54 @@ export class KunjunganService {
         });
     }
 
-    async findOne(id_kunjungan: number) {
-        if (!id_kunjungan || isNaN(id_kunjungan)) {
-          throw new Error("id_kunjungan harus berupa angka dan tidak boleh kosong.");
-        }
-      
-        return this.prisma.kunjungan.findUnique({
-          where: { id_kunjungan: Number(id_kunjungan) },
+    async getAllKunjungan() {
+        return this.prisma.kunjungan.findMany({
+            include: {
+                nasabah: {
+                    select: {
+                        namaNasabah: true,
+                        alamat: true,
+                        namaUsaha: true,
+                        no_telp: true,
+                        karyawan: {
+                            select: {
+                                namaKaryawan: true,
+                            },
+                        },
+                        desa: {
+                            select: {
+                                nama: true,
+                                Kecamatan: {
+                                    select: {
+                                        nama: true,
+                                        KabupatenKota: {
+                                            select: {
+                                                nama: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            }
+                        }
+                    },
+                },
+            },
         });
-      }
+    }
+    
+    async findOne(id_kunjungan: number) {
+        return this.prisma.kunjungan.findUnique({
+            where: { id_kunjungan },
+            include: {
+                nasabah: {
+                    select: {
+                        namaNasabah: true,
+                        alamat: true,
+                    },
+                },
+            },
+        });
+    }
       
 
     async remove(id_kunjungan: number) {

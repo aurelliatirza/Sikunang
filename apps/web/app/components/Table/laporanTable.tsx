@@ -1,46 +1,52 @@
+import { useEffect, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 
+interface Nasabah {
+  namaNasabah: string;
+  alamat: string;
+  namaUsaha: string;
+  no_telp: string;
+  karyawan: {
+    namaKaryawan: string;
+  };
+  desa: {
+    nama: string;
+    Kecamatan: {
+      nama: string;
+      KabupatenKota: {
+        nama: string;
+      };
+    };
+  };
+}
+
+interface Kunjungan {
+  id_kunjungan: number;
+  hasilKunjungan: string;
+  createdAt: string;
+  nasabah: Nasabah;
+}
+
 const LaporanTable: React.FC = () => {
-  const data = [
-    {
-      no: 1,
-      namaNasabah: "Mustakin",
-      alamat: "Jl. Merdeka No. 1",
-      kelurahan: "Beringin",
-      kecamatan: "Ngaliyan",
-      kota: "Kota Semarang",
-      namaUsaha: "Toko Sembako",
-      waktuKunjungan: "2025-10-01 10.54",
-      hasilKunjungan: "Tertarik",
-      namaAO: "Airin",
-    },
-    {
-      no: 2,
-      namaNasabah: "Siti",
-      alamat: "Jl. Merdeka No. 2",
-      kelurahan: "Durian",
-      kecamatan: "Tembalang",
-      kota: "Kota Semarang",
-      namaUsaha: "Toko Buku",
-      waktuKunjungan: "2025-10-01 10.54",
-      hasilKunjungan: "Tertarik",
-      namaAO: "Permatasari",
-    },
-    {
-      no: 3,
-      namaNasabah: "Rahmat",
-      alamat: "Jl. Merdeka No. 3",
-      kelurahan: "Pringapus",
-      kecamatan: "Ungaran",
-      kota: "Kabupaten Semarang",
-      namaUsaha: "Ternak Sapi",
-      waktuKunjungan: "2025-10-01 10.54",
-      hasilKunjungan: "Belum Tertarik",
-      namaAO: "Indah",
-    }
-    // Data lainnya...
-  ];
+  const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
+
+  useEffect(() => {
+    const fetchKunjungan = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/kunjungan");
+        if (!response.ok) throw new Error("Gagal mengambil data");
+        const data = await response.json();
+        console.log("Data kunjungan:", data);
+        setKunjunganData(data);
+      } catch (error) {
+        console.error("Error fetching kunjungan data:", error);
+      }
+    };
+
+    fetchKunjungan();
+  }, []);
+
 
   return (
     <div className="overflow-x-auto w-full">
@@ -61,35 +67,69 @@ const LaporanTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
-            <tr
-              key={index}
-              className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
-            >
-              <td className="px-6 py-3 text-center">{item.no}</td>
-              <td className="px-6 py-3 text-center border-l border-white">
-                {item.namaNasabah}
-              </td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.alamat}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.kelurahan}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.kecamatan}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.kota}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.namaUsaha}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.waktuKunjungan}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.hasilKunjungan}</td>
-              <td className="px-6 py-3 text-center border-l border-white">{item.namaAO}</td>
-              <td className="px-6 py-4 text-center border-l border-white">
-                <div className="flex justify-center space-x-2">
-                  <button className="text-yellow-500 hover:text-yellow-600">
-                    <MdEditSquare className="w-6 h-6" />
-                  </button>
-                  <button className="text-red-500 hover:text-red-700">
-                    <RiDeleteBin6Fill className="w-6 h-6" />
-                  </button>
-                </div>
+          {kunjunganData.length > 0 ? (
+            kunjunganData
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .map((item, index) => (
+              <tr
+                key={item.id_kunjungan}
+                className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
+              >
+                <td className="px-6 py-3 text-center">{index + 1}</td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.namaNasabah}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.alamat}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.desa.nama}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.desa.Kecamatan.nama}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.desa.Kecamatan.KabupatenKota.nama}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.namaUsaha}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {new Date(item.createdAt).toLocaleString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                  })}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.hasilKunjungan}
+                </td>
+                <td className="px-6 py-3 text-center border-l border-white">
+                  {item.nasabah.karyawan.namaKaryawan}
+                </td>
+                <td className="px-6 py-4 text-center border-l border-white">
+                  <div className="flex justify-center space-x-2">
+                    <button className="text-yellow-500 hover:text-yellow-600">
+                      <MdEditSquare size={36} />
+                    </button>
+                    <button className="text-red-500 hover:text-red-700">
+                      <RiDeleteBin6Fill size={36} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={11} className="text-center py-6 text-gray-500">
+                Tidak ada data kunjungan yang tersedia.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
