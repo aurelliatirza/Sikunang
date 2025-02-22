@@ -30,6 +30,7 @@ interface Nasabah {
   no_telp: string;
   namaUsaha: string;
   nik: number;
+  desaKelurahanId: string;
 }
 
 interface Karyawan {
@@ -73,6 +74,8 @@ const AddLaporanCard: React.FC = () => {
   const [DesaKelurahanList, setDesaKelurahanList] = useState<DesaKelurahan[]>([]);
   const [NasabahList, setNasabahList] = useState<Nasabah[]>([]);
   const [loading, setLoading] = useState(false);
+  // Tambahkan useState untuk `selectedKota`
+  const [selectedKota, setSelectedKota] = useState("");
   const [aoList, setAoList] = useState<Karyawan[]>([]);
   const [selectedAo, setSelectedAo] = useState<Karyawan | null>(null);  
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -102,10 +105,13 @@ const AddLaporanCard: React.FC = () => {
     };
     fetchKabupatenKota();
   }, []);
-
+  
   useEffect(() => {
     const fetchKecamatan = async () => {
       if (formData.id_kota) {
+        setKecamatanList([]); // Reset kecamatan saat ID kota berubah
+        setDesaKelurahanList([]); // Reset kelurahan juga
+  
         try {
           const response = await fetch(`http://localhost:8000/kecamatan/filter/${formData.id_kota}`);
           const data = await response.json();
@@ -113,14 +119,19 @@ const AddLaporanCard: React.FC = () => {
         } catch (error) {
           console.error("Error fetching kecamatan data:", error);
         }
+      } else {
+        setKecamatanList([]); // Jika ID kota kosong, pastikan kecamatan juga kosong
+        setDesaKelurahanList([]); // Kelurahan juga harus kosong
       }
     };
     fetchKecamatan();
   }, [formData.id_kota]);
-
+  
   useEffect(() => {
     const fetchDesaKelurahan = async () => {
       if (formData.id_kecamatan) {
+        setDesaKelurahanList([]); // Reset kelurahan saat ID kecamatan berubah
+  
         try {
           const response = await fetch(`http://localhost:8000/desa-kelurahan/filter/${formData.id_kecamatan}`);
           const data = await response.json();
@@ -128,6 +139,8 @@ const AddLaporanCard: React.FC = () => {
         } catch (error) {
           console.error("Error fetching desa kelurahan data:", error);
         }
+      } else {
+        setDesaKelurahanList([]); // Jika ID kecamatan kosong, kelurahan juga harus kosong
       }
     };
     fetchDesaKelurahan();
@@ -162,28 +175,73 @@ const AddLaporanCard: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleAutocompleteChange = (
+  const handleAutocompleteChange = async (
     event: React.SyntheticEvent,
     value: string | Nasabah | null
   ) => {
     if (typeof value === "string") {
-      // User mengetik sendiri
-      setFormData({ ...formData, namaNasabah: value });
-    } else if (value && "namaNasabah" in value) {
-      // User memilih dari daftar (value adalah objek Nasabah)
-      setFormData({ 
-        ...formData, 
-        namaNasabah: value.namaNasabah 
+      setFormData({
+        ...formData,
+        namaNasabah: value,
+        id_nasabah: "",
+        alamat: "",
+        no_telp: "",
+        namaUsaha: "",
+        id_kelurahan: "",
+        id_kecamatan: "",
+        id_kota: "",
       });
-    } else {
-      // Jika null atau tidak valid
-      setFormData({ ...formData, namaNasabah: "" });
-    }
+    } else if (value && "id_nasabah" in value) {
+      setFormData({
+        ...formData,
+        namaNasabah: value.namaNasabah,
+        alamat: value.alamat,
+        no_telp: value.no_telp,
+        namaUsaha: value.namaUsaha,
+        id_nasabah: String(value.id_nasabah),
+        nik: value.nik,
+        id_kelurahan: value.desaKelurahanId,
+        id_kecamatan: "",
+        id_kota: "",
+      });
   
-    console.log("Nama Nasabah dipilih:", value);
+      try {
+        const response = await fetch(`http://localhost:8000/desa-kelurahan/detail/${value.desaKelurahanId}`);
+        const data = await response.json();
+        
+        if (data) {
+          const idKota = data.Kecamatan?.KabupatenKota?.id || "";  
+          setFormData((prev) => ({
+            ...prev,
+            id_kelurahan: data.id,
+            id_kecamatan: data.kecamatanId,
+            id_kota: idKota,
+          }));
+  
+          // Pastikan ada state `selectedKota`
+          setSelectedKota(data.Kecamatan?.KabupatenKota?.nama || "Tidak Diketahui");
+        }
+      } catch (error) {
+        console.error("Error fetching wilayah nasabah:", error);
+      }
+    } else {
+      setFormData({
+        ...formData,
+        namaNasabah: "",
+        id_nasabah: "",
+        alamat: "",
+        no_telp: "",
+        id_kelurahan: "",
+        id_kecamatan: "",
+        id_kota: "",
+      });
+    }
   };
   
   
+  useEffect(() => {
+    console.log("Updated formData:", formData);
+  }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +255,12 @@ const AddLaporanCard: React.FC = () => {
   
     if (requiredFields.some((field) => !formData[field]?.toString().trim())) {
       setAlert({ type: "error", message: "Field tidak boleh ada yang kosong." });
+      return;
+    }
+  
+    // Validasi nomor telepon harus berupa angka
+    if (!/^\d+$/.test(formData.no_telp)) {
+      setAlert({ type: "error", message: "Nomor Telepon harus berupa angka." });
       return;
     }
   
@@ -257,19 +321,31 @@ const AddLaporanCard: React.FC = () => {
         }
       }
   
+      // Validasi ID Nasabah sebelum lanjut
+      if (!idNasabah) {
+        setAlert({ type: "error", message: "Gagal mendapatkan ID Nasabah." });
+        return;
+      }
+  
+      // Validasi field kunjungan
+      if (!formData.foto_kunjungan || !formData.hasilKunjungan) {
+        setAlert({ type: "error", message: "Foto kunjungan dan hasil kunjungan harus diisi." });
+        return;
+      }
+  
       const kunjunganData = {
         foto_kunjungan: formData.foto_kunjungan,
         hasilKunjungan: formData.hasilKunjungan,
         id_nasabah: Number(idNasabah), // Pastikan ID nasabah dikirim sebagai number
       };
-  
+      
       console.log("Data yang dikirim ke backend untuk kunjungan:", kunjunganData);
-  
+      
       const responseKunjungan = await fetch("http://localhost:8000/kunjungan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(kunjunganData),
-      });
+      });      
   
       const resultKunjungan = await responseKunjungan.json();
       console.log("Response dari backend saat membuat kunjungan:", resultKunjungan);
@@ -320,9 +396,6 @@ const AddLaporanCard: React.FC = () => {
             )}
           />
 
-
-
-
           {/* Field Alamat Nasabah */}
           <label className="block text-sm font-medium mt-3">Alamat</label>
           <TextField
@@ -341,9 +414,20 @@ const AddLaporanCard: React.FC = () => {
             sx={{ backgroundColor: "white" }}
             options={KabupatenKotaList.map((kota) => ({ label: kota.nama, value: kota.id }))}
             renderInput={(params) => <TextField {...params} placeholder="Pilih Kota" />}
-            onChange={(event, newValue) =>
-              setFormData({ ...formData, id_kota: newValue?.value || "" })
+            value={
+              formData.id_kota
+                ? KabupatenKotaList.find((kota) => kota.id === formData.id_kota)
+                  ? { 
+                      label: KabupatenKotaList.find((kota) => kota.id === formData.id_kota)!.nama, 
+                      value: KabupatenKotaList.find((kota) => kota.id === formData.id_kota)!.id
+                    }
+                  : null
+                : null
             }
+            onChange={(event, newValue) => {
+              setFormData({ ...formData, id_kota: newValue?.value || "" });
+              setSelectedKota(newValue?.label || ""); // Update UI Kota
+            }}
           />
 
           {/* Field Kecamatan */}

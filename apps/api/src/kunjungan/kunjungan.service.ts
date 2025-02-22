@@ -11,35 +11,18 @@ export class KunjunganService {
         private readonly nasabahService: NasabahService, // 🔥 Tambahkan ini
     ) {}
 
-    async createKunjungan(dto: CreateKunjunganDto, nasabahDto?: CreateNasabahDto) {
-        let nasabah = null;
-    
-        if (nasabahDto) {
-            nasabah = await this.nasabahService.findNasabahByData(
-                nasabahDto.namaNasabah, 
-                nasabahDto.no_telp, 
-                nasabahDto.alamat
-            );
-            
-            if (!nasabah) {
-                nasabah = await this.nasabahService.createNasabah(nasabahDto);
-            }
-        }
-    
-        const idNasabah = nasabah?.id || dto.id_nasabah;
-    
-        // 🔍 Tambahkan pengecekan agar ID tidak kosong
-        if (!idNasabah) {
+    async createKunjungan(dto: CreateKunjunganDto) {
+        if (!dto.id_nasabah) {
             throw new BadRequestException("ID Nasabah tidak ditemukan atau tidak valid.");
         }
     
-        console.log("🚀 ID Nasabah yang akan digunakan:", idNasabah);
+        console.log("🚀 ID Nasabah yang akan digunakan:", dto.id_nasabah);
         console.log("📦 Data kunjungan yang disimpan:", dto);
     
         try {
             const newKunjungan = await this.prisma.kunjungan.create({
                 data: {
-                    id_nasabah: idNasabah, // ✅ Pastikan selalu ada ID
+                    id_nasabah: dto.id_nasabah,
                     hasilKunjungan: dto.hasilKunjungan,
                     foto_kunjungan: dto.foto_kunjungan,
                 },
@@ -52,9 +35,6 @@ export class KunjunganService {
             throw new BadRequestException("Gagal menyimpan data kunjungan.");
         }
     }
-    
-    
-    
 
     async findAll() {
         return this.prisma.kunjungan.findMany({

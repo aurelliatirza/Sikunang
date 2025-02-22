@@ -28,6 +28,11 @@ export class DesaKelurahanController {
     return this.desaKelurahanService.getDesaKelurahanByKecamatan(kecamatanId);
   }
 
+  @Get('detail/:id')
+  async getDesaKelurahanDetail(@Param('id') id: string) {
+    return this.desaKelurahanService.getDesaKelurahanDetail(id);
+  }  
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDesaKelurahanDto: UpdateDesaKelurahanDto) {
     return this.desaKelurahanService.update(id, updateDesaKelurahanDto);

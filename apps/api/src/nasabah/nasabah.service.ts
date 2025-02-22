@@ -14,18 +14,27 @@ export class NasabahService {
   }
 
   async findNasabahByData(nama: string, no_telp: string, alamat: string) {
-    const nasabah = await this.prisma.nasabah.findFirst({
-        where: {
-            namaNasabah: nama,
-            no_telp: no_telp,
-            alamat: alamat,
+    return this.prisma.nasabah.findFirst({
+      where: {
+        namaNasabah: nama,
+        no_telp: no_telp,
+        alamat: alamat,
+      },
+      include: {
+        desa: {
+          include: {
+            Kecamatan: {
+              include: {
+                KabupatenKota: true,
+              },
+            },
+          },
         },
+        karyawan: { select: { namaKaryawan: true } },
+      },
     });
-
-    return nasabah; // Bisa null jika tidak ditemukan
-}
-
-
+  }
+  
 
 
   async findAll() {
@@ -37,9 +46,24 @@ export class NasabahService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} nasabah`;
+  async findOne(id: number) {
+    return this.prisma.nasabah.findUnique({
+      where: { id_nasabah: id },
+      include: {
+        desa: {
+          include: {
+            Kecamatan: {
+              include: {
+                KabupatenKota: true,
+              },
+            },
+          },
+        },
+        karyawan: { select: { namaKaryawan: true } },
+      },
+    });
   }
+  
 
   update(id: number, updateNasabahDto: UpdateNasabahDto) {
     return `This action updates a #${id} nasabah`;

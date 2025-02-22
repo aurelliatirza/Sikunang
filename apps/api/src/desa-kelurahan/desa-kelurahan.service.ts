@@ -24,6 +24,27 @@ export class DesaKelurahanService {
     })
   }
 
+  // Menampilkan detail desa/kelurahan
+  async getDesaKelurahanDetail(id: string) {
+    return this.prisma.desaKelurahan.findUnique({
+      where: { id },
+      include: {
+        Kecamatan: { 
+          select: {
+            id: true,
+            nama: true,
+            KabupatenKota: { 
+              select: {
+                id: true,
+                nama: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   findOne(id: string) {
     return this.prisma.desaKelurahan.findUnique({
       where: {id},

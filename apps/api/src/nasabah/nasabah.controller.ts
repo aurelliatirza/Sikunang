@@ -19,12 +19,13 @@ export class NasabahController {
 
   @Get('find-by-data')
   async findByData(
-      @Query('nama') nama: string,
-      @Query('no_telp') no_telp: string,
-      @Query('alamat') alamat: string
+    @Query('nama') nama: string,
+    @Query('no_telp') no_telp: string,
+    @Query('alamat') alamat: string
   ) {
-      return this.nasabahService.findNasabahByData(nama, no_telp, alamat);
+    return this.nasabahService.findNasabahByData(nama, no_telp, alamat);
   }
+  
   
 
 

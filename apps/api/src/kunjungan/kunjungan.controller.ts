@@ -33,15 +33,13 @@ export class KunjunganController {
     }
     return { filePath: `/uploads/${file.filename}` }; // Path saja yang disimpan
   } 
-
+  
   @Post()
-  async createKunjungan(
-    @Body() kunjunganDto: CreateKunjunganDto,
-    @Body('nasabah') nasabahDto?: CreateNasabahDto
-  ) {
+  async createKunjungan(@Body() kunjunganDto: CreateKunjunganDto) {
     console.log("Data yang diterima di backend:", kunjunganDto);
-    return this.laporanKunjunganService.createKunjungan(kunjunganDto, nasabahDto);
+    return this.laporanKunjunganService.createKunjungan(kunjunganDto);
   }
+  
   
 
   
