@@ -9,11 +9,9 @@ export async function middleware(req: NextRequest) {
     // Jika tidak ada token, redirect ke login
     if (!token) {
         console.log("Token tidak ditemukan. Redirect ke login.");
-        const loginUrl = new URL("/auth/login", req.url);
-        return NextResponse.redirect(loginUrl);
+        return NextResponse.redirect(new URL("/auth/login", req.url));
     }
 
-    // Verifikasi token
     try {
         // Pastikan JWT_SECRET tidak undefined
         if (!process.env.JWT_SECRET) {
@@ -24,11 +22,29 @@ export async function middleware(req: NextRequest) {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
 
-        // Ambil jabatan dari payload dan normalisasi
+        // Ambil jabatan dari payload dan normalisasi menggunakan mapping
         const { jabatan } = payload as { jabatan: string };
-        const normalizedJabatan = jabatan.toLowerCase();
         console.log("Payload token:", payload);
+        console.log("Jabatan dari payload:", jabatan);
+
+        // Mapping jabatan agar sesuai dengan accessControl
+        const jabatanMapping: Record<string, string> = {
+            AdminSlik: "adminSlik",
+            HRD: "hrd",
+            Marketing: "marketing",
+            SPV: "spv",
+            Kabag: "kabag",
+            DirekturBisnis: "direkturBisnis", // ✅ Pastikan ini ada!
+        };
+
+        const normalizedJabatan = jabatanMapping[jabatan] ?? jabatan;
         console.log("Normalized Jabatan:", normalizedJabatan);
+
+        // Jika jabatan tidak valid, redirect ke halaman not authorized
+        if (!normalizedJabatan) {
+            console.log(`Jabatan "${jabatan}" tidak valid. Redirect ke notAuthorized.`);
+            return NextResponse.redirect(new URL("/notAuthorized", req.url));
+        }
 
         // Ambil path yang sedang diakses
         const pathname = req.nextUrl.pathname;
@@ -37,29 +53,10 @@ export async function middleware(req: NextRequest) {
         const accessControl: Record<string, string[]> = {
             adminSlik: ["/dashboardAdminSlik", "/kreditAdminSlik"],
             hrd: ["/dashboardHRD", "/karyawan"],
-            marketing: [
-                "/dashboardMarketing",
-                "/laporan",
-                "/kreditMarketing",
-            ],
-            spv: [
-                "/dashboardPejabat",
-                "/marketing",
-                "/nasabah",
-                "/kreditPejabat",
-            ],
-            kabag: [
-                "/dashboardPejabat",
-                "/marketing",
-                "/nasabah",
-                "/kreditPejabat",
-            ],
-            direkturBisnis: [
-                "/dashboardPejabat",
-                "/marketing",
-                "/nasabah",
-                "/kreditPejabat",
-            ],
+            marketing: ["/dashboardMarketing", "/laporan", "/kreditMarketing"],
+            spv: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
+            kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
+            direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
         };
 
         // Periksa apakah jabatan memiliki akses ke URL yang diakses
@@ -70,17 +67,14 @@ export async function middleware(req: NextRequest) {
             !allowedPaths ||
             !allowedPaths.some((path) => pathname.startsWith(path))
         ) {
-            // Jika tidak sesuai, arahkan ke halaman tidak diizinkan
             console.log("Akses tidak diizinkan. Redirect ke notAuthorized.");
-            const unauthorizedUrl = new URL("/notAuthorized", req.url);
-            return NextResponse.redirect(unauthorizedUrl);
+            return NextResponse.redirect(new URL("/notAuthorized", req.url));
         }
 
         // Jika lolos verifikasi, lanjutkan ke halaman tujuan
         return NextResponse.next();
     } catch (err) {
         console.error("JWT verification failed:", err);
-        // Jika token tidak valid, redirect ke login
         const loginUrl = new URL("/auth/login", req.url);
         console.log("Token tidak valid. Redirect ke login.");
         return NextResponse.redirect(loginUrl);

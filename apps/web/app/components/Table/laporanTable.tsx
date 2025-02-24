@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
+import AlertDialog from "../Dialog/alertHapusDialog"
 
 interface Nasabah {
   namaNasabah: string;
@@ -28,8 +29,12 @@ interface Kunjungan {
   nasabah: Nasabah;
 }
 
+
 const LaporanTable: React.FC = () => {
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
+  const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchKunjungan = async () => {
@@ -46,6 +51,70 @@ const LaporanTable: React.FC = () => {
 
     fetchKunjungan();
   }, []);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/auth/profile", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error("Unauthorized: Token mungkin tidak terkirim atau invalid.");
+          }
+          throw new Error(`Gagal mengambil data user: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("User Data:", data);
+        setNamaKaryawan(data.name);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  // Fungsi untuk membuka modal konfirmasi
+  const handleOpenModal = (id_kunjungan: number) => {
+    setSelectedId(id_kunjungan);
+    setOpenModal(true);
+  };
+
+  // Fungsi untuk menutup modal
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedId(null);
+  };
+
+  // Fungsi untuk menghapus kunjungan setelah konfirmasi
+  const handleConfirmDelete = async () => {
+    if (!selectedId) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/kunjungan/${selectedId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal menghapus data kunjungan");
+      }
+
+      setKunjunganData((prevData) =>
+        prevData.filter((item) => item.id_kunjungan !== selectedId)
+      );
+    } catch (error) {
+      console.error("Error deleting kunjungan data:", error);
+    } finally {
+      handleCloseModal();
+    }
+  };
 
 
   return (
@@ -69,6 +138,7 @@ const LaporanTable: React.FC = () => {
         <tbody>
           {kunjunganData.length > 0 ? (
             kunjunganData
+            .filter(item => item.nasabah.karyawan.namaKaryawan === namaKaryawan)
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .map((item, index) => (
               <tr
@@ -116,7 +186,10 @@ const LaporanTable: React.FC = () => {
                     <button className="text-yellow-500 hover:text-yellow-600">
                       <MdEditSquare size={36} />
                     </button>
-                    <button className="text-red-500 hover:text-red-700">
+                    <button
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => handleOpenModal(item.id_kunjungan)}
+                    >
                       <RiDeleteBin6Fill size={36} />
                     </button>
                   </div>
@@ -132,6 +205,11 @@ const LaporanTable: React.FC = () => {
           )}
         </tbody>
       </table>
+      <AlertDialog
+        open={openModal}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };
