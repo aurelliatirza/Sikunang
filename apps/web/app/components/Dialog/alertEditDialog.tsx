@@ -12,7 +12,11 @@ interface AlertDialogProps {
   onConfirm: () => void;
 }
 
-const AlertDialog: React.FC<AlertDialogProps> = ({ open, onClose, onConfirm }) => {
+const AlertDialog: React.FC<AlertDialogProps> = ({
+  open,
+  onClose,
+  onConfirm,
+}) => {
   return (
     <Dialog
       open={open}
@@ -20,12 +24,10 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, onClose, onConfirm }) =
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        {"Konfirmasi Penghapusan Laporan"}
-      </DialogTitle>
+      <DialogTitle id="alert-dialog-title">Konfirmasi Perubahan Data</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          Apakah Anda yakin ingin menghapus laporan ini?
+          Apakah Anda yakin ingin menyimpan perubahan data ini?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -33,7 +35,7 @@ const AlertDialog: React.FC<AlertDialogProps> = ({ open, onClose, onConfirm }) =
           Batal
         </Button>
         <Button onClick={onConfirm} color="error" autoFocus>
-          Ya, Hapus
+          Ya, Simpan
         </Button>
       </DialogActions>
     </Dialog>

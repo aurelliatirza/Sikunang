@@ -65,9 +65,27 @@ export class NasabahService {
   }
   
 
-  update(id: number, updateNasabahDto: UpdateNasabahDto) {
-    return `This action updates a #${id} nasabah`;
-  }
+  async update(id: number, updateNasabahDto: UpdateNasabahDto) {
+    try {
+        console.log("Updating nasabah with id:", id);
+        console.log("Data to update:", updateNasabahDto);
+
+        const updatedNasabah = await this.prisma.nasabah.update({
+            where: { id_nasabah: id },
+            data: updateNasabahDto,
+        });
+
+        console.log("Nasabah updated:", updatedNasabah);
+
+        return { message: "Data nasabah berhasil diupdate", data: updatedNasabah };
+    } catch (error) {
+        console.error("Error updating nasabah:", error);
+        throw new BadRequestException("Gagal memperbarui data nasabah, pastikan ID benar");
+    }
+}
+
+  
+  
 
   remove(id: number) {
     return `This action removes a #${id} nasabah`;

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import AlertDialog from "../Dialog/alertHapusDialog"
+import EditKunjunganDialog from "../Dialog/editKunjunganDialog";
 
 interface Nasabah {
+  id_nasabah: number;
   namaNasabah: string;
   alamat: string;
   namaUsaha: string;
@@ -35,6 +37,9 @@ const LaporanTable: React.FC = () => {
   const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [selectedKunjungan, setSelectedKunjungan] = useState<Kunjungan | null>(null);
+
 
   useEffect(() => {
     const fetchKunjungan = async () => {
@@ -78,17 +83,91 @@ const LaporanTable: React.FC = () => {
     fetchUserProfile();
   }, []);
 
-  // Fungsi untuk membuka modal konfirmasi
+  // Fungsi untuk membuka modal konfirmasi hapus
   const handleOpenModal = (id_kunjungan: number) => {
     setSelectedId(id_kunjungan);
     setOpenModal(true);
   };
 
-  // Fungsi untuk menutup modal
+  // Fungsi untuk menutup modal hapus
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedId(null);
   };
+
+  //Fungsi untuk membuka dialog edit kunjungan
+  const handleEditClick = (kunjungan: Kunjungan) => {
+    setSelectedKunjungan(kunjungan); // Set kunjungan langsung tanpa manipulasi manual
+    setOpenEditDialog(true);
+  };
+
+  //Fungsi untuk menutup dialog edit kunjungan
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setSelectedKunjungan(null);
+  };
+
+  // Fungsi untuk menyimpan perubahan kunjungan
+  const handleSaveEdit = async (updatedKunjungan: Partial<Kunjungan>) => {
+    try {
+      // Update tabel Kunjungan
+      if (updatedKunjungan.id_kunjungan) {
+        const responseKunjungan = await fetch(
+          `http://localhost:8000/kunjungan/${updatedKunjungan.id_kunjungan}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              hasilKunjungan: updatedKunjungan.hasilKunjungan,
+              createdAt: updatedKunjungan.createdAt,
+            }),
+          }
+        );
+  
+        if (!responseKunjungan.ok) {
+          throw new Error("Gagal memperbarui data kunjungan");
+        }
+      }
+  
+      // Update tabel Nasabah
+      if (updatedKunjungan.nasabah?.id_nasabah) {
+        const responseNasabah = await fetch(
+          `http://localhost:8000/nasabah/${updatedKunjungan.nasabah.id_nasabah}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              namaNasabah: updatedKunjungan.nasabah.namaNasabah,
+              alamat: updatedKunjungan.nasabah.alamat,
+              namaUsaha: updatedKunjungan.nasabah.namaUsaha,
+              no_telp: updatedKunjungan.nasabah.no_telp,
+            }),
+          }
+        );
+  
+        if (!responseNasabah.ok) {
+          throw new Error("Gagal memperbarui data nasabah");
+        }
+      }
+  
+      // 🔹 Ambil data terbaru dari API untuk memperbarui state setelah update Nasabah
+      const responseUpdated = await fetch("http://localhost:8000/kunjungan");
+      if (!responseUpdated.ok) throw new Error("Gagal mengambil data terbaru");
+  
+      const updatedData = await responseUpdated.json();
+      setKunjunganData(updatedData); // 🔹 Perbarui state dengan data terbaru
+  
+      handleCloseEditDialog(); // Tutup dialog setelah sukses
+    } catch (error) {
+      console.error("Error updating data:", error);
+    }
+  };
+  
+  
 
   // Fungsi untuk menghapus kunjungan setelah konfirmasi
   const handleConfirmDelete = async () => {
@@ -183,9 +262,12 @@ const LaporanTable: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 text-center border-l border-white">
                   <div className="flex justify-center space-x-2">
-                    <button className="text-yellow-500 hover:text-yellow-600">
-                      <MdEditSquare size={36} />
-                    </button>
+                  <button
+                    className="text-yellow-500 hover:text-yellow-600"
+                    onClick={() => handleEditClick(item)}
+                  >
+                    <MdEditSquare size={36} />
+                  </button>
                     <button
                       className="text-red-500 hover:text-red-700"
                       onClick={() => handleOpenModal(item.id_kunjungan)}
@@ -210,6 +292,16 @@ const LaporanTable: React.FC = () => {
         onClose={handleCloseModal}
         onConfirm={handleConfirmDelete}
       />
+      {/* Komponen EditKunjunganDialog */}
+      {selectedKunjungan && (
+        <EditKunjunganDialog
+          open={openEditDialog}
+          onClose={handleCloseEditDialog}
+          kunjungan={selectedKunjungan ?? null} // Pastikan null jika belum ada data
+          onsave={handleSaveEdit}
+        />
+    )}
+
     </div>
   );
 };

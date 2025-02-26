@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { NasabahService } from 'src/nasabah/nasabah.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { UpdateKunjunganDto } from './dto/update-kunjungan.dto';
 
 @Injectable()
 export class KunjunganService {
@@ -95,6 +96,7 @@ export class KunjunganService {
             include: {
                 nasabah: {
                     select: {
+                        id_nasabah: true,
                         namaNasabah: true,
                         alamat: true,
                         namaUsaha: true,
@@ -133,6 +135,38 @@ export class KunjunganService {
         const folderPath = '/Users/tirzaaurellia/Documents/Foto Test Sikunang';
         return path.join(folderPath, filename);
     }
+
+    async updateKunjungan(id_kunjungan: number, data: UpdateKunjunganDto) {
+        try {
+            console.log("Updating kunjungan with id_kunjungan:", id_kunjungan);
+            console.log("Data to update:", data);
+    
+            const { hasilKunjungan, foto_kunjungan, id_nasabah, ...nasabahData } = data;
+    
+            // Update tabel Kunjungan jika ada perubahan pada hasilKunjungan atau foto_kunjungan
+            if (hasilKunjungan || foto_kunjungan) {
+                await this.prisma.kunjungan.update({
+                    where: { id_kunjungan },
+                    data: { hasilKunjungan, foto_kunjungan },
+                });
+            }
+    
+            // Update tabel Nasabah jika ada data nasabah yang berubah
+            if (Object.keys(nasabahData).length > 0 && id_nasabah) {
+                await this.prisma.nasabah.update({
+                    where: { id_nasabah },
+                    data: nasabahData,
+                });
+            }
+    
+            return { message: "Data berhasil diperbarui" };
+        } catch (error) {
+            console.error("Error updating data:", error);
+            throw new BadRequestException("Gagal memperbarui data, pastikan ID benar");
+        }
+    }
+    
+    
       
 
     async remove(id_kunjungan: number) {

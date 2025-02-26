@@ -4,15 +4,16 @@ import {
   BadRequestException, 
   InternalServerErrorException,
   NotFoundException,
-  Res
+  Res,
+  Put
 } from '@nestjs/common';
 import { KunjunganService } from './kunjungan.service';
 import { CreateKunjunganDto } from './dto/create-kunjungan.dto';
+import { UpdateKunjunganDto } from './dto/update-kunjungan.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { Kunjungan } from '@prisma/client';
-import * as path from 'path';
 import * as fs from 'fs';
 import { Response } from 'express';
 
@@ -70,6 +71,15 @@ export class KunjunganController {
       // Kirim file sebagai respon
       return res.sendFile(filePath);
   }
+
+  @Put(':id_kunjungan')
+  update(
+    @Param('id_kunjungan') id_kunjungan: string, 
+    @Body() updateKunjunganDto: UpdateKunjunganDto
+  ) {
+    return this.laporanKunjunganService.updateKunjungan(Number(id_kunjungan), updateKunjunganDto);
+  }  
+  
 
   @Delete(':id_kunjungan')
   remove(@Param('id_kunjungan') id_kunjungan: string) {
