@@ -51,10 +51,19 @@ export class NasabahService {
       where: { id_nasabah: id },
       include: {
         desa: {
-          include: {
+          select: {
+            id: true, // Tambahkan ini
+            nama: true,
             Kecamatan: {
-              include: {
-                KabupatenKota: true,
+              select: {
+                id: true, // Tambahkan ini
+                nama: true,
+                KabupatenKota: {
+                  select: {
+                    id: true, // Tambahkan ini
+                    nama: true,
+                  },
+                },
               },
             },
           },
@@ -63,6 +72,7 @@ export class NasabahService {
       },
     });
   }
+  
   
 
   async update(id: number, updateNasabahDto: UpdateNasabahDto) {

@@ -41,6 +41,9 @@ export class KunjunganController {
       }
       console.log('🚦 Path file yang akan disimpan ke database:', file.filename);
       return { filePath: `${file.filename}` }; // Hanya simpan nama file, tanpa '/uploads/'
+
+      // // **Gunakan URL akses dari komputer lain**
+      // return { filePath: `http://your-server-ip:8000/uploads/${file.filename}` };
   }  
   
   @Post()

@@ -84,6 +84,17 @@ const DetailKunjunganCard = () => {
                     />
                 </div>
 
+                {/* Foto nanti setelah dihostingin di server
+                <div className="mt-4">
+                    <p className="font-semibold">Foto Kunjungan:</p>
+                    <img 
+                        src={kunjunganData.foto_kunjungan} 
+                        alt="Foto Kunjungan" 
+                        className="mt-2 w-full rounded-lg shadow-md" 
+                    />
+                </div> */}
+
+
                 {/* Tombol Kembali */}
                 <div className="flex justify-between mt-4">
                     <Link href="/marketing">

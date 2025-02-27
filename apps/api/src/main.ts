@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
 
 async function bootstrap() {
   process.env.TZ = 'Asia/Jakarta';
@@ -20,6 +21,9 @@ async function bootstrap() {
     transform: true,
     whitelist: true,
   }));
+
+  // **Menyajikan folder sebagai static file**
+  app.use('/uploads', express.static('/Users/tirzaaurellia/Documents/Foto Test Sikunang'));
 
   await app.listen(process.env.PORT ?? 8000);
 }
