@@ -5,6 +5,7 @@ import { Alert } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import UploadComponent from "../Unggah/page";
+import Snackbar from "@mui/material/Snackbar";
 
 interface KabupatenKota {
   id: string;
@@ -52,7 +53,6 @@ interface FormDataType {
   id_nasabah?: string; // Bisa undefined jika nasabah baru
 }
 
-
 const AddLaporanCard: React.FC = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<FormDataType>({
@@ -74,11 +74,13 @@ const AddLaporanCard: React.FC = () => {
   const [DesaKelurahanList, setDesaKelurahanList] = useState<DesaKelurahan[]>([]);
   const [NasabahList, setNasabahList] = useState<Nasabah[]>([]);
   const [loading, setLoading] = useState(false);
-  // Tambahkan useState untuk `selectedKota`
   const [selectedKota, setSelectedKota] = useState("");
   const [aoList, setAoList] = useState<Karyawan[]>([]);
   const [selectedAo, setSelectedAo] = useState<Karyawan | null>(null);  
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   useEffect(() => {
     const fetchNasabah = async () => {
@@ -354,7 +356,9 @@ const AddLaporanCard: React.FC = () => {
         throw new Error(resultKunjungan.message || "Gagal menambahkan kunjungan.");
       }
   
-      setAlert({ type: "success", message: "Laporan Kunjungan berhasil ditambahkan!" });
+      setSnackbarMessage("Data kunjungan berhasil dibuat.");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
       setTimeout(() => router.push("/laporan"), 1000);
     } catch (error) {
       console.error("Error:", error);
@@ -491,9 +495,6 @@ const AddLaporanCard: React.FC = () => {
             className="mt-1"
           />
 
-
-
-
           <label className="block text-sm font-medium mt-3">Hasil Kunjungan</label>
           <TextField 
           sx={{ backgroundColor: "white" }} 
@@ -523,6 +524,15 @@ const AddLaporanCard: React.FC = () => {
           </div>
         </form>
       </div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%", color: "green"}}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

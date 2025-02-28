@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateNasabahDto } from './dto/create-nasabah.dto';
 import { UpdateNasabahDto } from './dto/update-nasabah.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as path from 'path';
+
 
 @Injectable()
 export class NasabahService {
@@ -47,20 +49,26 @@ export class NasabahService {
   }
 
   async findOne(id: number) {
+    console.log('findOne called with id:', id);
+  
+    if (!id || isNaN(id)) {
+      throw new Error('ID tidak boleh null, undefined, atau NaN');
+    }
+  
     return this.prisma.nasabah.findUnique({
       where: { id_nasabah: id },
       include: {
         desa: {
           select: {
-            id: true, // Tambahkan ini
+            id: true,
             nama: true,
             Kecamatan: {
               select: {
-                id: true, // Tambahkan ini
+                id: true,
                 nama: true,
                 KabupatenKota: {
                   select: {
-                    id: true, // Tambahkan ini
+                    id: true,
                     nama: true,
                   },
                 },
@@ -68,10 +76,85 @@ export class NasabahService {
             },
           },
         },
-        karyawan: { select: { namaKaryawan: true } },
+        karyawan: { 
+          select: { 
+            namaKaryawan: true,
+            supervisor: {
+              select: {
+                namaKaryawan: true,
+              },
+            },
+          },
+        },
       },
     });
   }
+  
+  //Buat fungsi baru untuk mengambil data kunjungan nasabah yang banyak
+  async KunjunganNasabah() {
+    try {
+      const data = await this.prisma.nasabah.findMany({
+        include: {
+          desa: { select: { nama: true } },
+          karyawan: { select: { namaKaryawan: true } },
+          kunjungan: {
+            select: {
+              id_kunjungan: true,
+              createdAt: true,
+              hasilKunjungan: true,
+            },
+          },
+        },
+      });
+  
+      // Tambahkan jumlah kunjungan untuk setiap nasabah
+      const result = data.map((nasabah) => ({
+        ...nasabah,
+        jumlahKunjungan: nasabah.kunjungan.length, // Hitung jumlah kunjungan
+      }));
+  
+      console.log('Data Kunjungan dengan Jumlah:', result);
+      return result;
+    } catch (error) {
+      console.error('Error fetching kunjungan nasabah:', error);
+      throw new Error('Gagal mengambil data kunjungan nasabah');
+    }
+  }
+  
+  //Buat fungsi baru untuk mengambil data kunjungan nasabah berdasarkan ID
+  async getKunjunganNasabah(id: number) {
+    try {
+      const nasabah = await this.prisma.nasabah.findUnique({
+        where: { id_nasabah: id },
+        include: {
+          kunjungan: {
+            select: {
+              id_kunjungan: true,
+              hasilKunjungan: true,
+              foto_kunjungan: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+  
+      if (!nasabah) {
+        throw new Error('Nasabah tidak ditemukan');
+      }
+  
+      return nasabah;
+    } catch (error) {
+      console.error('Error fetching kunjungan:', error);
+      throw new Error('Gagal mengambil data kunjungan nasabah');
+    }
+  }
+
+  // Method untuk mendapatkan path foto kunjungan
+  async getFotoPath(filename: string): Promise<string> {
+      const folderPath = '/Users/tirzaaurellia/Documents/Foto Test Sikunang';
+      return path.join(folderPath, filename);
+  }
+  
   
   
 

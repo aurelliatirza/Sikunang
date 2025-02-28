@@ -31,6 +31,8 @@ interface Kunjungan {
 
 const DetailKunjunganCard = () => {
     const [kunjunganData, setKunjunganData] = useState<Kunjungan | null>(null);
+    const [jabatan, setJabatan] = useState<string | null>(null); // ✅ Simpan jabatan user
+    
     const { id } = useParams();
     console.log("ID dari URL:", id);
 
@@ -50,8 +52,33 @@ const DetailKunjunganCard = () => {
         fetchDetailKunjungan();
     }, [id]); // Menjalankan efek jika id berubah
 
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const response = await fetch("http://localhost:8000/auth/profile", {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (!response.ok) {
+                    throw new Error("Gagal mengambil data user");
+                }
+
+                const data = await response.json();
+                console.log("User Data:", data);
+                setJabatan(data.jabatan); // ✅ Simpan jabatan user dari API
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
+
     if (!kunjunganData) return <p>Memuat data...</p>;
 
+    // ✅ Tentukan redirect berdasarkan jabatan
+    const kembaliKe = jabatan === "marketing" ? "/laporan" : "/marketing";
 
     return (
         <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6">
@@ -77,12 +104,15 @@ const DetailKunjunganCard = () => {
                 {/* Foto Kunjungan */}
                 <div className="mt-4">
                     <p className="font-semibold">Foto Kunjungan:</p>
-                    <img 
-                        src={`http://localhost:8000/kunjungan/foto/${kunjunganData.foto_kunjungan}`} 
-                        alt="Foto Kunjungan" 
-                        className="mt-2 w-full rounded-lg shadow-md" 
-                    />
+                    <div className="mt-2 w-full flex justify-center">
+                        <img 
+                            src={`http://localhost:8000/kunjungan/foto/${kunjunganData.foto_kunjungan}`} 
+                            alt="Foto Kunjungan" 
+                            className="rounded-lg shadow-md w-full max-w-[500px] h-auto object-cover"
+                        />
+                    </div>
                 </div>
+
 
                 {/* Foto nanti setelah dihostingin di server
                 <div className="mt-4">
@@ -94,10 +124,9 @@ const DetailKunjunganCard = () => {
                     />
                 </div> */}
 
-
-                {/* Tombol Kembali */}
+                {/* Tombol Kembali dengan Redirect Sesuai Jabatan */}
                 <div className="flex justify-between mt-4">
-                    <Link href="/marketing">
+                    <Link href={kembaliKe}>
                         <button
                             type="button"
                             className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out"

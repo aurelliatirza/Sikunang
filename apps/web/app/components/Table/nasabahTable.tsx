@@ -1,33 +1,29 @@
 import React from "react";
 import Link from "next/link";
+import { useEffect } from "react";
+
+interface NasabahWithCount {
+  id_nasabah: number;
+  namaNasabah: string;
+  alamat: string;
+  no_telp: string;
+  jumlahKunjungan: number;
+  karyawan: {
+    namaKaryawan: string;
+  };
+}
 
 const NasabahTable: React.FC = () => {
-  const data = [
-    {
-      no: 1,
-      nama: "John Doe",
-      alamat: "Jl. Lorem Ipsum",
-      noTelp: "08123456789",
-      jumlahKunjungan: 1,
-      ao: "Dikta Wicaksono",
-    },
-    {
-      no: 2,
-      nama: "Jane Doe",
-      alamat: "Jl. Lorem Ipsum",
-      noTelp: "08123456789",
-      jumlahKunjungan: 3,
-      ao: "Dikta Wicaksono",
-    },
-    {
-      no: 3,
-      nama: "John Smith",
-      alamat: "Jl. Lorem Ipsum",
-      noTelp: "08123456789",
-      jumlahKunjungan: 2,
-      ao: "Fleamus Potter",
-    },
-  ];
+  const [data, setData] = React.useState<NasabahWithCount[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("http://localhost:8000/nasabah/kunjungan");
+      const result = await response.json();
+      setData(result);
+    };
+    fetchData();
+  }
+  , []);
 
   return (
     <div className="overflow-x-auto w-full">
@@ -50,14 +46,14 @@ const NasabahTable: React.FC = () => {
                 key={index}
                 className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
               >
-                <td className="px-4 py-2">{item.no}</td>
-                <td className="border px-4 py-2">{item.nama}</td>
+                <td className="px-4 py-2">{index + 1}</td>
+                <td className="border px-4 py-2">{item.namaNasabah}</td>
                 <td className="border px-4 py-2">{item.alamat}</td>
-                <td className="border px-4 py-2">{item.noTelp}</td>
+                <td className="border px-4 py-2">{item.no_telp}</td>
                 <td className="border px-4 py-2">{item.jumlahKunjungan}</td>
-                <td className="border px-4 py-2">{item.ao}</td>
+                <td className="border px-4 py-2">{item.karyawan.namaKaryawan}</td>
                 <td className="border px-4 py-2">
-                  <Link href="/nasabah/detailNasabah">
+                  <Link href={`/nasabah/${item.id_nasabah}`}>
                     <button className="text-blue-500 hover:text-blue-700 hover:underline">
                       Lihat Selengkapnya
                     </button>

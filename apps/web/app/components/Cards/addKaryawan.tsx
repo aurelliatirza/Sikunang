@@ -2,6 +2,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Alert, CircularProgress } from "@mui/material";
 import { useRouter } from "next/navigation";
+import Snackbar from "@mui/material";
 
 interface Kantor {
   id_kantor: number;

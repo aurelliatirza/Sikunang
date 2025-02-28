@@ -1,22 +1,53 @@
 "use client";
-import React from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import DetailNasabahTable from "../Table/DetailNasabahTable";
 import Link from "next/link";
+
+interface Nasabah {
+  namaNasabah: string;
+  no_telp: string;
+  alamat: string;
+  karyawan : {
+    namaKaryawan: string;
+    supervisor: {
+      namaKaryawan: string;
+    }
+  };
+  desa: {
+    nama: string;
+    Kecamatan: {
+      nama: string;
+      KabupatenKota: {
+        nama: string;
+      };
+    };
+  }
+}
 
 const DetailNasabahCard: React.FC = () => {
   const router = useRouter();
 
-  const nasabahData = {
-    nama: "Mustakin",
-    noHp: "081234567890",
-    alamat: "Jalan Merdeka",
-    kelurahan: "Beringin",
-    kecamatan: "Semarang Tengah",
-    kota: "Kota Semarang",
-    namaAO: "Airin",
-    namaSupervisor: "Maha Sagara Lim",
-  };
+  const [nasabahData, setNasabahData] = React.useState<Nasabah | null>(null);
+  const { id } = useParams();
+  console.log("ID dari URL:", id);
+
+  useEffect(() => {
+    const fetchDetailNasabah = async () => {
+      if (!id) return;
+      try {
+        const response = await fetch(`http://localhost:8000/nasabah/${id}`);
+        if (!response.ok) throw new Error("Gagal mengambil data");
+        const data = await response.json();
+        console.log("Data nasabah:", data);
+        setNasabahData(data);
+      } catch (error) {
+        console.error("Error fetching nasabah data:", error);
+      }
+    };
+    fetchDetailNasabah();
+  }
+  , [id]);
 
   const handleBack = () => {
     router.back();
@@ -32,14 +63,14 @@ const DetailNasabahCard: React.FC = () => {
 
         {/* Data Nasabah */}
         <div className="space-y-3 text-gray-700">
-          <p><strong>Nama:</strong> {nasabahData.nama}</p>
-          <p><strong>No. HP:</strong> {nasabahData.noHp}</p>
-          <p><strong>Alamat:</strong> {nasabahData.alamat}</p>
-          <p><strong>Kelurahan:</strong> {nasabahData.kelurahan}</p>
-          <p><strong>Kecamatan:</strong> {nasabahData.kecamatan}</p>
-          <p><strong>Kota:</strong> {nasabahData.kota}</p>
-          <p><strong>Nama AO:</strong> {nasabahData.namaAO}</p>
-          <p><strong>Nama Supervisor:</strong> {nasabahData.namaSupervisor}</p>
+          <p><strong>Nama:</strong> {nasabahData?.namaNasabah}</p>
+          <p><strong>No. HP:</strong> {nasabahData?.no_telp}</p>
+          <p><strong>Alamat:</strong> {nasabahData?.alamat}</p>
+          <p><strong>Kelurahan:</strong> {nasabahData?.desa.nama}</p>
+          <p><strong>Kecamatan:</strong> {nasabahData?.desa.Kecamatan.nama}</p>
+          <p><strong>Kota:</strong> {nasabahData?.desa.Kecamatan.KabupatenKota.nama}</p>
+          <p><strong>Nama AO:</strong> {nasabahData?.karyawan.namaKaryawan}</p>
+          <p><strong>Nama Supervisor:</strong> {nasabahData?.karyawan.supervisor.namaKaryawan}</p>
         </div>
 
         {/* Detail Kunjungan */}

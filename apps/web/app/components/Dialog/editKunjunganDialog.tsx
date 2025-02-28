@@ -116,102 +116,102 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
     }
   };
 
-  //Maximum depth exceeded tapi wilayah semua bisa tampil
-  useEffect(() => {
-    if (kunjungan) {
-      console.log("Data Kunjungan dari API:", kunjungan);
-      setHasilKunjungan(kunjungan.hasilKunjungan);
-      setKunjunganData(kunjungan); // Pastikan kunjunganData juga diperbarui
-
-      if (kunjungan.nasabah) {
-        console.log("Data Nasabah dari API sebelum setState:", kunjungan.nasabah);
-
-        setNasabah((prev) => {
-          const updatedNasabah = {
-            ...prev,
-            ...kunjungan.nasabah,
-            id_nasabah:
-              kunjungan.nasabah.id_nasabah ?? prev?.id_nasabah ?? kunjungan.id_nasabah ?? null,
-          };
-
-          console.log("Data Nasabah setelah setState:", updatedNasabah);
-          return updatedNasabah;
-        });
-
-        // Set initial values for selectedKota, selectedKecamatan, and selectedDesa
-        const initialKota = kabupatenKotaList.find(
-          (kota) => kota.nama === kunjungan.nasabah.desa.Kecamatan.KabupatenKota.nama
-        );
-        const initialKecamatan = kecamatanList.find(
-          (kecamatan) => kecamatan.nama === kunjungan.nasabah.desa.Kecamatan.nama
-        );
-        const initialDesa = desaKelurahanList.find(
-          (desa) => desa.nama === kunjungan.nasabah.desa.nama
-        );
-
-        setSelectedKota(initialKota || null);
-        setSelectedKecamatan(initialKecamatan || null);
-        setSelectedDesa(initialDesa || null);
-
-        if (initialKota) fetchKecamatan(initialKota.id);
-        if (initialKecamatan) fetchDesaKelurahan(initialKecamatan.id);
-      } else {
-        console.error("ID Nasabah tidak ditemukan dalam data kunjungan:", kunjungan);
-      }
-    }
-  }, [kunjungan, kabupatenKotaList, kecamatanList, desaKelurahanList]);
-
-  // //ga kena maximum exceed tapi kecamatan dan desa kelurahan tidak bisa tampil
+  // //Maximum depth exceeded tapi wilayah semua bisa tampil
   // useEffect(() => {
   //   if (kunjungan) {
   //     console.log("Data Kunjungan dari API:", kunjungan);
   //     setHasilKunjungan(kunjungan.hasilKunjungan);
-  //     setKunjunganData(kunjungan); 
-  
+  //     setKunjunganData(kunjungan); // Pastikan kunjunganData juga diperbarui
+
   //     if (kunjungan.nasabah) {
   //       console.log("Data Nasabah dari API sebelum setState:", kunjungan.nasabah);
-  
-  //       setNasabah((prev) => ({
-  //         ...prev,
-  //         ...kunjungan.nasabah,
-  //         id_nasabah:
-  //           kunjungan.nasabah.id_nasabah ?? prev?.id_nasabah ?? kunjungan.id_nasabah ?? null,
-  //       }));
-  
-  //       // Initialize selectedKota, selectedKecamatan, selectedDesa
+
+  //       setNasabah((prev) => {
+  //         const updatedNasabah = {
+  //           ...prev,
+  //           ...kunjungan.nasabah,
+  //           id_nasabah:
+  //             kunjungan.nasabah.id_nasabah ?? prev?.id_nasabah ?? kunjungan.id_nasabah ?? null,
+  //         };
+
+  //         console.log("Data Nasabah setelah setState:", updatedNasabah);
+  //         return updatedNasabah;
+  //       });
+
+  //       // Set initial values for selectedKota, selectedKecamatan, and selectedDesa
   //       const initialKota = kabupatenKotaList.find(
   //         (kota) => kota.nama === kunjungan.nasabah.desa.Kecamatan.KabupatenKota.nama
   //       );
-  
-  //       if (initialKota) {
-  //         setSelectedKota(initialKota);
-  //         fetchKecamatan(initialKota.id); // Fetch only when needed
-  //       }
-  
-  //       // Fetch kecamatan first, then find initial kecamatan
-  //       if (kunjungan.nasabah.desa?.Kecamatan?.nama && kecamatanList.length > 0) {
-  //         const initialKecamatan = kecamatanList.find(
-  //           (kecamatan) => kecamatan.nama === kunjungan.nasabah.desa.Kecamatan.nama
-  //         );
-  //         if (initialKecamatan) {
-  //           setSelectedKecamatan(initialKecamatan);
-  //           fetchDesaKelurahan(initialKecamatan.id);
-  //         }
-  //       }
-  
-  //       // Set initialDesa when desaKelurahanList is ready
-  //       if (kunjungan.nasabah.desa?.nama && desaKelurahanList.length > 0) {
-  //         const initialDesa = desaKelurahanList.find(
-  //           (desa) => desa.nama === kunjungan.nasabah.desa.nama
-  //         );
-  //         if (initialDesa) setSelectedDesa(initialDesa);
-  //       }
-  
+  //       const initialKecamatan = kecamatanList.find(
+  //         (kecamatan) => kecamatan.nama === kunjungan.nasabah.desa.Kecamatan.nama
+  //       );
+  //       const initialDesa = desaKelurahanList.find(
+  //         (desa) => desa.nama === kunjungan.nasabah.desa.nama
+  //       );
+
+  //       setSelectedKota(initialKota || null);
+  //       setSelectedKecamatan(initialKecamatan || null);
+  //       setSelectedDesa(initialDesa || null);
+
+  //       if (initialKota) fetchKecamatan(initialKota.id);
+  //       if (initialKecamatan) fetchDesaKelurahan(initialKecamatan.id);
   //     } else {
   //       console.error("ID Nasabah tidak ditemukan dalam data kunjungan:", kunjungan);
   //     }
   //   }
-  // }, [kunjungan, kabupatenKotaList]);
+  // }, [kunjungan, kabupatenKotaList, kecamatanList, desaKelurahanList]);
+
+  //ga kena maximum exceed tapi kecamatan dan desa kelurahan tidak bisa tampil
+  useEffect(() => {
+    if (kunjungan) {
+      console.log("Data Kunjungan dari API:", kunjungan);
+      setHasilKunjungan(kunjungan.hasilKunjungan);
+      setKunjunganData(kunjungan); 
+  
+      if (kunjungan.nasabah) {
+        console.log("Data Nasabah dari API sebelum setState:", kunjungan.nasabah);
+  
+        setNasabah((prev) => ({
+          ...prev,
+          ...kunjungan.nasabah,
+          id_nasabah:
+            kunjungan.nasabah.id_nasabah ?? prev?.id_nasabah ?? kunjungan.id_nasabah ?? null,
+        }));
+  
+        // Initialize selectedKota, selectedKecamatan, selectedDesa
+        const initialKota = kabupatenKotaList.find(
+          (kota) => kota.nama === kunjungan.nasabah.desa.Kecamatan.KabupatenKota.nama
+        );
+  
+        if (initialKota) {
+          setSelectedKota(initialKota);
+          fetchKecamatan(initialKota.id); // Fetch only when needed
+        }
+  
+        // Fetch kecamatan first, then find initial kecamatan
+        if (kunjungan.nasabah.desa?.Kecamatan?.nama && kecamatanList.length > 0) {
+          const initialKecamatan = kecamatanList.find(
+            (kecamatan) => kecamatan.nama === kunjungan.nasabah.desa.Kecamatan.nama
+          );
+          if (initialKecamatan) {
+            setSelectedKecamatan(initialKecamatan);
+            fetchDesaKelurahan(initialKecamatan.id);
+          }
+        }
+  
+        // Set initialDesa when desaKelurahanList is ready
+        if (kunjungan.nasabah.desa?.nama && desaKelurahanList.length > 0) {
+          const initialDesa = desaKelurahanList.find(
+            (desa) => desa.nama === kunjungan.nasabah.desa.nama
+          );
+          if (initialDesa) setSelectedDesa(initialDesa);
+        }
+  
+      } else {
+        console.error("ID Nasabah tidak ditemukan dalam data kunjungan:", kunjungan);
+      }
+    }
+  }, [kunjungan, kabupatenKotaList]);
   
   useEffect(() => {
     fetchKabupatenKota();
