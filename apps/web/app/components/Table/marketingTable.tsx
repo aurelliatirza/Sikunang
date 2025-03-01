@@ -1,5 +1,16 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import TablePagination from "@mui/material/TablePagination";
+import { FaSearch } from "react-icons/fa";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { Autocomplete, TextField } from "@mui/material";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 interface Nasabah {
   namaNasabah: string;
@@ -37,11 +48,18 @@ interface UserProfile {
   jabatan: "spv" | "kabag" | "direkturBisnis";
 }
 
-
 const MarketingTable: React.FC = () => {
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
   const [filteredKunjungan, setFilteredKunjungan] = useState<Kunjungan[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const [bawahanList, setBawahanList] = useState<string[]>([]);
+  const [selectedBawahan, setSelectedBawahan] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
   useEffect(() => {
     const fetchKunjungan = async () => {
@@ -80,34 +98,182 @@ const MarketingTable: React.FC = () => {
     fetchUserProfile();
   }, []);
 
-// Filter data berdasarkan jabatan dan ID pengguna yang login
-useEffect(() => {
-  if (!userProfile) return;
+  useEffect(() => {
+    if (!userProfile) return;
 
-  let filteredData: Kunjungan[] = [];
+    let bawahanNames: string[] = [];
 
-  if (userProfile.jabatan === "spv") {
+    if (userProfile.jabatan === "spv") {
+      bawahanNames = kunjunganData
+        .filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik)
+        .map((item) => item.nasabah.karyawan.namaKaryawan);
+    } else if (userProfile.jabatan === "kabag") {
+      bawahanNames = kunjunganData
+        .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
+        .map((item) => item.nasabah.karyawan.namaKaryawan);
+    } else if (userProfile.jabatan === "direkturBisnis") {
+      bawahanNames = kunjunganData
+        .filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik)
+        .map((item) => item.nasabah.karyawan.namaKaryawan);
+    }
+
+    // Hilangkan nama yang duplikat
+    setBawahanList([...new Set(bawahanNames)]);
+  }, [userProfile, kunjunganData]);
+
+  // Filter data berdasarkan jabatan dan ID pengguna yang login
+  useEffect(() => {
+    if (!userProfile) return;
+
+    let filteredData: Kunjungan[] = [];
+
+    if (userProfile.jabatan === "spv") {
       filteredData = kunjunganData.filter(
-          (item) => item.nasabah.karyawan.nik_SPV === userProfile.nik
+        (item) => item.nasabah.karyawan.nik_SPV === userProfile.nik
       );
-  } else if (userProfile.jabatan === "kabag") {
+    } else if (userProfile.jabatan === "kabag") {
       filteredData = kunjunganData.filter(
-          (item) => item.nasabah.karyawan.nik_kabag === userProfile.nik
+        (item) => item.nasabah.karyawan.nik_kabag === userProfile.nik
       );
-  } else if (userProfile.jabatan === "direkturBisnis") {
+    } else if (userProfile.jabatan === "direkturBisnis") {
       filteredData = kunjunganData.filter(
-          (item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik
+        (item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik
       );
-  } else {
+    } else {
       filteredData = kunjunganData; // Untuk AO atau jabatan lainnya, tampilkan semua
-  }
+    }
 
-  setFilteredKunjungan(filteredData);
-}, [userProfile, kunjunganData]);
+    // Filter data berdasarkan tanggal
+    filteredData = filteredData.filter((item) => {
+      const createdAtDate = dayjs(item.createdAt).startOf("day");
 
+      if (startDate && endDate) {
+        return (
+          createdAtDate.isSameOrAfter(startDate, "day") &&
+          createdAtDate.isSameOrBefore(endDate, "day")
+        );
+      } else if (startDate) {
+        return createdAtDate.isSameOrAfter(startDate, "day");
+      } else if (endDate) {
+        return createdAtDate.isSameOrBefore(endDate, "day");
+      }
+      return true;
+    });
+
+    // Filter data berdasarkan nama bawahan yang dipilih
+    if (selectedBawahan) {
+      filteredData = filteredData.filter(
+        (item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan
+      );
+    }
+
+    setFilteredKunjungan(filteredData);
+  }, [userProfile, kunjunganData, startDate, endDate, selectedBawahan]);
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setPage(0);
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
+
+  const filteredData = filteredKunjungan
+    .filter((item) =>
+      item.nasabah.namaNasabah.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((item) => {
+      const createdAtDate = dayjs(item.createdAt).startOf("day");
+
+      if (startDate && endDate) {
+        return (
+          createdAtDate.isSameOrAfter(startDate, "day") &&
+          createdAtDate.isSameOrBefore(endDate, "day")
+        );
+      } else if (startDate) {
+        return createdAtDate.isSameOrAfter(startDate, "day");
+      } else if (endDate) {
+        return createdAtDate.isSameOrBefore(endDate, "day");
+      }
+      return true;
+    });
+
+  const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  useEffect(() => {
+    setPage(0); // Reset ke halaman pertama setiap filter berubah
+  }, [searchQuery, startDate, endDate, selectedBawahan]);
 
   return (
     <div className="overflow-x-auto w-full">
+      <div className="flex justify-between items-center py-2">
+        <TablePagination
+          component="div"
+          count={filteredData.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Rows per page"
+          labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
+          sx={{
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
+            ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
+          }}
+        />
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <div className="flex gap-4">
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+              format="DD/MM/YYYY"
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+              format="DD/MM/YYYY"
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+            </div>
+        </LocalizationProvider>
+        <Autocomplete
+          options={bawahanList}
+          value={selectedBawahan}
+          onChange={(_, newValue) => setSelectedBawahan(newValue)}
+          renderInput={(params) => <TextField {...params} label="AO" size="small" />}
+          className="w-40"
+        />
+        <form className="flex items-center" onSubmit={handleSearchSubmit}>
+          <div className="relative flex items-center">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+                <FaSearch />
+              </span>
+            </div>
+            <input
+              type="text"
+              placeholder="Search here..."
+              className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+              value={searchQuery}
+              onChange={handleSearch} // 🔥 Filter data saat mengetik
+            />
+          </div>
+        </form>
+      </div>
       <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
         <thead>
           <tr className="bg-blue-500 text-white">
@@ -125,39 +291,39 @@ useEffect(() => {
           </tr>
         </thead>
         <tbody>
-          {filteredKunjungan.length > 0 ? (
-            filteredKunjungan
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((item, index) => (
-              <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
-                <td className="px-6 py-3 text-center">{index + 1}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.namaNasabah}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.alamat}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.nama}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.Kecamatan.nama}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.namaUsaha}</td>
-                <td className="px-6 py-3 text-center border-l border-white">
-                  {new Date (item.createdAt).toLocaleString("id-ID", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
-                </td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.hasilKunjungan}</td>
-                <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.karyawan.namaKaryawan}</td>
-                <td className="px-6 py-4 text-center border-l border-white">
-                  <Link href={`/marketing/${item.id_kunjungan}`}>
+          {paginatedData.length > 0 ? (
+            paginatedData
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .map((item, index) => (
+                <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                  <td className="px-6 py-3 text-center">{page * rowsPerPage + index + 1}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.namaNasabah}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.alamat}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.nama}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.Kecamatan.nama}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.namaUsaha}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">
+                    {new Date(item.createdAt).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.hasilKunjungan}</td>
+                  <td className="px-6 py-3 text-center border-l border-white">{item.nasabah.karyawan.namaKaryawan}</td>
+                  <td className="px-6 py-4 text-center border-l border-white">
+                    <Link href={`/marketing/${item.id_kunjungan}`}>
                       <button className="text-blue-500 hover:text-blue-700 hover:underline">
-                          Lihat Selengkapnya
+                        Lihat Selengkapnya
                       </button>
-                  </Link>
-                </td>
-              </tr>
-            ))
+                    </Link>
+                  </td>
+                </tr>
+              ))
           ) : (
             <tr>
               <td colSpan={11} className="px-6 py-3 text-center">Tidak ada data kunjungan.</td>
@@ -165,9 +331,30 @@ useEffect(() => {
           )}
         </tbody>
       </table>
+      <div className="flex justify-end py-2">
+        <TablePagination
+          component="div"
+          count={filteredKunjungan.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+          rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
+          labelRowsPerPage=""
+          labelDisplayedRows={({ page, count }) =>
+            `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+          }
+          sx={{
+            display: "flex", // 🔹 Pastikan flexbox aktif
+            justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+            ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+          }}
+        />
+      </div>
     </div>
   );
 };
 
 export default MarketingTable;
-

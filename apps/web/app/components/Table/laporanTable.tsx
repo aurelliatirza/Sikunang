@@ -6,6 +6,7 @@ import EditKunjunganDialog from "../Dialog/editKunjunganDialog";
 import Link from "next/link";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import TablePagination from "@mui/material/TablePagination";
 
 interface Nasabah {
   id_nasabah: number;
@@ -49,6 +50,9 @@ const LaporanTable: React.FC = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchKunjungan = async () => {
@@ -220,8 +224,39 @@ const LaporanTable: React.FC = () => {
     setOpenSnackbar(false);
   };
 
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
     <div className="overflow-x-auto w-full">
+      {/* Pagination di atas hanya untuk menampilkan teks "Rows per page" */}
+      <div className="flex justify-between items-center py-2">
+      <TablePagination
+          component="div"
+          count={kunjunganData.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50, 100]}
+          labelRowsPerPage="Rows per page"
+          labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
+          sx={{
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
+            ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
+          }}
+        />
+
+      </div>
+
+      {/* Tabel */}
       <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
         <thead>
           <tr className="bg-blue-500 text-white">
@@ -243,17 +278,12 @@ const LaporanTable: React.FC = () => {
             kunjunganData
               .filter(item => item.nasabah.karyawan.namaKaryawan === namaKaryawan)
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((item, index) => (
-                <tr
-                  key={item.id_kunjungan}
-                  className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
-                >
-                  <td className="px-6 py-3 text-center">{index + 1}</td>
+                <tr key={item.id_kunjungan} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                  <td className="px-6 py-3 text-center">{index + 1 + page * rowsPerPage}</td>
                   <td className="px-6 py-3 text-center border-l border-white whitespace-nowrap">
-                    <Link
-                      href={`/laporan/${item.id_kunjungan}`}
-                      className="text-blue-900 hover:underline"
-                    >
+                    <Link href={`/laporan/${item.id_kunjungan}`} className="text-blue-900 hover:underline">
                       {item.nasabah.namaNasabah}
                     </Link>
                   </td>
@@ -291,16 +321,10 @@ const LaporanTable: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-center border-l border-white whitespace-nowrap">
                     <div className="flex justify-center space-x-2">
-                      <button
-                        className="text-yellow-500 hover:text-yellow-600"
-                        onClick={() => handleEditClick(item)}
-                      >
+                      <button className="text-yellow-500 hover:text-yellow-600" onClick={() => handleEditClick(item)}>
                         <MdEditSquare size={36} />
                       </button>
-                      <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleOpenModal(item.id_kunjungan)}
-                      >
+                      <button className="text-red-500 hover:text-red-700" onClick={() => handleOpenModal(item.id_kunjungan)}>
                         <RiDeleteBin6Fill size={36} />
                       </button>
                     </div>
@@ -309,37 +333,58 @@ const LaporanTable: React.FC = () => {
               ))
           ) : (
             <tr>
-              <td colSpan={11} className="text-center py-6 text-gray-500">
-                Tidak ada data kunjungan yang tersedia.
-              </td>
+              <td colSpan={11} className="text-center py-6 text-gray-500">Tidak ada data kunjungan yang tersedia.</td>
             </tr>
           )}
         </tbody>
       </table>
-      <AlertDialog
-        open={openModal}
-        onClose={handleCloseModal}
-        onConfirm={handleConfirmDelete}
-      />
-      {/* Komponen EditKunjunganDialog */}
-      {selectedKunjungan && (
-        <EditKunjunganDialog
-          open={openEditDialog}
-          onClose={handleCloseEditDialog}
-          kunjungan={selectedKunjungan ?? null} // Pastikan null jika belum ada data
-          onsave={handleSaveEdit}
-        />
-      )}
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </div>
+
+          <AlertDialog
+            open={openModal}
+            onClose={handleCloseModal}
+            onConfirm={handleConfirmDelete}
+          />
+          {/* Komponen EditKunjunganDialog */}
+          {selectedKunjungan && (
+            <EditKunjunganDialog
+              open={openEditDialog}
+              onClose={handleCloseEditDialog}
+              kunjungan={selectedKunjungan ?? null} // Pastikan null jika belum ada data
+              onsave={handleSaveEdit}
+            />
+          )}
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+          >
+            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+          <div className="flex justify-end py-2">
+            <TablePagination
+              component="div"
+              count={kunjunganData.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+              rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
+              labelRowsPerPage=""
+              labelDisplayedRows={({ page, count }) =>
+                `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+              }
+              sx={{
+                display: "flex", // 🔹 Pastikan flexbox aktif
+                justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+                ".MuiTablePagination-spacer": { display: "none" },
+                ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+                ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+              }}
+            />
+          </div>
+        </div>
   );
 };
 
