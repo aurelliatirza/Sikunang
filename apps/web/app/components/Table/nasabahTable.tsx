@@ -44,6 +44,10 @@ const NasabahTable: React.FC = () => {
     setSearchQuery(event.target.value);
     setPage(0); // Reset ke halaman pertama saat mencari
   };
+
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
   
   const filteredData = data.filter((item) =>
     item.namaNasabah.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,7 +74,7 @@ const NasabahTable: React.FC = () => {
               ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
             }}
           />
-          <form className="flex items-center">
+          <form className="flex items-center " onSubmit={handleSearchSubmit}>
           <div className="relative flex items-center">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
               <span className="text-gray-500 text-sm sm:text-base md:text-lg">

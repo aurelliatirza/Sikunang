@@ -27,6 +27,8 @@ model Karyawan {
   kepalaBagianSubs   Karyawan[]  @relation("Kabag")
   nasabah            Nasabah[]   @relation("KaryawanNasabah")  // Relasi ke Nasabah
   user               User?       @relation("KaryawanUser")
+
+  kredit Kredit[]
 }
 
 model Kantor {
@@ -56,6 +58,8 @@ model Nasabah {
   karyawan              Karyawan    @relation("KaryawanNasabah", fields: [nik], references: [nik]) // Relasi ke Karyawan
   kunjungan             Kunjungan[]
   desa                  DesaKelurahan @relation("DesaNasabah", fields: [desaKelurahanId], references: [id]) // Relasi ke DesaKelurahan
+
+  kredit Kredit[]
 }
 
 model Provinsi {
@@ -96,4 +100,42 @@ model Kunjungan {
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime @updatedAt @db.Timestamptz(6)
   nasabah        Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])  // Relasi ke Nasabah
+}
+
+model Kredit {
+  id_kredit       Int      @id @default(autoincrement())
+  id_nasabah      Int
+  id_karyawan     Int
+  nominal_pengajuan  Int
+  tenor_pengajuan    Int
+  //Langkah 1
+  status_pengajuan   String @default("belum_diajukan")
+  updatedAtPengajuan       DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 2
+  status_Slik      String @default("belum_ditinjau")
+  updatedAtSlik    DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 3
+  status_analisisSlik String @default("belum_dianalisis")
+  updatedAtAnalisisSlik DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 4
+  status_visitNasabah String @default("belum_dilakukan")
+  updatedAtVisitNasabah DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 5
+  status_proposalKredit String @default("belum_dibuat")
+  updatedAtProposalKredit DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 6
+  status_persetujuansatu String @default("belum_disetujui")
+  updatedAtPersetujuansatu DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 7
+  status_persetujuandua String @default("belum_disetujui")
+  updatedAtPersetujuandua DateTime @updatedAt @db.Timestamptz(6)
+  //Langkah 8
+  status_persetujuantiga String @default("belum_disetujui")
+  updatedAtPersetujuantiga DateTime @updatedAt @db.Timestamptz(6)
+  
+  nominal_disetujui Int
+  tenor_disetujui   Int
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  nasabah         Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])  // Relasi ke Nasabah
+  karyawan        Karyawan @relation(fields: [id_karyawan], references: [nik])  // Relasi ke Karyawan
 }

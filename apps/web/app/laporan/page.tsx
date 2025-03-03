@@ -36,11 +36,6 @@ const LaporanPage = () => {
           </div>
         </div>
 
-        {/* Tombol Cetak */}
-        <div className="flex items-end justify-end w-full md:w-auto p-4">
-            <CetakButton />
-        </div>
-
         {/* Sticky Footer */}
         <div className="sticky bottom-0 z-50 bg-gray-50 shadow-md">
             <Footer />

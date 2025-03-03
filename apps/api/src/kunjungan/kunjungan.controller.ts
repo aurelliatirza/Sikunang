@@ -5,7 +5,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Res,
-  Put
+  Put,
+  Query,
+  UseGuards,
+  Req
 } from '@nestjs/common';
 import { KunjunganService } from './kunjungan.service';
 import { CreateKunjunganDto } from './dto/create-kunjungan.dto';
@@ -16,35 +19,67 @@ import { extname, join } from 'path';
 import { Kunjungan } from '@prisma/client';
 import * as fs from 'fs';
 import { Response } from 'express';
+import * as sharp from 'sharp';
+import { Request } from 'express';
+import { LocalAuthGuard } from 'src/auth/guards/local-auth/local-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 
 @Controller('kunjungan')
 export class KunjunganController {
   constructor(private readonly laporanKunjunganService: KunjunganService) {}
-
-  @Post("upload")
+  @Post('upload')
   @UseInterceptors(
-      FileInterceptor('file', {
-          storage: diskStorage({
-              destination: '/Users/tirzaaurellia/Documents/Foto Test Sikunang',
-              filename: (req, file, callback) => {
-                  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                  const filename = file.fieldname + '-' + uniqueSuffix + extname(file.originalname);
-                  console.log('📁 File diupload dengan nama:', filename);
-                  callback(null, filename);
-              },
-          }),
-      })
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: '/Users/tirzaaurellia/Documents/Foto Test Sikunang',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const filename = file.fieldname + '-' + uniqueSuffix + extname(file.originalname);
+          callback(null, filename);
+        },
+      }),
+    }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-      if (!file) {
-          throw new BadRequestException('File tidak ditemukan!');
-      }
-      console.log('🚦 Path file yang akan disimpan ke database:', file.filename);
-      return { filePath: `${file.filename}` }; // Hanya simpan nama file, tanpa '/uploads/'
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File tidak ditemukan!');
+    }
 
-      // // **Gunakan URL akses dari komputer lain**
+    const inputPath = file.path;
+    const compressedFilename = `compressed-${file.filename}`;
+    const outputPath = `/Users/tirzaaurellia/Documents/Foto Test Sikunang/${compressedFilename}`;
+
+    try {
+      // Ambil ukuran file sebelum dikompresi
+      const originalSize = fs.statSync(inputPath).size;
+
+      // Kompres gambar menggunakan Sharp
+      await sharp(inputPath)
+        .resize(800) // Resize lebar max 800px, tinggi menyesuaikan
+        .jpeg({ quality: 75 }) // Simpan dalam format JPEG dengan kualitas 70%
+        .toFile(outputPath);
+
+      // Ambil ukuran file setelah dikompresi
+      const compressedSize = fs.statSync(outputPath).size;
+
+      // Hapus file asli setelah dikompresi (opsional)
+      fs.unlinkSync(inputPath);
+
+      console.log('📁 File asli:', file.filename, `(${(originalSize / 1024).toFixed(2)} KB)`);
+      console.log('📁 File setelah dikompresi:', compressedFilename, `(${(compressedSize / 1024).toFixed(2)} KB)`);
+
+      return { 
+        originalSize: `${(originalSize / 1024).toFixed(2)} KB`,
+        compressedSize: `${(compressedSize / 1024).toFixed(2)} KB`,
+        filePath: compressedFilename
+      };
+    } catch (error) {
+      console.error('❌ Error saat mengompresi gambar:', error);
+      throw new BadRequestException('Gagal mengompresi gambar');
+    }
+          // // **Gunakan URL akses dari komputer lain**
       // return { filePath: `http://your-server-ip:8000/uploads/${file.filename}` };
-  }  
+  }
   
   @Post()
   async createKunjungan(@Body() kunjunganDto: CreateKunjunganDto) {
@@ -88,4 +123,27 @@ export class KunjunganController {
   remove(@Param('id_kunjungan') id_kunjungan: string) {
       return this.laporanKunjunganService.remove(Number(id_kunjungan));
   }
+
+  @UseGuards(JwtAuthGuard) // Pastikan user sudah login
+  @Get("cetak")
+  async cetakLaporan(
+    @Query("startDate") startDate: string,
+    @Query("endDate") endDate: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const user = req.user as any; // Dapatkan user yang login dari request
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const laporan = await this.laporanKunjunganService.cetakLaporan(
+      startDate,
+      endDate,
+      user.nik // Ambil NIK karyawan yang sedang login
+    );
+
+    res.download(laporan.filePath);
+  }
+  
 }

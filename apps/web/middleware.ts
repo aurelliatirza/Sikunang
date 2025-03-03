@@ -53,7 +53,7 @@ export async function middleware(req: NextRequest) {
         const accessControl: Record<string, string[]> = {
             adminSlik: ["/dashboardAdminSlik", "/kreditAdminSlik"],
             hrd: ["/dashboardHRD", "/karyawan"],
-            marketing: ["/dashboardMarketing", "/laporan", "/kreditMarketing"],
+            marketing: ["/dashboardMarketing", "/laporan", "/kreditMarketing", "/pdfPage"],
             spv: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
             kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
             direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],

@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState } from "react";
 import { MdEditSquare } from "react-icons/md";
 import { RiDeleteBin6Fill } from "react-icons/ri";
@@ -7,6 +8,8 @@ import Link from "next/link";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import TablePagination from "@mui/material/TablePagination";
+import KonfirmasiCetakDialog from "../Dialog/konfirmasiCetakDialog";
+import { useRouter } from "next/navigation";
 
 interface Nasabah {
   id_nasabah: number;
@@ -40,6 +43,7 @@ const Alert = (props: AlertProps) => {
 };
 
 const LaporanTable: React.FC = () => {
+  const router = useRouter();
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
   const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
@@ -48,6 +52,7 @@ const LaporanTable: React.FC = () => {
   const [selectedKunjungan, setSelectedKunjungan] = useState<Kunjungan | null>(null);
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openKonfirmasiCetakDialog, setOpenKonfirmasiCetakDialog] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
@@ -362,7 +367,13 @@ const LaporanTable: React.FC = () => {
               {snackbarMessage}
             </Alert>
           </Snackbar>
-          <div className="flex justify-end py-2">
+            <div className="flex justify-end py-2 mt-3">
+            <button
+              className="bg-blue-200 hover:bg-blue-300 text-white font-semibold py-5 px-8 w-52 h-27 rounded-lg shadow-md transition duration-300"
+              onClick={() => setOpenKonfirmasiCetakDialog(true)}
+            >
+              Cetak
+            </button>
             <TablePagination
               component="div"
               count={kunjunganData.length}
@@ -373,17 +384,29 @@ const LaporanTable: React.FC = () => {
               rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
               labelRowsPerPage=""
               labelDisplayedRows={({ page, count }) =>
-                `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+              `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
               }
               sx={{
-                display: "flex", // 🔹 Pastikan flexbox aktif
-                justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
-                ".MuiTablePagination-spacer": { display: "none" },
-                ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
-                ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+              display: "flex", // 🔹 Pastikan flexbox aktif
+              justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+              ".MuiTablePagination-spacer": { display: "none" },
+              ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+              ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
               }}
             />
-          </div>
+            </div>
+            <KonfirmasiCetakDialog
+            open={openKonfirmasiCetakDialog}
+            onClose={() => setOpenKonfirmasiCetakDialog(false)}
+            onConfirm={(startDate, endDate) => {
+              // Implementasi logika cetak laporan berdasarkan tanggal yang dipilih
+              console.log("Tanggal mulai:", startDate);
+              console.log("Tanggal akhir:", endDate);
+              setOpenKonfirmasiCetakDialog(false);
+              // Redirect ke halaman PDF dengan parameter tanggal
+              router.push(`/pdfPage?startDate=${startDate}&endDate=${endDate}`);
+            }}
+            />
         </div>
   );
 };

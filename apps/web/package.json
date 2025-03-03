@@ -25,6 +25,8 @@
     "date-fns": "^4.1.0",
     "dhtmlx-gantt": "^9.0.3",
     "jose": "^5.9.6",
+    "jspdf": "^3.0.0",
+    "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.473.0",
     "next": "^15.1.7",
     "numeral": "^2.0.6",

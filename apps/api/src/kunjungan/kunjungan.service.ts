@@ -6,6 +6,8 @@ import { NasabahService } from 'src/nasabah/nasabah.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UpdateKunjunganDto } from './dto/update-kunjungan.dto';
+import PdfPrinter from 'pdfmake';
+import { TDocumentDefinitions } from 'pdfmake/interfaces';
 
 @Injectable()
 export class KunjunganService {
@@ -202,5 +204,109 @@ export class KunjunganService {
     
         return { message: 'Data kunjungan dan file foto berhasil dihapus.' };
     }
+
+
+    async cetakLaporan(startDate: string, endDate: string, nikKaryawan: string) {
+        const fonts = {
+            Roboto: {
+                normal: "fonts/Roboto-Regular.ttf",
+                bold: "fonts/Roboto-Medium.ttf",
+                italics: "fonts/Roboto-Italic.ttf",
+                bolditalics: "fonts/Roboto-MediumItalic.ttf",
+            },
+        };
     
+        const printer = new PdfPrinter(fonts);
+    
+        // Ambil data kunjungan berdasarkan tanggal dan NIK karyawan
+        const kunjunganData = await this.prisma.kunjungan.findMany({
+            where: {
+                createdAt: {
+                    gte: new Date(startDate),
+                    lte: new Date(endDate),
+                },
+                nasabah: {
+                    karyawan: {
+                        nik: Number(nikKaryawan),
+                    },
+                },
+            },
+            include: {
+                nasabah: {
+                    select: {
+                        namaNasabah: true,
+                        alamat: true,
+                        namaUsaha: true,
+                        no_telp: true,
+                        desa: {
+                            select: {
+                                nama: true,
+                                Kecamatan: {
+                                    select: {
+                                        nama: true,
+                                        KabupatenKota: {
+                                            select: {
+                                                nama: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    
+        // Struktur data untuk PDF
+        //a. Untuk Marketing
+        const docDefinition: TDocumentDefinitions = {
+            content: [
+                { text: "Laporan Kunjungan Nasabah", style: "header", alignment: "center" },
+                { text: `Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}\n\n`, style: "subheader", alignment: "center" },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ["auto", "*", "*", "auto", "auto", "auto"],
+                        body: [
+                            ["No", "Nama Nasabah", "Alamat", "Nama Usaha", "Hasil Kunjungan", "Waktu Kunjungan"],
+                            ...kunjunganData.map((item, index) => [
+                                index + 1,
+                                item.nasabah.namaNasabah,
+                                `${item.nasabah.alamat}, ${item.nasabah.desa.nama}, 
+                                ${item.nasabah.desa.Kecamatan.nama}, 
+                                ${item.nasabah.desa.Kecamatan.KabupatenKota.nama}`,
+                                item.nasabah.namaUsaha,
+                                item.hasilKunjungan || "-",
+                                new Date(item.createdAt).toLocaleString('id-ID', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric',
+                                }),
+                            ]),
+                        ],
+                    },
+                },
+            ],
+            styles: {
+                header: { fontSize: 16, bold: true, alignment: "center" },
+                subheader: { fontSize: 12, italics: true, margin: [0, 5, 0, 10] },
+            },
+        };
+    
+        const pdfDoc = printer.createPdfKitDocument(docDefinition);
+        const pdfPath = "laporan_kunjungan.pdf";
+        pdfDoc.pipe(fs.createWriteStream(pdfPath));
+        pdfDoc.end();
+    
+        return {
+            message: "Laporan berhasil dicetak",
+            filePath: pdfPath,
+        };
+    }
+
+    //b. untuk SPV, kabag, direktur bisnis
 }
