@@ -44,6 +44,7 @@ const Alert = (props: AlertProps) => {
 
 const LaporanTable: React.FC = () => {
   const router = useRouter();
+  const [jabatan, setJabatan] = useState<string | null>(null);
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
   const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
@@ -93,6 +94,7 @@ const LaporanTable: React.FC = () => {
         const data = await response.json();
         console.log("User Data:", data);
         setNamaKaryawan(data.name);
+        setJabatan(data.jabatan);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -395,18 +397,19 @@ const LaporanTable: React.FC = () => {
               }}
             />
             </div>
-            <KonfirmasiCetakDialog
-            open={openKonfirmasiCetakDialog}
-            onClose={() => setOpenKonfirmasiCetakDialog(false)}
-            onConfirm={(startDate, endDate) => {
-              // Implementasi logika cetak laporan berdasarkan tanggal yang dipilih
-              console.log("Tanggal mulai:", startDate);
-              console.log("Tanggal akhir:", endDate);
-              setOpenKonfirmasiCetakDialog(false);
-              // Redirect ke halaman PDF dengan parameter tanggal
-              router.push(`/pdfPage?startDate=${startDate}&endDate=${endDate}`);
-            }}
-            />
+            {jabatan === "marketing" && (
+              <KonfirmasiCetakDialog
+                open={openKonfirmasiCetakDialog}
+                onClose={() => setOpenKonfirmasiCetakDialog(false)}
+                onConfirm={(startDate, endDate) => {
+                  console.log("Tanggal mulai:", startDate);
+                  console.log("Tanggal akhir:", endDate);
+                  setOpenKonfirmasiCetakDialog(false);
+                  router.push(`/pdfPage?startDate=${startDate}&endDate=${endDate}`);
+                }}
+                jabatan={jabatan} // Pastikan ini dikirim
+              />
+            )}
         </div>
   );
 };

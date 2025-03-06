@@ -5,7 +5,7 @@ import MarketingHeader from "../components/Header/HeaderPejabat/MarketingHeader"
 import Sidebar from "../components/Sidebar/SidebarPejabat";
 import MarketingTable from "../components/Table/marketingTable";
 import Footer from "../components/Footers";
-import CetakButton from "../components/Buttons/cetakButton";
+
 
 const MarketingPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -35,11 +35,6 @@ const MarketingPage = () => {
           <div className="overflow-x-auto w-full mt-4">
             <MarketingTable />
           </div>
-        </div>
-
-        {/* Tombol Cetak */}
-        <div className="flex items-end justify-end w-full md:w-auto p-4">
-            <CetakButton />
         </div>
 
         {/* Sticky Footer */}

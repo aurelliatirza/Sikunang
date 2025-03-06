@@ -36,11 +36,13 @@ export default function LaporanKunjungan() {
   const searchParams = useSearchParams();
   const tanggalMulai = searchParams.get("startDate");
   const tanggalSelesai = searchParams.get("endDate");
+  const selectedBawahan = searchParams.get("selectedBawahan"); // Ambil nama bawahan jika supervisor memilih
 
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
   const [namaKaryawan, setNamaKaryawan] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [jabatan, setJabatan] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -51,14 +53,12 @@ export default function LaporanKunjungan() {
         });
 
         if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error("Unauthorized: Token tidak valid.");
-          }
           throw new Error(`Gagal mengambil data user: ${response.statusText}`);
         }
 
         const data = await response.json();
         setNamaKaryawan(data.name);
+        setJabatan(data.jabatan);
       } catch (err) {
         setError("Gagal mengambil data user.");
         console.error("Error fetching user profile:", err);
@@ -82,14 +82,19 @@ export default function LaporanKunjungan() {
 
         const data = await response.json();
 
-        // Filter berdasarkan nama karyawan
-        const filteredData = data
-        .filter((item: Kunjungan) => item.nasabah.karyawan.namaKaryawan === namaKaryawan)
-        .filter((item: Kunjungan) => {
+        let filteredData = data.filter((item: Kunjungan) => {
           const tanggalKunjungan = dayjs(item.createdAt);
-          return tanggalKunjungan.isSameOrAfter(dayjs(tanggalMulai), "day") &&
-                 tanggalKunjungan.isSameOrBefore(dayjs(tanggalSelesai), "day");
-        });      
+          const withinDateRange =
+            tanggalKunjungan.isSameOrAfter(dayjs(tanggalMulai), "day") &&
+            tanggalKunjungan.isSameOrBefore(dayjs(tanggalSelesai), "day");
+
+          if (jabatan === "marketing") {
+            return withinDateRange;
+          } else {
+            // Supervisor atau role lain → filter berdasarkan nama bawahan
+            return withinDateRange && item.nasabah.karyawan.namaKaryawan === selectedBawahan;
+          }
+        });
 
         setKunjunganData(filteredData);
       } catch (err) {
@@ -100,16 +105,14 @@ export default function LaporanKunjungan() {
       }
     };
 
-    if (namaKaryawan) {
+    if (namaKaryawan && jabatan) {
       fetchData();
     }
-  }, [tanggalMulai, tanggalSelesai, namaKaryawan]);
+  }, [tanggalMulai, tanggalSelesai, namaKaryawan, jabatan, selectedBawahan]);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <style>
-        {`@media print { @page { size: landscape; } }`}
-      </style>
+      <style>{`@media print { @page { size: landscape; } }`}</style>
 
       <h1 className="text-2xl font-bold mb-4 text-center">Laporan Kunjungan</h1>
 
@@ -119,9 +122,12 @@ export default function LaporanKunjungan() {
         <p>Loading...</p>
       ) : (
         <>
-          <p className="mb-2"><strong>Nama AO:</strong> {namaKaryawan}</p>
+          <p className="mb-2"><strong>Nama Karyawan:</strong> {namaKaryawan}</p>
           <p className="mb-2"><strong>Tanggal Mulai:</strong> {tanggalMulai}</p>
-          <p className="mb-4"><strong>Tanggal Selesai:</strong> {tanggalSelesai}</p>
+          <p className="mb-2"><strong>Tanggal Selesai:</strong> {tanggalSelesai}</p>
+          {jabatan !== "marketing" && (
+            <p className="mb-4"><strong>Nama Ao:</strong> {selectedBawahan || "Tidak ada bawahan dipilih"}</p>
+          )}
 
           {kunjunganData.length > 0 ? (
             <table className="w-full border-collapse border border-gray-400">
@@ -132,6 +138,7 @@ export default function LaporanKunjungan() {
                   <th className="border p-2">Alamat</th>
                   <th className="border p-2">Nama Usaha</th>
                   <th className="border p-2">No. Telp/HP</th>
+                  <th className="border p-2">Nama AO</th>
                   <th className="border p-2">Hasil Kunjungan</th>
                   <th className="border p-2">Waktu Kunjungan</th>
                 </tr>
@@ -142,12 +149,13 @@ export default function LaporanKunjungan() {
                     <td className="border p-2">{index + 1}</td>
                     <td className="border p-2">{item.nasabah.namaNasabah}</td>
                     <td className="border p-2">
-                    {item.nasabah.alamat}, Kel. {item.nasabah.desa.nama}, 
-                    Kec. {item.nasabah.desa.Kecamatan.nama}, 
-                    {item.nasabah.desa.Kecamatan.KabupatenKota.nama}
-                  </td>
+                      {item.nasabah.alamat}, Kel. {item.nasabah.desa.nama}, 
+                      Kec. {item.nasabah.desa.Kecamatan.nama}, 
+                      {item.nasabah.desa.Kecamatan.KabupatenKota.nama}
+                    </td>
                     <td className="border p-2">{item.nasabah.namaUsaha}</td>
                     <td className="border p-2">{item.nasabah.no_telp}</td>
+                    <td className="border p-2">{item.nasabah.karyawan.namaKaryawan}</td>
                     <td className="border p-2">{item.hasilKunjungan}</td>
                     <td className="border p-2">{dayjs(item.createdAt).format("DD MMMM YYYY, HH:mm")}</td>
                   </tr>
@@ -169,3 +177,4 @@ export default function LaporanKunjungan() {
     </div>
   );
 }
+

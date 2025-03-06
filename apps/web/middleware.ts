@@ -54,9 +54,9 @@ export async function middleware(req: NextRequest) {
             adminSlik: ["/dashboardAdminSlik", "/kreditAdminSlik"],
             hrd: ["/dashboardHRD", "/karyawan"],
             marketing: ["/dashboardMarketing", "/laporan", "/kreditMarketing", "/pdfPage"],
-            spv: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
-            kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
-            direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat"],
+            spv: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat","/pdfPage"],
+            kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
+            direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
         };
 
         // Periksa apakah jabatan memiliki akses ke URL yang diakses

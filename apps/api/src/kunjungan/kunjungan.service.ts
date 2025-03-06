@@ -206,7 +206,7 @@ export class KunjunganService {
     }
 
 
-    async cetakLaporan(startDate: string, endDate: string, nikKaryawan: string) {
+    async cetakLaporan(startDate: string, endDate: string, nikKaryawan: string, namaKaryawan: string, role: string) {
         const fonts = {
             Roboto: {
                 normal: "fonts/Roboto-Regular.ttf",
@@ -253,23 +253,37 @@ export class KunjunganService {
                                 },
                             },
                         },
+                        karyawan: {
+                            select: {
+                                namaKaryawan: true,
+                                supervisor: {
+                                    select: {
+                                        namaKaryawan: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
         });
     
+        // Ambil nama supervisor dari karyawan yang dipilih
+        const supervisorNama = kunjunganData.length > 0 ? kunjunganData[0].nasabah.karyawan.supervisor?.namaKaryawan || "-" : "-";
+    
         // Struktur data untuk PDF
-        //a. Untuk Marketing
         const docDefinition: TDocumentDefinitions = {
             content: [
-                { text: "Laporan Kunjungan Nasabah", style: "header", alignment: "center" },
-                { text: `Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}\n\n`, style: "subheader", alignment: "center" },
+                { text: "Laporan Kunjungan", style: "header", alignment: "center" },
+                { text: `Nama Karyawan: ${namaKaryawan}`, style: "subheader" },
+                { text: `Tanggal Mulai: ${startDate}`, style: "subheader" },
+                { text: `Tanggal Selesai: ${endDate}\n\n`, style: "subheader" },
                 {
                     table: {
                         headerRows: 1,
-                        widths: ["auto", "*", "*", "auto", "auto", "auto"],
+                        widths: ["auto", "auto", "auto", "auto", "auto", "auto"],
                         body: [
-                            ["No", "Nama Nasabah", "Alamat", "Nama Usaha", "Hasil Kunjungan", "Waktu Kunjungan"],
+                            ["No", "Nama Nasabah", "Alamat", "Nama Usaha", "Nama Karyawan", "Hasil Kunjungan", "Waktu Kunjungan"],
                             ...kunjunganData.map((item, index) => [
                                 index + 1,
                                 item.nasabah.namaNasabah,
@@ -277,6 +291,7 @@ export class KunjunganService {
                                 ${item.nasabah.desa.Kecamatan.nama}, 
                                 ${item.nasabah.desa.Kecamatan.KabupatenKota.nama}`,
                                 item.nasabah.namaUsaha,
+                                item.nasabah.karyawan.namaKaryawan,
                                 item.hasilKunjungan || "-",
                                 new Date(item.createdAt).toLocaleString('id-ID', {
                                     hour: '2-digit',
@@ -289,6 +304,12 @@ export class KunjunganService {
                             ]),
                         ],
                     },
+                },
+                { text: "\n\nSupervisor", style: "subheader", alignment: "left" },
+                {
+                    text: `\n\n( ${supervisorNama} )`,
+                    alignment: "left",
+                    margin: [0, 20, 0, 0],
                 },
             ],
             styles: {
@@ -307,6 +328,5 @@ export class KunjunganService {
             filePath: pdfPath,
         };
     }
-
-    //b. untuk SPV, kabag, direktur bisnis
+    
 }

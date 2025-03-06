@@ -140,7 +140,9 @@ export class KunjunganController {
     const laporan = await this.laporanKunjunganService.cetakLaporan(
       startDate,
       endDate,
-      user.nik // Ambil NIK karyawan yang sedang login
+      user.nik, // Ambil NIK karyawan yang sedang login
+      user.nama, // Ambil nama karyawan yang sedang login
+      user.karyawan.jabatan, // Ambil jabatan karyawan yang sedang login
     );
 
     res.download(laporan.filePath);

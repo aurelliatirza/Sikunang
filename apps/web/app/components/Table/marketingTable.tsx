@@ -8,6 +8,9 @@ import dayjs, { Dayjs } from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { Autocomplete, TextField } from "@mui/material";
+import KonfirmasiCetakDialog from "../Dialog/konfirmasiCetakDialog";
+import { useRouter } from "next/navigation";
+
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -49,6 +52,9 @@ interface UserProfile {
 }
 
 const MarketingTable: React.FC = () => {
+  const router = useRouter();
+  const [openKonfirmasiCetakDialog, setOpenKonfirmasiCetakDialog] = useState(false);
+  const [jabatan, setJabatan] = useState<string | null>(null);
   const [kunjunganData, setKunjunganData] = useState<Kunjungan[]>([]);
   const [filteredKunjungan, setFilteredKunjungan] = useState<Kunjungan[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -90,6 +96,7 @@ const MarketingTable: React.FC = () => {
         const data = await response.json();
         console.log("Data user:", data);
         setUserProfile(data);
+        
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -352,6 +359,41 @@ const MarketingTable: React.FC = () => {
             ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
           }}
         />
+        <button
+          className="bg-blue-200 hover:bg-blue-300 text-white font-semibold py-5 px-8 w-52 h-27 rounded-lg shadow-md transition duration-300"
+          onClick={() => setOpenKonfirmasiCetakDialog(true)}
+        >
+          Cetak
+        </button>
+        {jabatan === "marketing" ? (
+        <KonfirmasiCetakDialog
+          open={openKonfirmasiCetakDialog}
+          onClose={() => setOpenKonfirmasiCetakDialog(false)}
+          onConfirm={(startDate, endDate) => {
+            console.log("Tanggal mulai:", startDate);
+            console.log("Tanggal akhir:", endDate);
+            setOpenKonfirmasiCetakDialog(false);
+            router.push(`/pdfPageMarketing?startDate=${startDate}&endDate=${endDate}`);
+          }}
+          jabatan={jabatan} // Pastikan ini dikirim
+        />
+      ) : (
+        <KonfirmasiCetakDialog
+          open={openKonfirmasiCetakDialog}
+          onClose={() => setOpenKonfirmasiCetakDialog(false)}
+          onConfirm={(startDate, endDate, selectedBawahan) => {
+            console.log("Tanggal mulai:", startDate);
+            console.log("Tanggal akhir:", endDate);
+            console.log("Bawahan yang dipilih:", selectedBawahan);
+            setOpenKonfirmasiCetakDialog(false);
+            router.push(
+              `/pdfPage?startDate=${startDate}&endDate=${endDate}&selectedBawahan=${selectedBawahan}`
+            );
+          }}
+          jabatan={jabatan as "spv" | "kabag" | "direktur_bisnis"}
+          bawahanList={bawahanList} // Pastikan data bawahan dikirim
+        />
+)}
       </div>
     </div>
   );
