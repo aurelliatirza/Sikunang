@@ -12,7 +12,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors({
     origin: 'http://localhost:3000', // Ganti dengan URL frontend Anda
-    methods: 'GET,POST,PUT,DELETE',
+    methods: 'GET,POST,PUT,DELETE, PATCH',
     allowedHeaders: 'Content-Type, Accept, Authorization', // jika diperlukan
     credentials: true,  //Untuk mengirim cookies
   });

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { KreditService } from './kredit.service';
 import { CreateKreditDto } from './dto/create-kredit.dto';
 import { UpdateKreditDto } from './dto/update-kredit.dto';
-import { create } from 'domain';
+import { UpdateSlikCheckDto } from './dto/updateSlik.dto';
 import { Kredit } from '@prisma/client';
 
 @Controller('kredit')
@@ -29,6 +29,17 @@ export class KreditController {
   update(@Param('id') id: string, @Body() updateKreditDto: UpdateKreditDto) {
     return this.kreditService.update(+id, updateKreditDto);
   }
+  
+  @Patch(':id/slik-check')
+  async updateSlikCheck(
+    @Param('id') id: string,
+    @Body() updateSlikCheckDto: UpdateSlikCheckDto
+  ) {
+    console.log("recieved ID:", id);
+    console.log("recieved Data:", updateSlikCheckDto)
+    return this.kreditService.updateSlikCheck(Number(id), updateSlikCheckDto);
+  }
+
 
   @Delete(':id')
   remove(@Param('id') id: string) {
