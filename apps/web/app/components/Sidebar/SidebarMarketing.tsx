@@ -2,7 +2,7 @@
 
 import { usePathname} from "next/navigation";
 import Link from "next/link";
-import { FaDesktop, FaFileAlt , FaCoins, FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaDesktop, FaFileAlt , FaCoins, FaUserCircle, FaSignOutAlt, FaUser } from "react-icons/fa";
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -14,6 +14,7 @@ const SidebarMarketing = ({ isSidebarOpen }: SidebarProps) => {
     const links = [
         { href: "/dashboardMarketing", label: "Dashboard", icon: <FaDesktop /> },
         { href: "/laporan", label: "Laporan", icon: <FaFileAlt /> },
+        { href: "/nasabah", label: "Nasabah", icon: <FaUser /> },
         { href: "/kreditMarketing", label: "Kredit", icon: <FaCoins /> },
     ];
 

@@ -96,7 +96,12 @@ export class NasabahService {
       const data = await this.prisma.nasabah.findMany({
         include: {
           desa: { select: { nama: true } },
-          karyawan: { select: { namaKaryawan: true } },
+          karyawan: { select: { 
+            namaKaryawan: true,
+            nik_SPV: true,
+            nik_kabag: true,
+            nik_direkturBisnis: true
+           } },
           kunjungan: {
             select: {
               id_kunjungan: true,

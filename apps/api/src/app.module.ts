@@ -12,6 +12,7 @@ import { KecamatanModule } from './kecamatan/kecamatan.module';
 import { DesaKelurahanModule } from './desa-kelurahan/desa-kelurahan.module';
 import { KunjunganModule } from './kunjungan/kunjungan.module';
 import { NasabahModule } from './nasabah/nasabah.module';
+import { KreditModule } from './kredit/kredit.module';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { NasabahModule } from './nasabah/nasabah.module';
     DesaKelurahanModule,
     KunjunganModule,
     NasabahModule,
+    KreditModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

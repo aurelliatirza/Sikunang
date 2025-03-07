@@ -1,48 +1,237 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import TablePagination from "@mui/material/TablePagination";
+import { FaSearch } from "react-icons/fa";
+
+interface Nasabah {
+  namaNasabah: string;
+  alamat: string;
+  namaUsaha: string;
+  no_telp: string;
+  karyawan: {
+    namaKaryawan: string;
+    nik: number;
+    nik_SPV?: number;
+    nik_kabag?: number;
+    nik_direkturBisnis?: number;
+  };
+  desa: {
+    nama: string;
+    Kecamatan: {
+      nama: string;
+      KabupatenKota: {
+        nama: string;
+      };
+    };
+  };
+}
+
+interface Karyawan {
+  nik: number;
+  namaKaryawan: string;
+}
+
+interface KreditPengajuan {
+  id_kredit: number;
+  nasabah: Nasabah;
+  nominal_pengajuan: number;
+  tenor_pengajuan: number;
+  status_pengajuan: string;
+  id_karyawan_pengajuan: number;
+  createdAt: string;
+}
+
+interface UserProfile {
+  id: number;
+  namaKaryawan: string;
+  nik: number;
+  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+}
+
+const statusPengajuanOptions = [
+  { label: "Sedang Diajukan", value: "sedang_diajukan"},
+]
 
 const PengajuanTable: React.FC = () => {
-  const data = [
-    {
-      no: 1,
-      namaNasabah: "Mustakin",
-      alamat: "Jl. Merdeka No. 1",
-      kelurahan: "Beringin",
-      kecamatan: "Ngaliyan",
-      kota: "Kota Semarang",
-      namaUsaha: "Toko Sembako",
-      waktuPengajuan: "2025-10-01 10.54",
-      statusPengajuan: "Belum Diajukan",
-      namaAO: "Airin",
-    },
-    {
-      no: 2,
-      namaNasabah: "Siti",
-      alamat: "Jl. Merdeka No. 2",
-      kelurahan: "Durian",
-      kecamatan: "Tembalang",
-      kota: "Kota Semarang",
-      namaUsaha: "Toko Buku",
-      waktuPengajuan: "2025-10-01 10.54",
-      statusPengajuan: "Belum Diajukan",
-      namaAO: "Permatasari",
-    },
-    {
-      no: 3,
-      namaNasabah: "Rahmat",
-      alamat: "Jl. Merdeka No. 3",
-      kelurahan: "Pringapus",
-      kecamatan: "Ungaran",
-      kota: "Kabupaten Semarang",
-      namaUsaha: "Ternak Sapi",
-      statusPengajuan: "Sedang Diajukan",
-      waktuPengajuan: "2025-10-01 10.54",
-      namaAO: "Indah",
-    },
-  ];
+  const [kreditData, setKreditData] = useState<KreditPengajuan[]>([]);
+  const [karyawanData, setKaryawanData] = useState<Karyawan[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [filteredData, setFilteredData] = useState<KreditPengajuan[]>([]);
+  const [bawahanList, setBawahanList] = useState<string[]>([]);
+  const [selectedBawahan, setSelectedBawahan] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const getStatusPengajuanLabel = (status_pengajuan: string) => {
+    const option = statusPengajuanOptions.find((option) => option.value === status_pengajuan);
+    return option? option.label : status_pengajuan;
+  }
+
+ // Fungsi untuk mendapatkan nama karyawan berdasarkan ID karyawan pengajuan
+ const getNamaKaryawan = (id_karyawan_pengajuan: number, karyawanData: Karyawan[]): string => {
+  const karyawan = karyawanData.find(k => k.nik === id_karyawan_pengajuan);
+  return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
+};
+
+  // Fetch data kredit pengajuan
+  useEffect(() => {
+    const fetchKreditPengajuan = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/kredit");
+        if (!response.ok) throw new Error("Gagal mengambil Data");
+        const data = await response.json();
+        setKreditData(data);
+      } catch (error) {
+        console.error("Error fetching kredit data: ", error);
+      }
+    };
+    fetchKreditPengajuan();
+    const interval = setInterval(fetchKreditPengajuan, 3000); // Update setiap 5 detik
+
+    return () => clearInterval(interval); // Bersihkan interval saat unmount
+  }, []);
+
+  // Fetch data user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/auth/profile", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) throw new Error("Gagal mengambil data user");
+
+        const data = await response.json();
+        setUserProfile(data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  //Fetch data karyawan
+  useEffect(() => {
+    const fetchKaryawan = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/karyawan");
+        if (!response.ok) throw new Error("Gagal mengambil data");
+
+        const data = await response.json();
+        setKaryawanData(data);
+      } catch (error) {
+        console.error("Error fetching karyawan:", error);
+      }
+    };
+
+    fetchKaryawan();
+  }, []);
+
+  // Filter data berdasarkan jabatan user yang login
+  useEffect(() => {
+    if (!userProfile) return;
+
+    let filtered: KreditPengajuan[] = [];
+
+    if (userProfile.jabatan === "marketing") {
+      filtered = kreditData.filter(
+        (item) => item.nasabah.karyawan.nik === userProfile.nik
+      );
+    } else {
+      let bawahanNames: string[] = [];
+      if (userProfile.jabatan === "spv") {
+        bawahanNames = kreditData
+          .filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik)
+          .map((item) => item.nasabah.karyawan.namaKaryawan);
+      } else if (userProfile.jabatan === "kabag") {
+        bawahanNames = kreditData
+          .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
+          .map((item) => item.nasabah.karyawan.namaKaryawan);
+      } else if (userProfile.jabatan === "direkturBisnis") {
+        bawahanNames = kreditData
+          .filter(
+            (item) =>
+              item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik
+          )
+          .map((item) => item.nasabah.karyawan.namaKaryawan);
+      }
+
+      setBawahanList([...new Set(bawahanNames)]);
+
+      if (selectedBawahan) {
+        filtered = kreditData.filter(
+          (item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan
+        );
+      } else {
+        filtered = kreditData;
+      }
+    }
+
+    setFilteredData(filtered);
+  }, [userProfile, kreditData, selectedBawahan]);
+  
+  // Search filter
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setPage(0);
+  };
+  
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  };
+
+  // Filter berdasarkan search query
+  const searchedData = filteredData.filter((item) =>
+    item.nasabah.namaNasabah.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const paginatedData = searchedData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
-    <div className="overflow-x-auto w-full">
-      <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
+    <div className="w-full p-4">
+      {/* Search Box */}
+      <form className="flex items-center" onSubmit={handleSearchSubmit}>
+        <div className="relative flex items-center">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+              <FaSearch />
+            </span>
+          </div>
+          <input
+            type="text"
+            placeholder="Search here..."
+            className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+            value={searchQuery}
+            onChange={handleSearch} // 🔥 Filter data saat mengetik
+          />
+        </div>
+      </form>
+
+        {/* Filter Bawahan */}
+        {userProfile && userProfile.jabatan !== "marketing" && (
+          <select
+            value={selectedBawahan || ""}
+            onChange={(e) => setSelectedBawahan(e.target.value || null)}
+            className="border px-4 py-2 rounded-lg"
+          >
+            <option value="">Semua Bawahan</option>
+            {bawahanList.map((bawahan, index) => (
+              <option key={index} value={bawahan}>
+                {bawahan}
+              </option>
+            ))}
+          </select>
+        )}
+
+      {/* Tabel */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm border border-gray-300">
         <thead>
           <tr className="bg-blue-500 text-white">
             <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
@@ -53,33 +242,50 @@ const PengajuanTable: React.FC = () => {
             <th className="px-6 py-3 text-center border-l border-white">Kota</th>
             <th className="px-6 py-3 text-center border-l border-white">Nama Usaha</th>
             <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama AO</th>
-            <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
+            <th className="px-6 py-3 text-center border-l border-white">Nominal Pengajuan</th>
+            <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
+            <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
+            <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Pengaju</th>
           </tr>
         </thead>
-        <tbody>
-          {data.map((item, index) => (
-            <tr key={index} className="text-center">
-              <td className="px-6 py-4">{item.no}</td>
-              <td className="px-6 py-4">{item.namaNasabah}</td>
-              <td className="px-6 py-4">{item.alamat}</td>
-              <td className="px-6 py-4">{item.kelurahan}</td>
-              <td className="px-6 py-4">{item.kecamatan}</td>
-              <td className="px-6 py-4">{item.kota}</td>
-              <td className="px-6 py-4">{item.namaUsaha}</td>
-              <td className="px-6 py-4">{item.waktuPengajuan}</td>
-              <td className="px-6 py-4">{item.statusPengajuan}</td>
-              <td className="px-6 py-4">{item.namaAO}</td>
-              <td className="px-6 py-4">
-                <button className="bg-blue-200 hover:bg-blue-300 text-white px-4 py-2 rounded-md">
-                  Ajukan
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <tbody>
+            {paginatedData.map((item, index) => (
+              <tr key={index} className="border-t">
+                <td className="px-6 py-4">{index + 1}</td>
+                <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
+                <td className="px-6 py-4">{item.nasabah.alamat}</td>
+                <td className="px-6 py-4">{item.nasabah.desa.nama}</td>
+                <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.nama}</td>
+                <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
+                <td className="px-6 py-4">{item.nasabah.namaUsaha}</td>
+                <td className="px-6 py-4">
+                  {new Date(item.createdAt).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                  })}
+                </td>
+                <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
+                <td className="px-6 py-4">
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.nominal_pengajuan)}
+                </td>
+
+                {/* tanpa ada ,00 dibelakang */}
+                {/* <td className="px-6 py-4">
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.nominal_pengajuan)}
+                </td> */}
+                <td className="px-6 py-4">{item.tenor_pengajuan}</td>
+                <td className="px-6 py-4">
+                  {getNamaKaryawan(item.id_karyawan_pengajuan, karyawanData)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

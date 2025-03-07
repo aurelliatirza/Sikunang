@@ -28,7 +28,20 @@ model Karyawan {
   nasabah            Nasabah[]   @relation("KaryawanNasabah")  // Relasi ke Nasabah
   user               User?       @relation("KaryawanUser")
 
-  kredit Kredit[]
+  KreditPengajuan Kredit[] @relation(name: "KaryawanPengajuan")
+  kreditSlik Kredit[] @relation(name: "KaryawanSlik")
+
+  KreditAnalisis Kredit[] @relation(name: "KaryawanAnalisisSlik")
+
+  KreditVisit Kredit[] @relation(name: "KaryawanVisitNasabah")
+
+  KreditProposal Kredit[] @relation(name: "KaryawanProposalKredit")
+
+  KreditSetuju1 Kredit[] @relation(name: "KaryawanPersetujuanSatu")
+
+  KreditSetuju2 Kredit[] @relation(name: "KaryawanPersetujuanDua")
+
+  KreditSetuju3 Kredit[] @relation(name: "KaryawanPersetujuanTiga")
 }
 
 model Kantor {
@@ -103,39 +116,63 @@ model Kunjungan {
 }
 
 model Kredit {
-  id_kredit       Int      @id @default(autoincrement())
-  id_nasabah      Int
-  id_karyawan     Int
-  nominal_pengajuan  Int
-  tenor_pengajuan    Int
-  //Langkah 1
-  status_pengajuan   String @default("belum_diajukan")
-  updatedAtPengajuan       DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 2
-  status_Slik      String @default("belum_ditinjau")
-  updatedAtSlik    DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 3
-  status_analisisSlik String @default("belum_dianalisis")
-  updatedAtAnalisisSlik DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 4
-  status_visitNasabah String @default("belum_dilakukan")
-  updatedAtVisitNasabah DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 5
-  status_proposalKredit String @default("belum_dibuat")
-  updatedAtProposalKredit DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 6
-  status_persetujuansatu String @default("belum_disetujui")
-  updatedAtPersetujuansatu DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 7
-  status_persetujuandua String @default("belum_disetujui")
-  updatedAtPersetujuandua DateTime @updatedAt @db.Timestamptz(6)
-  //Langkah 8
-  status_persetujuantiga String @default("belum_disetujui")
-  updatedAtPersetujuantiga DateTime @updatedAt @db.Timestamptz(6)
-  
-  nominal_disetujui Int
-  tenor_disetujui   Int
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  nasabah         Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])  // Relasi ke Nasabah
-  karyawan        Karyawan @relation(fields: [id_karyawan], references: [nik])  // Relasi ke Karyawan
+  id_kredit           Int      @id @default(autoincrement())
+  id_nasabah          Int
+  nominal_pengajuan   Int
+  tenor_pengajuan     Int
+
+  // Langkah 1: Pengajuan Kredit
+  status_pengajuan        String   @default("sedang_diajukan")
+  id_karyawan_pengajuan   Int      
+  karyawan_pengajuan      Karyawan @relation(fields: [id_karyawan_pengajuan], references: [nik], name: "KaryawanPengajuan")
+
+  // Langkah 2: SLIK Check
+  status_Slik            String   @default("belum_ditinjau")
+  id_karyawan_slik       Int?     
+  karyawan_slik          Karyawan? @relation(fields: [id_karyawan_slik], references: [nik], name: "KaryawanSlik")
+  updatedAtSlik          DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 3: Analisis SLIK
+  status_analisisSlik         String   @default("belum_dianalisis")
+  id_karyawan_analisisSlik    Int?     
+  karyawan_analisisSlik       Karyawan? @relation(fields: [id_karyawan_analisisSlik], references: [nik], name: "KaryawanAnalisisSlik")
+  updatedAtAnalisisSlik       DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 4: Visit Nasabah
+  status_visitNasabah        String   @default("belum_dilakukan")
+  id_karyawan_visitNasabah   Int?     
+  karyawan_visitNasabah      Karyawan? @relation(fields: [id_karyawan_visitNasabah], references: [nik], name: "KaryawanVisitNasabah")
+  updatedAtVisitNasabah      DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 5: Proposal Kredit
+  status_proposalKredit        String   @default("belum_dibuat")
+  id_karyawan_proposalKredit   Int?     
+  karyawan_proposalKredit      Karyawan? @relation(fields: [id_karyawan_proposalKredit], references: [nik], name: "KaryawanProposalKredit")
+  updatedAtProposalKredit      DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 6: Persetujuan 1
+  status_persetujuansatu        String   @default("belum_disetujui")
+  id_karyawan_persetujuansatu   Int?     
+  karyawan_persetujuansatu      Karyawan? @relation(fields: [id_karyawan_persetujuansatu], references: [nik], name: "KaryawanPersetujuanSatu")
+  updatedAtPersetujuansatu      DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 7: Persetujuan 2
+  status_persetujuandua        String   @default("belum_disetujui")
+  id_karyawan_persetujuandua   Int?     
+  karyawan_persetujuandua      Karyawan? @relation(fields: [id_karyawan_persetujuandua], references: [nik], name: "KaryawanPersetujuanDua")
+  updatedAtPersetujuandua      DateTime @updatedAt @db.Timestamptz(6)
+
+  // Langkah 8: Persetujuan 3
+  status_persetujuantiga        String   @default("belum_disetujui")
+  id_karyawan_persetujuantiga   Int?     
+  karyawan_persetujuantiga      Karyawan? @relation(fields: [id_karyawan_persetujuantiga], references: [nik], name: "KaryawanPersetujuanTiga")
+  updatedAtPersetujuantiga      DateTime @updatedAt @db.Timestamptz(6)
+
+  nominal_disetujui   Int?
+  tenor_disetujui     Int?
+  createdAt           DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relasi ke Nasabah
+  nasabah             Nasabah  @relation(fields: [id_nasabah], references: [id_nasabah])
+
 }

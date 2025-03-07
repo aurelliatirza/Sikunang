@@ -1,22 +1,55 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NasabahTable from "../components/Table/nasabahTable";
-import Sidebar from "../components/Sidebar/SidebarPejabat";
+import SidebarPejabat from "../components/Sidebar/SidebarPejabat";
+import SidebarMarketing from "../components/Sidebar/SidebarMarketing";
 import Footer from "../components/Footers";
-import CetakButton from "../components/Buttons/cetakButton";
 import NasabahNavbar from "../components/Navbar/nasabahNavbar";
+
+interface UserProfile {
+    id: number;
+    namaKaryawan: string;
+    nik: number;
+    jabatan:"marketing" | "spv" | "kabag" | "direkturBisnis";
+}
 
 const NasabahPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const handleSidebarToggle = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/auth/profile", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) throw new Error("Gagal mengambil data user");
+
+        const data = await response.json();
+        console.log("Data user:", data);
+        setUserProfile(data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
         {/* Sidebar */}
-        <Sidebar isSidebarOpen={isSidebarOpen} />
+        {userProfile?.jabatan === "marketing" ? (
+        <SidebarMarketing isSidebarOpen={isSidebarOpen} />
+      ) : (
+        <SidebarPejabat isSidebarOpen={isSidebarOpen} />
+      )}
 
         {/* Main Content */}
         <main
