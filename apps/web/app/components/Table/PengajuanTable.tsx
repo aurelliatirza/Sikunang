@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import TablePagination from "@mui/material/TablePagination";
 import { FaSearch } from "react-icons/fa";
+import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
+import Snackbar from "@mui/material/Snackbar";
+import { useRouter } from "next/navigation";
+import { Alert } from "@mui/material";
+import EditPengajuanDialog from "../Dialog/editPengajuanDialog";
+
 
 interface Nasabah {
   namaNasabah: string;
@@ -38,6 +44,7 @@ interface KreditPengajuan {
   status_pengajuan: string;
   id_karyawan_pengajuan: number;
   createdAt: string;
+  status_persetujuansatu: string;
 }
 
 interface UserProfile {
@@ -49,9 +56,11 @@ interface UserProfile {
 
 const statusPengajuanOptions = [
   { label: "Sedang Diajukan", value: "sedang_diajukan"},
+  { label: "Dibatalkan", value: "dibatalkan"},
 ]
 
 const PengajuanTable: React.FC = () => {
+  const router = useRouter();
   const [kreditData, setKreditData] = useState<KreditPengajuan[]>([]);
   const [karyawanData, setKaryawanData] = useState<Karyawan[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -59,8 +68,18 @@ const PengajuanTable: React.FC = () => {
   const [bawahanList, setBawahanList] = useState<string[]>([]);
   const [selectedBawahan, setSelectedBawahan] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [jabatan, setJabatan] = useState<string | null>(null);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  //untuk Edit
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [selectedKreditPengajuan, setSelectedKreditPengajuan] = useState<KreditPengajuan | null>(null);
 
   const getStatusPengajuanLabel = (status_pengajuan: string) => {
     const option = statusPengajuanOptions.find((option) => option.value === status_pengajuan);
@@ -91,26 +110,27 @@ const PengajuanTable: React.FC = () => {
     return () => clearInterval(interval); // Bersihkan interval saat unmount
   }, []);
 
-  // Fetch data user profile
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!response.ok) throw new Error("Gagal mengambil data user");
-
-        const data = await response.json();
-        setUserProfile(data);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
+    // Fetch data user profile
+    useEffect(() => {
+      const fetchUserProfile = async () => {
+        try {
+          const response = await fetch("http://localhost:8000/auth/profile", {
+            method: "GET",
+            credentials: "include",
+          });
+  
+          if (!response.ok) throw new Error("Gagal mengambil data user");
+  
+          const data = await response.json();
+          setUserProfile(data);
+          setJabatan(data.jabatan);
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      };
+  
+      fetchUserProfile();
+    }, []);
 
   //Fetch data karyawan
   useEffect(() => {
@@ -171,6 +191,44 @@ const PengajuanTable: React.FC = () => {
 
     setFilteredData(filtered);
   }, [userProfile, kreditData, selectedBawahan]);
+
+  const handleCancel = async () => {
+    if (!selectedId) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8000/kredit/${selectedId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status_pengajuan: "dibatalkan" }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.message || "Gagal membatalkan pengajuan");
+      }
+  
+      setSnackbarMessage("Data Pengajuan berhasil dibatalkan.");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+      setTimeout(
+        () => router.push(userProfile?.jabatan === "marketing" ? "/kreditMarketing" : "/kreditPejabat"),
+        1000
+      );
+      // Update state untuk memperbarui tampilan
+      setKreditData((prevData) =>
+        prevData.map((item) =>
+          item.id_kredit === selectedId ? { ...item, status_pengajuan: "dibatalkan" } : item
+        )
+      );
+  
+      setIsCancelDialogOpen(false);
+    } catch (error) {
+      console.error("Error", error);
+      const errorMessage = error instanceof Error? error.message: "Terjadi kesalahan saat memproses data.";
+      setAlert({ type: "error", message: errorMessage});
+    }
+  };
+  
   
   // Search filter
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,6 +239,14 @@ const PengajuanTable: React.FC = () => {
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   };
+
+  // Fungsi untuk membuka dialog edit kunjungan
+  const handleEditClick = (kreditPengajuan: KreditPengajuan) => {
+    console.log("Edit data:", kreditPengajuan); // Cek apakah data lengkap
+    setSelectedKreditPengajuan(kreditPengajuan);
+    setOpenEditDialog(true);
+  };
+  
 
   // Filter berdasarkan search query
   const searchedData = filteredData.filter((item) =>
@@ -245,7 +311,14 @@ const PengajuanTable: React.FC = () => {
             <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
             <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
             <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
-            <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Pengaju</th>
+            {["marketing", "spv"].includes(userProfile?.jabatan ?? "") ? (
+              <>
+                <th className="px-6 py-3 text-center border-l border-white ">Nama Pengaju</th>
+                <th className="px-6 py-3  min-w-40 text-center border-l border-white rounded-tr-2xl">Aksi</th>
+              </>
+            ) : (
+              <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Pengaju</th>
+            )}
           </tr>
         </thead>
           <tbody>
@@ -269,22 +342,80 @@ const PengajuanTable: React.FC = () => {
                   })}
                 </td>
                 <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
-                <td className="px-6 py-4">
-                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.nominal_pengajuan)}
-                </td>
 
                 {/* tanpa ada ,00 dibelakang */}
-                {/* <td className="px-6 py-4">
+                <td className="px-6 py-4">
                   {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.nominal_pengajuan)}
-                </td> */}
+                </td>
                 <td className="px-6 py-4">{item.tenor_pengajuan}</td>
                 <td className="px-6 py-4">
                   {getNamaKaryawan(item.id_karyawan_pengajuan, karyawanData)}
                 </td>
+                {["marketing", "spv"].includes(jabatan ?? "") && (
+                  <td className="px-6 py-4 min-w-56">
+                    <div className="flex justify-center gap-4">
+                    <button
+                        key={item.id_kredit}
+                        className={`px-4 py-2 w-24 rounded-md text-white ${
+                          item.status_persetujuansatu !== "belum_disetujui"
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-yellow-500 hover:bg-yellow-600"
+                        }`}
+                        onClick={() => handleEditClick(item)}
+                        disabled={item.status_persetujuansatu !== "belum_disetujui"}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 w-24 rounded-md"
+                        onClick={() => {
+                          setSelectedId(item.id_kredit);
+                          setIsCancelDialogOpen(true);
+                        }}
+                      >
+                        Batalkan
+                      </button>
+                    </div>
+                  </td>
+                )}
+
               </tr>
             ))}
           </tbody>
         </table>
+          <ConfirmationDialog
+            open={isCancelDialogOpen}
+            onClose={() => setIsCancelDialogOpen(false)}
+            onConfirm={handleCancel}
+            title="Batalkan Proses Pengajuan"
+            message="Apakah Anda yakin ingin membatalkan pengajuan ini?"
+            confirmText="Ya, Batalkan"
+            cancelText="Batal"
+          />
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            onClose={() => setOpenSnackbar(false)}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%", color: "green"}}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+          <EditPengajuanDialog
+            open={openEditDialog}
+            onClose={() => setOpenEditDialog(false)}
+            kreditPengajuan={selectedKreditPengajuan}
+            onSave={async (updatedData) => {
+              setKreditData((prev) =>
+                prev.map((item) =>
+                  item.id_kredit === updatedData.id_kredit
+                    ? { ...item, ...updatedData } // Hanya update yang berubah
+                    : item
+                )
+              );
+            }}            
+          />
       </div>
     </div>
   );

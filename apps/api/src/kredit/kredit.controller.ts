@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { KreditService } from './kredit.service';
 import { CreateKreditDto } from './dto/create-kredit.dto';
 import { UpdateKreditDto } from './dto/update-kredit.dto';
@@ -20,14 +20,37 @@ export class KreditController {
     return this.kreditService.getAllKredit();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.kreditService.findOne(+id);
+  @Get(':id_kredit')
+  findOne(@Param('id_kredit') id_kredit: string) {
+    console.log("ID dari parameter:", id_kredit); // Debugging parameter dari request
+  
+    const numericId = parseInt(id_kredit, 10);
+  
+    if (isNaN(numericId)) {
+      throw new BadRequestException("ID harus berupa angka.");
+    }
+  
+    console.log("ID setelah dikonversi:", numericId); // Debugging setelah parsing
+  
+    return this.kreditService.findOne(numericId);
   }
+  
+  
+  @Get('filter/slikTable')
+  async fetchSlikKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getSlikKredit();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }
+  
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateKreditDto: UpdateKreditDto) {
-    return this.kreditService.update(+id, updateKreditDto);
+    return this.kreditService.update(Number(id), updateKreditDto);
   }
   
   @Patch(':id/slik-check')

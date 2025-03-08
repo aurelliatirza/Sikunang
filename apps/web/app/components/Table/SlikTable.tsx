@@ -1,6 +1,9 @@
 import React, {useState, useEffect, useMemo} from "react";
 import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
+
 
 interface Nasabah {
   namaNasabah: string;
@@ -59,6 +62,9 @@ const statusSlikOptions = [
 const statusPengajuanOptions = [
   { label: "Sedang Diajukan", value: "sedang_diajukan"},
 ]
+const Alert = (props: AlertProps) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
 
 const SlikTable: React.FC = () => {
     const [kreditData, setKreditData] = useState<KreditPengajuan[]>([]);
@@ -75,6 +81,10 @@ const SlikTable: React.FC = () => {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [openKonfirmasiCetakDialog, setOpenKonfirmasiCetakDialog] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
 
   
     const getStatusSlikLabel = (status_Slik: string) => {
@@ -101,7 +111,7 @@ const SlikTable: React.FC = () => {
       const fetchData = async () => {
         try {
           const [kreditRes, karyawanRes] = await Promise.all([
-            fetch("http://localhost:8000/kredit"),
+            fetch("http://localhost:8000/kredit/filter/slikTable"),
             fetch("http://localhost:8000/karyawan"),
           ]);
     
@@ -169,42 +179,55 @@ const SlikTable: React.FC = () => {
     
         setKreditData(updatedData);
         setOpenDialog(false);
+        setSnackbarMessage("Status Slik berhasil diperbarui");
+        setSnackbarSeverity("success");
+        setOpenSnackbar(true);
       } catch (error) {
         console.error("Gagal memperbarui status SLIK:", error);
+        setSnackbarMessage("Gagal mengupdate status Slik");
+        setSnackbarSeverity("error");
+        setOpenSnackbar(true);
       }
     };   
 
-const handleCancel = async () => {
-  if (!selectedId) return;
+  const handleCancel = async () => {
+    if (!selectedId) return;
 
-  try {
-    const response = await fetch(`http://localhost:8000/kredit/${selectedId}/slik-check`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status_Slik: "belum_ditinjau" }),
-    });
+    try {
+      const response = await fetch(`http://localhost:8000/kredit/${selectedId}/slik-check`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status_Slik: "belum_ditinjau" }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData?.message || "Gagal membatalkan status SLIK");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.message || "Gagal membatalkan status SLIK");
+      }
+
+      setSnackbarMessage("Berhasil membatalkan status slik");
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+
+      // Update state untuk memperbarui tampilan
+      setKreditData((prevData) =>
+        prevData.map((item) =>
+          item.id_kredit === selectedId ? { ...item, status_Slik: "belum_ditinjau" } : item
+        )
+      );
+
+      setIsCancelDialogOpen(false);
+    } catch (error) {
+      console.error("Gagal membatalkan status SLIK:", error);
+      setSnackbarMessage("Gagal membatalkan slik");
+      setSnackbarSeverity("error");
+      setOpenSnackbar(true);
     }
+  };
 
-    alert("Status SLIK berhasil dibatalkan!");
-
-    // Update state untuk memperbarui tampilan
-    setKreditData((prevData) =>
-      prevData.map((item) =>
-        item.id_kredit === selectedId ? { ...item, status_Slik: "belum_ditinjau" } : item
-      )
-    );
-
-    setIsCancelDialogOpen(false);
-  } catch (error) {
-    console.error("Gagal membatalkan status SLIK:", error);
-    alert("Terjadi kesalahan, coba lagi.");
-  }
-};
-
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
     
     // Search filter
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -379,6 +402,16 @@ const handleCancel = async () => {
           confirmText="Ya, Batalkan"
           cancelText="Batal"
         />
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
     </div>
   );
 };

@@ -43,14 +43,60 @@ export class KreditService {
     });
   }
 
-  findOne(id: number) {
-    return this.prisma.kredit.findUnique({
-      where: {id_kredit: id}
+  // Service Layer (kredit.service.ts)
+  async getSlikKredit(): Promise<Kredit[]> {
+    return this.prisma.kredit.findMany({
+      where: {
+        status_pengajuan: { not: "dibatalkan" }, // Filter data yang tidak dibatalkan
+      },
+      include: {
+        nasabah: {
+          include: {
+            karyawan: true,
+            desa: {
+              include: {
+                Kecamatan: {
+                  include: {
+                    KabupatenKota: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
-  update(id: number, updateKreditDto: UpdateKreditDto) {
-    return `This action updates a #${id} kredit`;
+  async findOne(id_kredit: number) {
+    console.log("Fetching kredit dengan id_kredit:", id_kredit); // Debugging
+  
+    const kredit = await this.prisma.kredit.findUnique({
+      where: { id_kredit: id_kredit }, // Pastikan sesuai dengan skema Prisma
+    });
+  
+    console.log("Hasil pencarian:", kredit); // Debugging hasil query
+  
+    return kredit;
+  }  
+  
+
+  async update(id: number, updateKreditDto: UpdateKreditDto) {
+    const kredit = await this.prisma.kredit.findUnique({
+      where: { id_kredit: id },
+    });
+  
+    if (!kredit) {
+      throw new NotFoundException("Kredit tidak ditemukan");
+    }
+    return this.prisma.kredit.update({
+      where: { id_kredit: id },
+      data: {
+        status_pengajuan: updateKreditDto.status_pengajuan,
+        tenor_pengajuan: updateKreditDto.tenor_pengajuan,
+        nominal_pengajuan: updateKreditDto.nominal_pengajuan
+      },
+    });
   }
 
   async updateSlikCheck(id: number, updateSlikCheckDto: UpdateSlikCheckDto) {
