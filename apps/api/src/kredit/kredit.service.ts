@@ -4,6 +4,7 @@ import { UpdateKreditDto } from './dto/update-kredit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Kredit } from '@prisma/client';
 import { UpdateSlikCheckDto } from './dto/updateSlik.dto';
+import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 
 @Injectable()
 export class KreditService {
@@ -43,7 +44,7 @@ export class KreditService {
     });
   }
 
-  // Service Layer (kredit.service.ts)
+  // seleksi tabel Slik
   async getSlikKredit(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({
       where: {
@@ -67,6 +68,32 @@ export class KreditService {
       },
     });
   }
+
+  //Seleksi tabel analisis
+  async getAnalisisSlikKredit(): Promise<Kredit[]> {
+    return this.prisma.kredit.findMany({
+      where: {
+        status_Slik: { not: "belum_ditinjau" }, // Filter data yang tidak dibatalkan
+      },
+      include: {
+        nasabah: {
+          include: {
+            karyawan: true,
+            desa: {
+              include: {
+                Kecamatan: {
+                  include: {
+                    KabupatenKota: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+  
 
   async findOne(id_kredit: number) {
     console.log("Fetching kredit dengan id_kredit:", id_kredit); // Debugging
@@ -114,6 +141,25 @@ export class KreditService {
         status_Slik: updateSlikCheckDto.status_Slik,
         id_karyawan_slik: updateSlikCheckDto.id_karyawan_slik ?? kredit.id_karyawan_slik,
         updatedAtSlik: new Date(),
+      },
+    });
+  }
+
+  async updateAnalisisSlik(id: number, updateAnalisisSlik: UpdateAnalisisSlik) {
+    const kredit = await this.prisma.kredit.findUnique({
+      where: { id_kredit: id },
+    });
+  
+    if (!kredit) {
+      throw new NotFoundException("Kredit tidak ditemukan");
+    }
+  
+    return this.prisma.kredit.update({
+      where: { id_kredit: id },
+      data: {
+        status_analisisSlik: updateAnalisisSlik.status_analisisSlik,
+        id_karyawan_analisisSlik: updateAnalisisSlik.id_karyawan_analisisSlik ?? kredit.id_karyawan_analisisSlik,
+        updatedAtAnalisisSlik: new Date(),
       },
     });
   }

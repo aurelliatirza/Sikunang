@@ -197,7 +197,7 @@ const SlikTable: React.FC = () => {
       const response = await fetch(`http://localhost:8000/kredit/${selectedId}/slik-check`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status_Slik: "belum_ditinjau" }),
+        body: JSON.stringify({ status_Slik: "belum_ditinjau", id_karyawan_slik: null }),
       });
 
       if (!response.ok) {
@@ -299,13 +299,16 @@ const SlikTable: React.FC = () => {
             <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
             <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
             <th className="px-6 py-3 text-center border-l border-white">Nama Pengaju</th>
-
             {/* Langkah Kedua */}
             <th className="px-6 py-3 text-center border-l border-white">Waktu Slik</th>
             <th className="px-6 py-3 text-center border-l border-white">Status Slik</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama Admin Slik</th>
-            { (jabatan === "adminSlik") && (
-              <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
+            {jabatan === "adminSlik" ? (
+              <>
+                <th className="px-6 py-3 text-center border-l border-white">Nama Admin Slik</th>
+                <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
+              </>
+            ) : (
+              <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Admin Slik</th>
             )}
           </tr>
         </thead>
