@@ -145,7 +145,7 @@ model Kredit {
   updatedAtVisitNasabah      DateTime  @db.Timestamptz(6)
 
   // Langkah 5: Proposal Kredit
-  status_proposalKredit        String   @default("belum_dibuat")
+  status_proposalKredit        String   @default("belum_diajukan")
   id_karyawan_proposalKredit   Int?     
   karyawan_proposalKredit      Karyawan? @relation(fields: [id_karyawan_proposalKredit], references: [nik], name: "KaryawanProposalKredit")
   updatedAtProposalKredit      DateTime  @db.Timestamptz(6)
