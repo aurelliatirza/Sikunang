@@ -5,6 +5,8 @@ import { UpdateKreditDto } from './dto/update-kredit.dto';
 import { UpdateSlikCheckDto } from './dto/updateSlik.dto';
 import { Kredit } from '@prisma/client';
 import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
+import { UpdateVisitDto } from './dto/updateVisit.dto';
+import { UpdateProposalDto } from './dto/updateProposal.dto';
 
 @Controller('kredit')
 export class KreditController {
@@ -57,6 +59,26 @@ export class KreditController {
     }
   }
 
+  @Get('filter/visitTable')
+  async fetchVisitKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getVisit();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }  
+
+  @Get('filter/proposalTable')
+  async fetchProposalKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getProposal();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateKreditDto: UpdateKreditDto) {
@@ -81,6 +103,26 @@ export class KreditController {
     console.log("recieved ID:", id);
     console.log("recieved Data:", updateAnalisisSlik)
     return this.kreditService.updateAnalisisSlik(Number(id), updateAnalisisSlik);
+  }
+
+  @Patch(':id/visit')
+  async updateVisit(
+    @Param('id') id: string,
+    @Body() updateVisit: UpdateVisitDto
+  ) {
+    console.log("recieved ID:", id);
+    console.log("recieved Data:", updateVisit)
+    return this.kreditService.updateVisit(Number(id), updateVisit);
+  } 
+  
+  @Patch(':id/proposal')
+  async updateProposal(
+    @Param('id') id: string,
+    @Body() updateProposal: UpdateProposalDto
+  ) {
+    console.log("recieved ID:", id);
+    console.log("recieved Data:", updateProposal)
+    return this.kreditService.updateProposal(Number(id), updateProposal);
   }
 
 

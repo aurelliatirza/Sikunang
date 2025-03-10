@@ -130,43 +130,43 @@ model Kredit {
   status_Slik            String   @default("belum_ditinjau")
   id_karyawan_slik       Int?     
   karyawan_slik          Karyawan? @relation(fields: [id_karyawan_slik], references: [nik], name: "KaryawanSlik")
-  updatedAtSlik          DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtSlik          DateTime @db.Timestamptz(6)
 
   // Langkah 3: Analisis SLIK
   status_analisisSlik         String   @default("belum_dianalisis")
   id_karyawan_analisisSlik    Int?     
   karyawan_analisisSlik       Karyawan? @relation(fields: [id_karyawan_analisisSlik], references: [nik], name: "KaryawanAnalisisSlik")
-  updatedAtAnalisisSlik       DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtAnalisisSlik       DateTime  @db.Timestamptz(6)
 
   // Langkah 4: Visit Nasabah
   status_visitNasabah        String   @default("belum_dilakukan")
   id_karyawan_visitNasabah   Int?     
   karyawan_visitNasabah      Karyawan? @relation(fields: [id_karyawan_visitNasabah], references: [nik], name: "KaryawanVisitNasabah")
-  updatedAtVisitNasabah      DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtVisitNasabah      DateTime  @db.Timestamptz(6)
 
   // Langkah 5: Proposal Kredit
   status_proposalKredit        String   @default("belum_dibuat")
   id_karyawan_proposalKredit   Int?     
   karyawan_proposalKredit      Karyawan? @relation(fields: [id_karyawan_proposalKredit], references: [nik], name: "KaryawanProposalKredit")
-  updatedAtProposalKredit      DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtProposalKredit      DateTime  @db.Timestamptz(6)
 
   // Langkah 6: Persetujuan 1
   status_persetujuansatu        String   @default("belum_disetujui")
   id_karyawan_persetujuansatu   Int?     
   karyawan_persetujuansatu      Karyawan? @relation(fields: [id_karyawan_persetujuansatu], references: [nik], name: "KaryawanPersetujuanSatu")
-  updatedAtPersetujuansatu      DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtPersetujuansatu      DateTime  @db.Timestamptz(6)
 
   // Langkah 7: Persetujuan 2
   status_persetujuandua        String   @default("belum_disetujui")
   id_karyawan_persetujuandua   Int?     
   karyawan_persetujuandua      Karyawan? @relation(fields: [id_karyawan_persetujuandua], references: [nik], name: "KaryawanPersetujuanDua")
-  updatedAtPersetujuandua      DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtPersetujuandua      DateTime  @db.Timestamptz(6)
 
   // Langkah 8: Persetujuan 3
   status_persetujuantiga        String   @default("belum_disetujui")
   id_karyawan_persetujuantiga   Int?     
   karyawan_persetujuantiga      Karyawan? @relation(fields: [id_karyawan_persetujuantiga], references: [nik], name: "KaryawanPersetujuanTiga")
-  updatedAtPersetujuantiga      DateTime @updatedAt @db.Timestamptz(6)
+  updatedAtPersetujuantiga      DateTime  @db.Timestamptz(6)
 
   nominal_disetujui   Int?
   tenor_disetujui     Int?

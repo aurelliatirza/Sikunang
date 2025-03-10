@@ -47,6 +47,7 @@ interface KreditPengajuan {
   id_karyawan_slik: number;    
   updatedAtSlik: string;
   createdAt: string;
+  status_analisisSlik: string;
 }
 
 interface UserProfile {
@@ -358,11 +359,12 @@ const SlikTable: React.FC = () => {
                 <td className="px-6 py-4">
                   {item.status_Slik === "lanjut" ? (
                     <button
-                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                       onClick={() => {
                         setSelectedId(item.id_kredit);
                         setIsCancelDialogOpen(true);
                       }}
+                      disabled={item.status_analisisSlik !== "belum_dianalisis"}
                     >
                       Batalkan
                     </button>

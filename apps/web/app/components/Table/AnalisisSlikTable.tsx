@@ -51,6 +51,7 @@ interface AnalisisKredit {
   status_analisisSlik: string;
   id_karyawan_analisisSlik: number;
   updatedAtAnalisisSlik: string;
+  status_visitNasabah: string;
 }
 
 interface UserProfile {
@@ -132,7 +133,7 @@ const AnalisisSlikTable: React.FC = () => {
     return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
   };
 
-  // Fetch data kredit pengajuan
+  // Fetch data kredit analisisSlik
   useEffect(() => {
     const fetchKreditPengajuan = async () => {
       try {
@@ -257,7 +258,11 @@ const AnalisisSlikTable: React.FC = () => {
       setIsDialogOpen(false);
     }
   };
-  
+
+  // Debugging perubahan kreditData
+  useEffect(() => {
+    console.log("Kredit data updated:", kreditData);
+  }, [kreditData]);
 
   const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
     setSelectedId(id_kredit);
@@ -269,8 +274,8 @@ const AnalisisSlikTable: React.FC = () => {
     if (!selectedId || !dialogAction) return;
     
     const statusMap = {
-      setuju: "disetujui",
-      tolak: "ditolak",
+      setuju: "setuju",
+      tolak: "tolak",
       batalkan: "belum_dianalisis"
     };
   
@@ -429,7 +434,14 @@ const AnalisisSlikTable: React.FC = () => {
                       <button className= "bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "tolak")}>Tolak</button>
                     </>
                   ) : (
-                    <button className= "bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "batalkan")}>Batalkan</button>
+                    <button 
+                    className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" 
+                    onClick={() => handleAction(item.id_kredit, "batalkan")}
+                    disabled={String(item.status_visitNasabah).trim() !== "belum_dilakukan"}
+                  >
+                    Batalkan
+                  </button>
+
                   )}
                   </div>
               </td>
