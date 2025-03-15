@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, InternalServerErrorException, BadRequestException, ParseIntPipe, Query, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { KreditService } from './kredit.service';
 import { CreateKreditDto } from './dto/create-kredit.dto';
 import { UpdateKreditDto } from './dto/update-kredit.dto';
@@ -7,7 +8,7 @@ import { Kredit } from '@prisma/client';
 import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 import { UpdateVisitDto } from './dto/updateVisit.dto';
 import { UpdateProposalDto } from './dto/updateProposal.dto';
-import { UpdatedPersetujuansatu } from './dto/updatePersetujuanSatu.dto';
+import { UpdatePersetujuan } from './dto/updatePersetujuan.dto';
 
 @Controller('kredit')
 export class KreditController {
@@ -145,16 +146,17 @@ export class KreditController {
     return this.kreditService.updateProposal(Number(id), updateProposal);
   }
 
-  @Patch(':id/persetujuanSatu')
-  async updatePersetujuanSatu (
-    @Param('id') id: string,
-    @Body() updatePersetujuanSatu: UpdatedPersetujuansatu 
+  @Patch(':id/persetujuan')
+  async updatePersetujuan(
+      @Param('id', ParseIntPipe) id: number,
+      @Query('step') step: string,
+      @Body() updatePersetujuanDto: UpdatePersetujuan
   ) {
-    console.log("recieved ID:", id);
-    console.log("recieved Data:", updatePersetujuanSatu)
-    return this.kreditService.updatePersetujuansatu(Number(id), updatePersetujuanSatu);
+      step = step.trim();  // Hapus spasi & newline
+      console.log("📌 Step setelah trim:", step);
+  
+      return this.kreditService.updatePersetujuan(id, step as any, updatePersetujuanDto);
   }
-
 
   @Delete(':id')
   remove(@Param('id') id: string) {

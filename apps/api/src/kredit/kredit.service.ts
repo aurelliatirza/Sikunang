@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateKreditDto } from './dto/create-kredit.dto';
 import { UpdateKreditDto } from './dto/update-kredit.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,6 +7,7 @@ import { UpdateSlikCheckDto } from './dto/updateSlik.dto';
 import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 import { UpdateVisitDto } from './dto/updateVisit.dto';
 import { UpdateProposalDto } from './dto/updateProposal.dto';
+import { UpdatePersetujuan } from './dto/updatePersetujuan.dto';
 import { UpdatedPersetujuansatu } from './dto/updatePersetujuanSatu.dto';
 import { UpdatedPersetujuandua } from './dto/updatePersetujuanDua.dto';
 import { UpdatedPersetujuantiga } from './dto/updatePersetujuanTiga.dto';
@@ -349,43 +350,77 @@ export class KreditService {
     }
   }
   
-  //Update Persetujuan Satu
-  async updatePersetujuansatu(id: number, updatePersetujuansatu: UpdatedPersetujuansatu) {
-    try {
-        const kredit = await this.prisma.kredit.findUnique({
-            where: { id_kredit: id },
-        });
+    async updatePersetujuan(
+      id: number,
+      step: "satu" | "dua" | "tiga",
+      updateData: UpdatePersetujuan
+  ) {
+      try {
+          const kredit = await this.prisma.kredit.findUnique({
+              where: { id_kredit: id },
+          });
 
-        if (!kredit) {
-            throw new NotFoundException("Kredit tidak ditemukan");
-        }
+          if (!kredit) {
+              throw new NotFoundException("Kredit tidak ditemukan");
+          }
 
-        const data: any = {
-            status_persetujuansatu: updatePersetujuansatu.status_persetujuansatu || "belum_disetujui", // <-- Pastikan defaultnya "belum_disetujui"
-            id_karyawan_persetujuansatu: updatePersetujuansatu.id_karyawan_persetujuansatu ?? kredit.id_karyawan_persetujuansatu,
-            updatedAtPersetujuansatu: new Date(),
-        };
+          const now = new Date();
+          const data: any = {};
 
-        if (updatePersetujuansatu.status_persetujuansatu === "belum_disetujui") {
+          switch (step) {
+              case "satu":
+                  data.status_persetujuansatu = updateData.status_persetujuansatu || "belum_disetujui";
+                  data.id_karyawan_persetujuansatu = updateData.id_karyawan_persetujuansatu ?? kredit.id_karyawan_persetujuansatu;
+                  data.updatedAtPersetujuansatu = now;
+                  break;
+              case "dua":
+                  data.status_persetujuandua = updateData.status_persetujuandua || "belum_disetujui";
+                  data.id_karyawan_persetujuandua = updateData.id_karyawan_persetujuandua ?? kredit.id_karyawan_persetujuandua;
+                  data.updatedAtPersetujuandua = now;
+                  break;
+              case "tiga":
+                  data.status_persetujuantiga = updateData.status_persetujuantiga || "belum_disetujui";
+                  data.id_karyawan_persetujuantiga = updateData.id_karyawan_persetujuantiga ?? kredit.id_karyawan_persetujuantiga;
+                  data.updatedAtPersetujuantiga = now;
+                  break;
+              default:
+                console.error("🚨 Step tidak valid:", step);
+                throw new BadRequestException("Jenis persetujuan tidak valid");
+          }
+
+          const statusField = `status_persetujuan${step}` as keyof UpdatePersetujuan;
+
+          //Kalau setuju ada nominal tapi sesuai action di FE
+          // Jika status diubah menjadi "belum_disetujui", reset tenor dan nominal ke 0
+          if (updateData[statusField] === "belum_disetujui") {
             data.tenor_disetujui = 0;
             data.nominal_disetujui = 0;
-        }
+          } 
+          // Jika status diubah menjadi "setuju", gunakan nilai dari request atau pertahankan nilai lama
+          else if (updateData[statusField] === "setuju") {
+            data.tenor_disetujui = updateData.tenor_disetujui ?? kredit.tenor_disetujui;
+            data.nominal_disetujui = updateData.nominal_disetujui ?? kredit.nominal_disetujui;
+          } 
+          else {
+              data.tenor_disetujui = kredit.tenor_disetujui ?? 0;
+              data.nominal_disetujui = kredit.nominal_disetujui ?? 0;
+          }
 
-        console.log("📌 Data yang akan diupdate:", data);
+          console.log("📌 Data yang akan diupdate:", data);
 
-        const updatedKredit = await this.prisma.kredit.update({
-            where: { id_kredit: id },
-            data,
-        });
+          const updatedKredit = await this.prisma.kredit.update({
+              where: { id_kredit: id },
+              data,
+          });
 
-        console.log("✅ Data setelah update:", updatedKredit);
+          console.log("✅ Data setelah update:", updatedKredit);
 
-        return updatedKredit;
-    } catch (error) {
-        console.error("Error Prisma:", error);
-        throw new InternalServerErrorException("Terjadi kesalahan saat memperbarui persetujuan");
-    }
-}
+          return updatedKredit;
+      } catch (error) {
+          console.error("Error Prisma:", error);
+          throw new InternalServerErrorException("Terjadi kesalahan saat memperbarui persetujuan");
+      }
+  }
 
   remove(id: number) {
     return `This action removes a #${id} kredit`;

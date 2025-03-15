@@ -3,7 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import PersetujuanKreditDialog from "../Dialog/persetujuanKreditDialog";
+import PersetujuanKreditDialog from "../Dialog/persetujuanKreditSatuDialog";
 
 interface Nasabah {
   id_nasabah: number;
@@ -326,7 +326,7 @@ const PersetujuanSatuTable: React.FC = () => {
         console.log("📤 Mengirim Payload:", JSON.stringify(cleanPayload, null, 2));
     
         try {
-            const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuanSatu`, {
+            const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuan?step=satu`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(cleanPayload),
@@ -334,6 +334,9 @@ const PersetujuanSatuTable: React.FC = () => {
     
             const responseData = await response.json();
             console.log("🔄 Respon API:", responseData);
+            console.log("🔍 Memanggil API dengan ID:", selectedId);
+            console.log("🔍 URL yang dipanggil:", `http://localhost:8000/kredit/${selectedId}/persetujuan?step=satu`);
+
     
             if (!response.ok) {
                 console.error("❌ API Error:", response.status, responseData);
@@ -654,8 +657,7 @@ const PersetujuanSatuTable: React.FC = () => {
         <PersetujuanKreditDialog
         open={isPersetujuanDialogOpen}
         onClose={handlePersetujuanDialogClose}
-        onsave={handlePersetujuanDialogSave}
-        nasabah={selectedKredit.nasabah}
+        onSave={handlePersetujuanDialogSave}
         kredit={{
             id_kredit: selectedKredit.id_kredit,
             nasabah: selectedKredit.nasabah,
@@ -663,6 +665,7 @@ const PersetujuanSatuTable: React.FC = () => {
             tenor_disetujui: selectedKredit.tenor_pengajuan,
         }}
         nominal_pengajuan={selectedKredit.nominal_pengajuan} // Kirim nominal_pengajuan
+        jenisPersetujuan="satu"
         />
     )}
     <Snackbar

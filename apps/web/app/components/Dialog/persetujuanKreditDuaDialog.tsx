@@ -126,7 +126,7 @@ const PersetujuanKreditDialog: React.FC<PersetujuanKreditDialogProps> = ({
     };
 
     try {
-      const response = await fetch(`http://localhost:8000/kredit/${kreditId}/persetujuanSatu`, {
+      const response = await fetch(`http://localhost:8000/kredit/${kreditId}/persetujuanDua`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
