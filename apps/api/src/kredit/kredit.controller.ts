@@ -7,6 +7,7 @@ import { Kredit } from '@prisma/client';
 import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 import { UpdateVisitDto } from './dto/updateVisit.dto';
 import { UpdateProposalDto } from './dto/updateProposal.dto';
+import { UpdatedPersetujuansatu } from './dto/updatePersetujuanSatu.dto';
 
 @Controller('kredit')
 export class KreditController {
@@ -79,6 +80,25 @@ export class KreditController {
     }
   }
 
+  @Get('filter/Persetujuan1Table')
+  async fetchPersetujuanSatuKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getPersetujuanSatu();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }
+
+  @Get('filter/Persetujuan2Table')
+  async fetchPersetujuanDuaKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getPersetujuanDua();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateKreditDto: UpdateKreditDto) {
@@ -123,6 +143,16 @@ export class KreditController {
     console.log("recieved ID:", id);
     console.log("recieved Data:", updateProposal)
     return this.kreditService.updateProposal(Number(id), updateProposal);
+  }
+
+  @Patch(':id/persetujuanSatu')
+  async updatePersetujuanSatu (
+    @Param('id') id: string,
+    @Body() updatePersetujuanSatu: UpdatedPersetujuansatu 
+  ) {
+    console.log("recieved ID:", id);
+    console.log("recieved Data:", updatePersetujuanSatu)
+    return this.kreditService.updatePersetujuansatu(Number(id), updatePersetujuanSatu);
   }
 
 

@@ -1,14 +1,13 @@
 import React from "react";
-import Button from "../Buttons/kreditButton";
 import KreditNavbar from "../Navbar/kreditNavbar";
 
 interface KreditHeaderProps {
     onSidebarToggle: () => void;
     setActiveTable: (tableName: string) => void;
-    activeTable: string; // Tambahkan props ini
+    activeTable: string;
 }
 
-const KreditHeader = ({ onSidebarToggle, setActiveTable, activeTable}: KreditHeaderProps) => {
+const KreditHeader = ({ onSidebarToggle, setActiveTable, activeTable }: KreditHeaderProps) => {
     const menuItems = [
         { name: "Pengajuan", table: "pengajuan" },
         { name: "SLIK", table: "slik" },
@@ -20,9 +19,7 @@ const KreditHeader = ({ onSidebarToggle, setActiveTable, activeTable}: KreditHea
 
     return (
         <>
-            {/* Oper properti onSidebarToggle ke Navbar */}
             <KreditNavbar onSidebarToggle={onSidebarToggle} />
-            {/* Button Group */}
             <div className="bg-blue-400 grid grid-cols-3 gap-4 p-4">
                 {menuItems.map((item) => (
                     <button
@@ -35,7 +32,6 @@ const KreditHeader = ({ onSidebarToggle, setActiveTable, activeTable}: KreditHea
                     </button>
                 ))}
             </div>
-
         </>
     );
 };

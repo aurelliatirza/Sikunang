@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
@@ -247,34 +247,39 @@ const VisitTable: React.FC = () => {
 
   //TODO: pastikan yang berhak update itu sesuai limit
   const berhakACCVisit = (id_karyawan_pengajuan: number, visitData: VisitKredit[]) => {
-    // Cari data VisitKredit berdasarkan id_karyawan_pengajuan
-    const visit = visitData.find((v) => v.id_karyawan_pengajuan === id_karyawan_pengajuan);
-    if (!visit) return false; // Jika tidak ada pengajuan kredit dari karyawan ini, return false
-  
-    const karyawanPengajuan = karyawanData.find((k) => k.nik === id_karyawan_pengajuan);
-    if (!karyawanPengajuan) return false; // Jika karyawan tidak ditemukan, return false
-  
-    const { kantor } = karyawanPengajuan;
-    const { nominal_pengajuan } = visit; // Ambil nominal dari visit data
-  
-    if (kantor.jenis_kantor === "Pusat") {
-      if (nominal_pengajuan <= 25000000) {
-        return visit.nasabah.karyawan.nik_SPV === userProfile?.nik;
-      } else if (nominal_pengajuan <= 50000000) {
-        return visit.nasabah.karyawan.nik_kabag === userProfile?.nik;
-      } else {
-        return visit.nasabah.karyawan.nik_direkturBisnis === userProfile?.nik;
-      }
-    } else {
-      if (nominal_pengajuan <= 25000000) {
-        return visit.nasabah.karyawan.nik_SPV === userProfile?.nik;
-      } else if (nominal_pengajuan <= 75000000) {
-        return visit.nasabah.karyawan.nik_kabag === userProfile?.nik;
-      } else {
-        return visit.nasabah.karyawan.nik_direkturBisnis === userProfile?.nik;
-      }
-    }
+    console.log("Memeriksa Hak ACC untuk Karyawan ID:", id_karyawan_pengajuan);
+
+    const visitList = visitData.filter(v => v.id_karyawan_pengajuan === id_karyawan_pengajuan);
+    if (visitList.length === 0) return [];
+
+    const karyawanPengajuan = karyawanData.find(k => k.nik === id_karyawan_pengajuan);
+    if (!karyawanPengajuan) return [];
+
+    const limitACC = karyawanPengajuan.kantor?.jenis_kantor === "Pusat"
+        ? { SPV: 25000000, Kabag: 50000000 }
+        : { SPV: 25000000, Kabag: 75000000 };
+
+    return visitList.map(visit => {
+        const { nominal_pengajuan, nasabah } = visit;
+        const { nik_SPV, nik_kabag, nik_direkturBisnis } = nasabah.karyawan;
+
+        const hakACC =
+            nominal_pengajuan <= limitACC.SPV ? { level: "SPV", nik: nik_SPV } :
+            nominal_pengajuan <= limitACC.Kabag ? { level: "Kabag", nik: nik_kabag } :
+            { level: "Direktur", nik: nik_direkturBisnis };
+
+        console.log(`✅ Kredit ID ${visit.id_kredit} → ${hakACC.level} - ${hakACC.nik}`);
+        return hakACC;
+    });
   };
+
+  const hakACCList = useMemo(() => {
+    return kreditData.map(item => ({
+      id_kredit: item.id_kredit,
+      hakACC: berhakACCVisit(item.id_karyawan_pengajuan, kreditData),
+    }));
+  }, [kreditData]);
+
 
   const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
     setSelectedId(id_kredit);
@@ -439,7 +444,11 @@ const VisitTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((item, index) => (
+        {paginatedData.map((item, index) => {
+          const currentHakACC = hakACCList.find(hak => hak.id_kredit === item.id_kredit)?.hakACC || [];
+          const isBerhakACC = currentHakACC.some(acc => acc.nik === userProfile?.nik && acc.level.toLowerCase() === userProfile?.jabatan.toLowerCase());
+
+          return (
             <tr key={item.id_kredit} className="text-center">
               <td className="px-6 py-4">{index + 1}</td>
               <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
@@ -510,34 +519,34 @@ const VisitTable: React.FC = () => {
                       <button 
                         className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                         onClick={() => handleAction(item.id_kredit, "setuju")}
-                        disabled={!berhakACCVisit(item.id_karyawan_pengajuan, kreditData)}
+                        disabled={!isBerhakACC}
                       >
                         Setujui
                       </button>
                       <button 
                         className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                         onClick={() => handleAction(item.id_kredit, "tolak")}
-                        disabled={!berhakACCVisit(item.id_karyawan_pengajuan, kreditData)}
+                        disabled={!isBerhakACC}
                       >
                         Tolak
                       </button>
                     </>
                   ) : (
-                  <button 
-                    className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    onClick={() => handleAction(item.id_kredit, "batalkan")}
-                    disabled={!berhakACCVisit(item.id_karyawan_pengajuan, kreditData) || item.status_proposalKredit !== "belum_dibuat"}
-                  >
-                    Batalkan
-                  </button>
+                    <button 
+                      className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      onClick={() => handleAction(item.id_kredit, "batalkan")}
+                      disabled={!isBerhakACC || item.status_proposalKredit !== "belum_dibuat"}
+                    >
+                      Batalkan
+                    </button>
                   )}
-                </div>
-              </td>
-            )}
-
+                  </div>
+                </td>
+              )}
             </tr>
-          ))}
-        </tbody>
+          );
+        })}
+      </tbody>
       </table>
       <ConfirmationDialog
         open={isDialogOpen}

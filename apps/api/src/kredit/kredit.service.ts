@@ -7,6 +7,9 @@ import { UpdateSlikCheckDto } from './dto/updateSlik.dto';
 import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 import { UpdateVisitDto } from './dto/updateVisit.dto';
 import { UpdateProposalDto } from './dto/updateProposal.dto';
+import { UpdatedPersetujuansatu } from './dto/updatePersetujuanSatu.dto';
+import { UpdatedPersetujuandua } from './dto/updatePersetujuanDua.dto';
+import { UpdatedPersetujuantiga } from './dto/updatePersetujuanTiga.dto';
 
 @Injectable()
 export class KreditService {
@@ -116,7 +119,7 @@ export class KreditService {
   async getVisit(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({
       where: {
-        status_analisisSlik: { not: "belum_dianalisis" }, // Filter data yang tidak dibatalkan
+        status_analisisSlik: { notIn: ["belum_dianalisis", "tolak"] }, // Filter data yang tidak dibatalkan
       },
       include: {
         nasabah: {
@@ -145,7 +148,69 @@ export class KreditService {
   async getProposal(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({
       where: {
-        status_visitNasabah: { not: "belum_dilakukan" }, // Filter data yang tidak dibatalkan
+        status_visitNasabah: { notIn: ["belum_dilakukan", "tolak"] }, // Filter data yang tidak dibatalkan
+      },
+      include: {
+        nasabah: {
+          include: {
+            karyawan: true,
+            desa: {
+              include: {
+                Kecamatan: {
+                  include: {
+                    KabupatenKota: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  //Seleksi tabel persetujuan satu
+  async getPersetujuanSatu(): Promise<Kredit[]> {
+    return this.prisma.kredit.findMany({
+      where: {
+        status_proposalKredit: "lanjut", // Filter data yang tidak dibatalkan
+      },
+      include: {
+        nasabah: {
+          include: {
+            karyawan: true,
+            desa: {
+              include: {
+                Kecamatan: {
+                  include: {
+                    KabupatenKota: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  //Seleksi tabel persetujuan dua
+  async getPersetujuanDua(): Promise<Kredit[]> {
+    return this.prisma.kredit.findMany({
+      where: {
+        OR: [
+          {
+            AND: [
+              { nominal_disetujui: { not: 0 } },
+              { nominal_disetujui: { not: null } },
+              { tenor_disetujui: { not: 0 } },
+              { tenor_disetujui: { not: null } }
+            ]
+          },
+          {
+            status_persetujuansatu: { notIn: ["tolak", "belum_disetujui"] }
+          }
+        ]
       },
       include: {
         nasabah: {
@@ -284,7 +349,43 @@ export class KreditService {
     }
   }
   
-  
+  //Update Persetujuan Satu
+  async updatePersetujuansatu(id: number, updatePersetujuansatu: UpdatedPersetujuansatu) {
+    try {
+        const kredit = await this.prisma.kredit.findUnique({
+            where: { id_kredit: id },
+        });
+
+        if (!kredit) {
+            throw new NotFoundException("Kredit tidak ditemukan");
+        }
+
+        const data: any = {
+            status_persetujuansatu: updatePersetujuansatu.status_persetujuansatu || "belum_disetujui", // <-- Pastikan defaultnya "belum_disetujui"
+            id_karyawan_persetujuansatu: updatePersetujuansatu.id_karyawan_persetujuansatu ?? kredit.id_karyawan_persetujuansatu,
+            updatedAtPersetujuansatu: new Date(),
+        };
+
+        if (updatePersetujuansatu.status_persetujuansatu === "belum_disetujui") {
+            data.tenor_disetujui = 0;
+            data.nominal_disetujui = 0;
+        }
+
+        console.log("📌 Data yang akan diupdate:", data);
+
+        const updatedKredit = await this.prisma.kredit.update({
+            where: { id_kredit: id },
+            data,
+        });
+
+        console.log("✅ Data setelah update:", updatedKredit);
+
+        return updatedKredit;
+    } catch (error) {
+        console.error("Error Prisma:", error);
+        throw new InternalServerErrorException("Terjadi kesalahan saat memperbarui persetujuan");
+    }
+}
 
   remove(id: number) {
     return `This action removes a #${id} kredit`;

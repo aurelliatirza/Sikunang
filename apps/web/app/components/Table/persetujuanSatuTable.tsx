@@ -3,10 +3,10 @@ import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import { useRouter } from "next/navigation";
-
+import PersetujuanKreditDialog from "../Dialog/persetujuanKreditDialog";
 
 interface Nasabah {
+  id_nasabah: number;
   namaNasabah: string;
   alamat: string;
   namaUsaha: string;
@@ -38,7 +38,7 @@ interface Karyawan {
   };
 }
 
-interface ProposalKredit {
+interface Persetujuan1Kredit {
   id_kredit: number;
   nasabah: Nasabah;
   nominal_pengajuan: number;
@@ -59,6 +59,11 @@ interface ProposalKredit {
   id_karyawan_proposalKredit: number;
   updatedAtProposalKredit: string;
   status_persetujuansatu: string;
+  id_karyawan_persetujuansatu: number;
+  updatedAtPersetujuansatu: string;
+  status_persetujuandua: string;
+  nominal_disetujui: number;
+  tenor_disetujui: number;
 }
 
 interface UserProfile {
@@ -98,12 +103,17 @@ const statusProposalOptions = [
   { label: "Lanjut", value: "lanjut" },
 ]
 
-const ProposalTable: React.FC = () => {
-    const router = useRouter();
-    const [kreditData, setKreditData] = useState<ProposalKredit[]>([]);
+const statusPersetujuan1Options = [
+    { label: "Belum Disetujui", value: "belum_disetujui" },
+    { label: "Setuju", value: "setuju" },
+    { label: "Tolak", value: "tolak" },
+]
+
+const PersetujuanSatuTable: React.FC = () => {
+    const [kreditData, setKreditData] = useState<Persetujuan1Kredit[]>([]);
     const [karyawanData, setKaryawanData] = useState<Karyawan[]>([]);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [filteredData, setFilteredData] = useState<ProposalKredit[]>([]);
+    const [filteredData, setFilteredData] = useState<Persetujuan1Kredit[]>([]);
     const [bawahanList, setBawahanList] = useState<string[]>([]);
     const [selectedBawahan, setSelectedBawahan] = useState<string | null>(null);
     const [page, setPage] = useState(0);
@@ -117,33 +127,45 @@ const ProposalTable: React.FC = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+    const [isPersetujuanDialogOpen, setIsPersetujuanDialogOpen] = useState(false);
+    const [selectedKredit, setSelectedKredit] = useState<Persetujuan1Kredit | null>(null);
+  
+    const handlePersetujuanDialogClose = () => {
+      setIsPersetujuanDialogOpen(false);
+      setSelectedKredit(null);
+    };
 
     //Get Status
     const getStatusPengajuanLabel = (status_pengajuan: string) => {
-      const option = statusPengajuanOptions.find((option) => option.value === status_pengajuan);
-      return option ? option.label : status_pengajuan;
-    };
-  
+        const option = statusPengajuanOptions.find((option) => option.value === status_pengajuan);
+        return option ? option.label : status_pengajuan;
+        };
+    
     const getStatusSlikLabel = (status_Slik: string) => {
-      const option = statusSlikOptions.find((option) => option.value === status_Slik);
-      return option ? option.label : status_Slik;
+        const option = statusSlikOptions.find((option) => option.value === status_Slik);
+        return option ? option.label : status_Slik;
     };
-  
+
     const getStatusAnalisisLabel = (status_analisisSlik: string) => {
-      const option = statusAnalisisOptions.find((option) => option.value === status_analisisSlik);
-      return option ? option.label : status_analisisSlik;
+        const option = statusAnalisisOptions.find((option) => option.value === status_analisisSlik);
+        return option ? option.label : status_analisisSlik;
     };
-  
+
     const getStatusVisitLabel = (status_visitNasabah: string) => {
-      const option = statusVisitOptions.find((option) => option.value === status_visitNasabah);
-      return option ? option.label: status_visitNasabah;
+        const option = statusVisitOptions.find((option) => option.value === status_visitNasabah);
+        return option ? option.label: status_visitNasabah;
     }
 
     const getProposalLabel = (status_proposalKredit: string) => {
-      const option = statusProposalOptions.find((option) => option.value === status_proposalKredit);
-      return option? option.label: status_proposalKredit;
+        const option = statusProposalOptions.find((option) => option.value === status_proposalKredit);
+        return option? option.label: status_proposalKredit;
     }
 
+    const getPersetujuan1Label = (status_persetujuansatu: string) => {
+        const option = statusPersetujuan1Options.find((option) => option.value === status_persetujuansatu);
+        return option? option.label: status_persetujuansatu;
+    }
+    
     //Fungsi get nama karyawan dari setiap tahap
     const getNamaKaryawanPengajuan = (id_karyawan_pengajuan: number, karyawanData: Karyawan[]): string => {
       const karyawan = karyawanData.find((k) => k.nik === id_karyawan_pengajuan);
@@ -170,11 +192,16 @@ const ProposalTable: React.FC = () => {
       return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
     };
 
+    const getNamaKaryawanPersetujuan1 = (id_karyawan_persetujuansatu: number, karyawanData: Karyawan[]): string => {
+        const karyawan = karyawanData.find((k) => k.nik === id_karyawan_persetujuansatu);
+        return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
+      };
+
     // Fetch data kredit proposal
     useEffect(() => {
-      const fetchKreditPengajuan = async () => {
+      const fetchKreditPersetujuan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/kredit/filter/proposalTable");
+          const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan1Table");
           if (!response.ok) throw new Error("Gagal mengambil Data");
           const data = await response.json();
           setKreditData(data);
@@ -182,8 +209,8 @@ const ProposalTable: React.FC = () => {
           console.error("Error fetching kredit data: ", error);
         }
       };
-      fetchKreditPengajuan();
-      const interval = setInterval(fetchKreditPengajuan, 3000); // Update setiap 5 detik
+      fetchKreditPersetujuan();
+      const interval = setInterval(fetchKreditPersetujuan, 3000); // Update setiap 5 detik
   
       return () => clearInterval(interval); // Bersihkan interval saat unmount
     }, []);
@@ -231,7 +258,7 @@ const ProposalTable: React.FC = () => {
     useEffect(() => {
       if (!userProfile) return;
   
-      let filtered: ProposalKredit[] = [];
+      let filtered: Persetujuan1Kredit[] = [];
   
       if (userProfile.jabatan === "marketing") {
         filtered = kreditData.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
@@ -262,65 +289,127 @@ const ProposalTable: React.FC = () => {
   
       setFilteredData(filtered);
     }, [userProfile, kreditData, selectedBawahan]);
-  
+
     //Update
-    const updateStatusProposal = async (status: string) => {
-      if (!selectedId || !userProfile) return;
-      try {
-        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/proposal`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status_proposalKredit: status, id_karyawan_proposalKredit: userProfile.nik }),
-        });
-    
-        if (!response.ok) throw new Error("Gagal memperbarui status Analisis Slik");
-    
-        setKreditData((prevData) =>
-          prevData.map((item) =>
-            item.id_kredit === selectedId ? { ...item, status_proposalKredit: status, id_karyawan_proposalKredit: userProfile.nik } : item
-          )
-        );
-    
-        // ✅ Pastikan ini dipanggil sebelum `setOpenSnackbar(true)`
-        setSnackbarMessage(`Status Analisis berhasil diperbarui`);
-        setSnackbarSeverity("success");
-      } catch (error) {
-        console.error(`Gagal memperbarui status Analisis Slik: ${error}`);
-        setSnackbarMessage("Gagal mengupdate status Analisis Slik");
-        setSnackbarSeverity("error");
-      } finally {
-        // ✅ Pastikan Snackbar selalu dibuka setelah pesan diatur
-        setOpenSnackbar(true);
-        setIsDialogOpen(false);
-      }
+    const handlePersetujuanDialogSave = (nominal_disetujui: number, tenor_disetujui: number) => {
+        if (!selectedId || !userProfile) {
+          console.error("❌ Error: Tidak ada selectedId atau userProfile", { selectedId, userProfile });
+          return;
+        }
+      
+        const payload = {
+          status_persetujuansatu: "setuju",
+          id_karyawan_persetujuansatu: userProfile.nik,
+          nominal_disetujui,
+          tenor_disetujui,
+        };
+      
+        console.log("✅ Memanggil updatePersetujuan1 dengan payload:", payload);
+      
+        updatePersetujuan1(payload);
     };
-  
+      
+    
+    const updatePersetujuan1 = async (payload: any) => {
+        if (!selectedId || !userProfile) {
+            console.error("❌ Error: selectedId atau userProfile tidak tersedia", { selectedId, userProfile });
+            return;
+        }
+    
+        // Pastikan payload memiliki status_persetujuansatu
+        const cleanPayload = {
+            ...payload,
+            status_persetujuansatu: payload.status_persetujuansatu ?? "belum_disetujui",
+            id_karyawan_persetujuansatu: payload.id_karyawan_persetujuansatu ?? userProfile.nik
+        };
+    
+        console.log("📤 Mengirim Payload:", JSON.stringify(cleanPayload, null, 2));
+    
+        try {
+            const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuanSatu`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(cleanPayload),
+            });
+    
+            const responseData = await response.json();
+            console.log("🔄 Respon API:", responseData);
+    
+            if (!response.ok) {
+                console.error("❌ API Error:", response.status, responseData);
+                throw new Error(responseData.message || "Gagal memperbarui status persetujuan");
+            }
+    
+            setKreditData((prevData) =>
+                prevData.map((item) =>
+                    item.id_kredit === selectedId
+                        ? { ...item, ...cleanPayload }
+                        : item
+                )
+            );
+    
+            setSnackbarMessage("Status persetujuan berhasil diperbarui");
+            setSnackbarSeverity("success");
+        } catch (error) {
+            console.error("Gagal memperbarui status persetujuan:", error);
+            setSnackbarMessage("Gagal mengupdate status persetujuan");
+            setSnackbarSeverity("error");
+        } finally {
+            setOpenSnackbar(true);
+            setIsDialogOpen(false);
+            setIsPersetujuanDialogOpen(false);
+        }
+    };
+    
+
+      const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
+        const selectedKredit = kreditData.find((item) => item.id_kredit === id_kredit);
+        if (!selectedKredit) return;
+    
+        setSelectedId(id_kredit);
+        setDialogAction(action);
+    
+        if (action === "setuju") {
+            // Hanya buka Persetujuan Dialog jika nominal <= 25 juta
+            if (selectedKredit.nominal_pengajuan <= 25000000) {
+                setSelectedKredit(selectedKredit);
+                setIsPersetujuanDialogOpen(true);
+            } else {
+                setIsDialogOpen(true);
+            }
+        } else {
+            // Jika action bukan "setuju", langsung buka ConfirmationDialog
+            setIsDialogOpen(true);
+        }
+    };
+    
+    const onConfirmAction = () => {
+        if (!selectedId || !dialogAction) return;
+      
+        const selectedKredit = kreditData.find((item) => item.id_kredit === selectedId);
+        if (!selectedKredit) return;
+      
+        const statusMap = {
+          setuju: "setuju",
+          tolak: "tolak",
+          batalkan: "belum_disetujui"
+        };
+      
+        const payload = {
+          status_persetujuansatu: statusMap[dialogAction as "setuju" | "tolak" | "batalkan"],
+          nominal_disetujui: dialogAction === "batalkan" ? selectedKredit.nominal_disetujui : 0,
+          tenor_disetujui: dialogAction === "batalkan" ? selectedKredit.tenor_disetujui : 0
+        };
+      
+        updatePersetujuan1(payload);
+    };
+      
+    
     // Debugging perubahan kreditData
     useEffect(() => {
       console.log("Kredit data updated:", kreditData);
-    }, [kreditData]);
-  
-    const handleAction = (id_kredit: number, action: "lanjut" | "batalkan") => {
-      setSelectedId(id_kredit);
-      setDialogAction(action);
-      setIsDialogOpen(true);
-    };  
-  
-    const onConfirmAction = () => {
-      if (!selectedId || !dialogAction) return;
-      
-      const statusMap = {
-        lanjut: "lanjut",
-        batalkan: "belum_diajukan"
-      };
-    
-      updateStatusProposal(statusMap[dialogAction as "lanjut" | "batalkan"]); // Panggil fungsi update
-    }; 
-  
-    const handleCloseSnackbar = () => {
-      setOpenSnackbar(false);
-    };
-  
+    }, [kreditData]);   
+
     // Search filter
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
@@ -377,12 +466,11 @@ const ProposalTable: React.FC = () => {
                 </select>
             )}
         </div>
-    
-      {/* Tabel */}
+
       <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
         <thead>
           <tr className="bg-blue-500 text-white">
-          <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
+            <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
             <th className="px-6 py-3 text-center border-l border-white">Nama Nasabah</th>
             <th className="px-6 py-3 text-center border-l border-white">Alamat</th>
             <th className="px-6 py-3 text-center border-l border-white">Kelurahan</th>
@@ -409,13 +497,23 @@ const ProposalTable: React.FC = () => {
             {/* Langkah Kelima */}
             <th className="px-6 py-3 text-center border-l border-white">Waktu Proposal</th>
             <th className="px-6 py-3 text-center border-l border-white">Status Proposal</th>
-            {["spv", "marketing"].includes(jabatan ?? "") ? (
+            <th className="px-6 py-3 text-center border-l border-white">Penulis Proposal</th>
+            {/* Langkah Keenam */}
+            <th className="px-6 py-3 text-center border-l border-white">Waktu Persetujuan Satu</th>
+            <th className="px-6 py-3 text-center border-l border-white">Status Persetujuan Satu</th>
+            {["spv"].includes(jabatan ?? "") ? (
               <>
-                <th className="px-6 py-3 text-center border-l border-white">Penulis Proposal</th>
+                <th className="px-6 py-3 text-center border-l border-white">Approvers 1</th>
+                <th className="px-6 py-3 text-center border-l border-white">Nominal Disetujui</th>
+                <th className="px-6 py-3 text-center border-l border-white">Tenor Disetujui</th>
                 <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
               </>
             ) : (
-              <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Penulis Proposal</th>
+                <>
+                <th className="px-6 py-3 text-center border-l border-white">Approvers 1</th>
+                <th className="px-6 py-3 text-center border-l border-white">Nominal Disetujui</th>
+                <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Tenor Disetujui</th>
+                </>
             )}
           </tr>
         </thead>
@@ -447,6 +545,7 @@ const ProposalTable: React.FC = () => {
               <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
               <td className="px-6 py-4">{item.tenor_pengajuan}</td>
               <td className="px-6 py-4">{getNamaKaryawanPengajuan(item.id_karyawan_pengajuan, karyawanData)}</td>
+              {/* Langkah kedua */}
               <td className="px-6 py-4">
                 {new Date(item.updatedAtSlik).toLocaleString("id-ID", {
                   day: "2-digit",
@@ -459,6 +558,7 @@ const ProposalTable: React.FC = () => {
               </td>
               <td className="px-6 py-4">{getStatusSlikLabel(item.status_Slik)}</td>
               <td className="px-6 py-4">{getNamaKaryawanSlik(item.id_karyawan_slik, karyawanData)}</td>
+              {/* Langkah Ketiga */}
               <td className="px-6 py-4">
                 {new Date(item.updatedAtAnalisisSlik).toLocaleString("id-ID", {
                   day: "2-digit",
@@ -471,6 +571,7 @@ const ProposalTable: React.FC = () => {
               </td>
               <td className="px-6 py-4">{getStatusAnalisisLabel(item.status_analisisSlik)}</td>
               <td className="px-6 py-4">{getNamaKaryawanAnalisis(item.id_karyawan_analisisSlik, karyawanData)}</td>
+              {/* Langkah Keempat */}
               <td className="px-6 py-4">
                 {new Date(item.updatedAtVisitNasabah).toLocaleString("id-ID", {
                   day: "2-digit",
@@ -483,6 +584,7 @@ const ProposalTable: React.FC = () => {
               </td>
               <td className="px-6 py-4">{getStatusVisitLabel(item.status_visitNasabah)}</td>
               <td className="px-6 py-4">{getNamaKaryawanVisit(item.id_karyawan_visitNasabah, karyawanData)}</td>
+              {/* Langkah Kelima */}
               <td className="px-6 py-4">
                 {new Date(item.updatedAtProposalKredit).toLocaleString("id-ID", {
                   day: "2-digit",
@@ -495,21 +597,42 @@ const ProposalTable: React.FC = () => {
               </td>
               <td className="px-6 py-4">{getProposalLabel(item.status_proposalKredit)}</td>
               <td className="px-6 py-4">{getNamaKaryawanProposal(item.id_karyawan_proposalKredit, karyawanData)}</td>
-              {[ "spv", "marketing"].includes(jabatan ?? "") && (
+              {/* Langkah Keenam */}
+              <td className="px-6 py-4">
+                {new Date(item.updatedAtPersetujuansatu).toLocaleString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}
+              </td>
+              <td className="px-6 py-4">{getPersetujuan1Label(item.status_persetujuansatu)}</td>
+              <td className="px-6 py-4">{getNamaKaryawanPersetujuan1(item.id_karyawan_persetujuansatu, karyawanData)}</td>
+              <td className="px-6 py-4">
+                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
+                  item.nominal_disetujui
+                )}
+              </td>
+              <td className="px-6 py-4">{item.tenor_disetujui}</td>
+              {[ "spv"].includes(jabatan ?? "") && (
                 <td className="px-6 py-4 flex space-x-2">
                   <div className="flex justify-center gap-4">
-                  {item.status_proposalKredit === "belum_diajukan" ? (
+                  {item.status_persetujuansatu === "belum_disetujui" ? (
                     <>
-                      <button className= "bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "lanjut")}>Lanjut</button>
+                      <button className= "bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "setuju")}>Setujui</button>
+                      <button className= "bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "tolak")}>Tolak</button>
                     </>
                   ) : (
                     <button 
                     className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" 
                     onClick={() => handleAction(item.id_kredit, "batalkan")}
-                    disabled={String(item.status_persetujuansatu).trim() !== "belum_disetujui"}
+                    disabled={String(item.status_persetujuandua).trim() !== "belum_disetujui"}
                   >
                     Batalkan
                   </button>
+
                   )}
                   </div>
               </td>
@@ -518,27 +641,42 @@ const ProposalTable: React.FC = () => {
           ))}
         </tbody>
       </table>
-        <ConfirmationDialog
-          open={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          onConfirm={onConfirmAction}
-          title={dialogAction === "batalkan" ? "Batalkan Pengajuan Kredit" : "Konfirmasi Aksi"}
-          message={`Apakah Anda yakin ingin ${dialogAction} kredit ini?`}
-          confirmText={dialogAction === "batalkan" ? "Ya, Batalkan" : "Ya"}
-          cancelText="Batal"
+      <ConfirmationDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={onConfirmAction}
+        title={dialogAction === "batalkan" ? "Batalkan Pengajuan Kredit" : "Konfirmasi Aksi"}
+        message={`Apakah Anda yakin ingin ${dialogAction} kredit ini?`}
+        confirmText={dialogAction === "batalkan" ? "Ya, Batalkan" : "Ya"}
+        cancelText="Batal"
+      />
+    {selectedKredit && (
+        <PersetujuanKreditDialog
+        open={isPersetujuanDialogOpen}
+        onClose={handlePersetujuanDialogClose}
+        onsave={handlePersetujuanDialogSave}
+        nasabah={selectedKredit.nasabah}
+        kredit={{
+            id_kredit: selectedKredit.id_kredit,
+            nasabah: selectedKredit.nasabah,
+            nominal_disetujui: selectedKredit.nominal_pengajuan,
+            tenor_disetujui: selectedKredit.tenor_pengajuan,
+        }}
+        nominal_pengajuan={selectedKredit.nominal_pengajuan} // Kirim nominal_pengajuan
         />
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={() => setOpenSnackbar(false)}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+    )}
+    <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
-          <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
             {snackbarMessage}
-          </Alert>
-        </Snackbar>
+        </Alert>
+    </Snackbar>
     </div>
   );
 };
 
-export default ProposalTable;
+export default PersetujuanSatuTable;

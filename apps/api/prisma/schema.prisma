@@ -168,8 +168,8 @@ model Kredit {
   karyawan_persetujuantiga      Karyawan? @relation(fields: [id_karyawan_persetujuantiga], references: [nik], name: "KaryawanPersetujuanTiga")
   updatedAtPersetujuantiga      DateTime  @db.Timestamptz(6)
 
-  nominal_disetujui   Int?
-  tenor_disetujui     Int?
+  nominal_disetujui   Int? @default(0)
+  tenor_disetujui     Int? @default(0)
   createdAt           DateTime @default(now()) @db.Timestamptz(6)
 
   // Relasi ke Nasabah
