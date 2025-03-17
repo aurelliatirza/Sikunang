@@ -33,7 +33,7 @@ interface Karyawan {
   namaKaryawan: string;
   kantor: {
     id_kantor: number;
-    jenis_kantor: String;
+    jenis_kantor: string;
   };
 }
 
@@ -246,40 +246,65 @@ const VisitTable: React.FC = () => {
   
 
   //TODO: pastikan yang berhak update itu sesuai limit
-  const berhakACCVisit = (id_karyawan_pengajuan: number, visitData: VisitKredit[]) => {
-    console.log("Memeriksa Hak ACC untuk Karyawan ID:", id_karyawan_pengajuan);
+  const berhakACCVisit = (id_kredit: number, nominal_pengajuan: number, jenis_kantor: string, nasabah: any) => {
+    console.log("🔍 Memeriksa Hak ACC untuk Kredit ID:", id_kredit);
 
-    const visitList = visitData.filter(v => v.id_karyawan_pengajuan === id_karyawan_pengajuan);
-    if (visitList.length === 0) return [];
+    const limitKabag = jenis_kantor === "Pusat" ? 50000000 : 75000000;
 
-    const karyawanPengajuan = karyawanData.find(k => k.nik === id_karyawan_pengajuan);
-    if (!karyawanPengajuan) return [];
+    const { nik_SPV, nik_kabag, nik_direkturBisnis } = nasabah.karyawan;
 
-    const limitACC = karyawanPengajuan.kantor?.jenis_kantor === "Pusat"
-        ? { SPV: 25000000, Kabag: 50000000 }
-        : { SPV: 25000000, Kabag: 75000000 };
+    let accUser = null;
 
-    return visitList.map(visit => {
-        const { nominal_pengajuan, nasabah } = visit;
-        const { nik_SPV, nik_kabag, nik_direkturBisnis } = nasabah.karyawan;
+    if (nominal_pengajuan <= 25000000) {
+        accUser = { level: "SPV", nik: nik_SPV };
+    } else if (nominal_pengajuan <= limitKabag) {
+        accUser = { level: "Kabag", nik: nik_kabag };
+    } else {
+        accUser = { level: "Direktur", nik: nik_direkturBisnis };
+    }
 
-        const hakACC =
-            nominal_pengajuan <= limitACC.SPV ? { level: "SPV", nik: nik_SPV } :
-            nominal_pengajuan <= limitACC.Kabag ? { level: "Kabag", nik: nik_kabag } :
-            { level: "Direktur", nik: nik_direkturBisnis };
+    if (accUser?.nik) {
+        console.log(`✅ Kredit ID ${id_kredit} → ${accUser.level} - ${accUser.nik}`);
+        return { id_kredit, level: accUser.level, nik: accUser.nik };
+    }
 
-        console.log(`✅ Kredit ID ${visit.id_kredit} → ${hakACC.level} - ${hakACC.nik}`);
-        return hakACC;
+    return { id_kredit, level: null, nik: null };
+};
+
+// Hitung daftar hak ACC berdasarkan **setiap kredit**
+const hakACCList = useMemo(() => {
+    return kreditData.map(item => {
+        const karyawanPengajuan = karyawanData.find(k => k.nik === item.id_karyawan_pengajuan);
+        const jenis_kantor = karyawanPengajuan?.kantor?.jenis_kantor ?? "";
+
+        return berhakACCVisit(item.id_kredit, item.nominal_pengajuan, jenis_kantor, item.nasabah);
     });
-  };
+}, [kreditData]);
 
-  const hakACCList = useMemo(() => {
-    return kreditData.map(item => ({
-      id_kredit: item.id_kredit,
-      hakACC: berhakACCVisit(item.id_karyawan_pengajuan, kreditData),
-    }));
-  }, [kreditData]);
+useEffect(() => {
+    console.log("🔍 hakACCList setelah dihitung:", hakACCList);
+}, [hakACCList]);
 
+// Mapping hak akses berdasarkan user login
+const hakACCMap = useMemo(() => {
+    if (!userProfile) return {};
+
+    return kreditData.reduce((acc, item) => {
+        const hakACC = hakACCList.find(hak => hak.id_kredit === item.id_kredit);
+
+        const userLevel = userProfile.jabatan?.toLowerCase();
+        const userNik = userProfile.nik;
+
+        const hasPermission = hakACC?.nik === userNik && hakACC?.level?.toLowerCase() === userLevel;
+
+        acc[item.id_kredit] = hasPermission;
+        return acc;
+    }, {} as Record<number, boolean>);
+}, [hakACCList, userProfile?.nik, userProfile?.jabatan]);
+
+useEffect(() => {
+    console.log("🔍 hakACCMap (Siapa yang berhak per kredit):", hakACCMap);
+}, [hakACCMap]);
 
   const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
     setSelectedId(id_kredit);
@@ -445,8 +470,12 @@ const VisitTable: React.FC = () => {
         </thead>
         <tbody>
         {paginatedData.map((item, index) => {
-          const currentHakACC = hakACCList.find(hak => hak.id_kredit === item.id_kredit)?.hakACC || [];
-          const isBerhakACC = currentHakACC.some(acc => acc.nik === userProfile?.nik && acc.level.toLowerCase() === userProfile?.jabatan.toLowerCase());
+    const isBerhakACC = hakACCMap[item.id_kredit] ?? false;
+
+    console.log(`🔍 Kredit ${item.id_kredit}: isBerhakACC =`, isBerhakACC, 
+        "Jabatan User:", userProfile?.jabatan, 
+        "Hak ACC Kredit:", hakACCList.find(h => h.id_kredit === item.id_kredit) ?? "Tidak ada"
+    );
 
           return (
             <tr key={item.id_kredit} className="text-center">

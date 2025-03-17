@@ -3,7 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import PersetujuanKreditDialog from "../Dialog/persetujuanKreditDuaDialog";
+import PersetujuanKreditDialog from "../Dialog/persetujuanKreditSatuDialog";
 
 interface Nasabah {
   id_nasabah: number;
@@ -17,7 +17,7 @@ interface Nasabah {
     nik_SPV?: number;
     nik_kabag?: number;
     nik_direkturBisnis?: number;
-    kantor: {
+    kantor?: {
       id_kantor: number;
       jenis_kantor: string;
     };
@@ -42,13 +42,14 @@ interface Karyawan {
   };
 }
 
-interface Persetujuan1Kredit {
+interface Persetujuan2Kredit {
   id_kredit: number;
   nasabah: Nasabah;
   nominal_pengajuan: number;
   tenor_pengajuan: number;
   status_pengajuan: string;
   id_karyawan_pengajuan: number;
+  karyawan_pengajuan: Karyawan;
   status_Slik: string;
   id_karyawan_slik: number;
   updatedAtSlik: string;
@@ -115,18 +116,17 @@ const statusPersetujuan1Options = [
     { label: "Setuju", value: "setuju" },
     { label: "Tolak", value: "tolak" },
 ]
-
 const statusPersetujuan2Options = [
-    { label: "Belum Disetujui", value: "belum_disetujui" },
-    { label: "Setuju", value: "setuju" },
-    { label: "Tolak", value: "tolak" },
+  { label: "Belum Disetujui", value: "belum_disetujui" },
+  { label: "Setuju", value: "setuju" },
+  { label: "Tolak", value: "tolak" },
 ]
 
 const PersetujuanDuaTable: React.FC = () => {
-    const [kreditData, setKreditData] = useState<Persetujuan1Kredit[]>([]);
+    const [kreditData, setKreditData] = useState<Persetujuan2Kredit[]>([]);
     const [karyawanData, setKaryawanData] = useState<Karyawan[]>([]);
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [filteredData, setFilteredData] = useState<Persetujuan1Kredit[]>([]);
+    const [filteredData, setFilteredData] = useState<Persetujuan2Kredit[]>([]);
     const [bawahanList, setBawahanList] = useState<string[]>([]);
     const [selectedBawahan, setSelectedBawahan] = useState<string | null>(null);
     const [page, setPage] = useState(0);
@@ -141,7 +141,7 @@ const PersetujuanDuaTable: React.FC = () => {
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
     const [isPersetujuanDialogOpen, setIsPersetujuanDialogOpen] = useState(false);
-    const [selectedKredit, setSelectedKredit] = useState<Persetujuan1Kredit | null>(null);
+    const [selectedKredit, setSelectedKredit] = useState<Persetujuan2Kredit | null>(null);
   
     const handlePersetujuanDialogClose = () => {
       setIsPersetujuanDialogOpen(false);
@@ -180,9 +180,10 @@ const PersetujuanDuaTable: React.FC = () => {
     }
 
     const getPersetujuan2Label = (status_persetujuandua: string) => {
-        const option = statusPersetujuan2Options.find((option) => option.value === status_persetujuandua);
-        return option? option.label: status_persetujuandua;
+      const option = statusPersetujuan2Options.find((option) => option.value === status_persetujuandua);
+      return option? option.label: status_persetujuandua;
     }
+    
     //Fungsi get nama karyawan dari setiap tahap
     const getNamaKaryawanPengajuan = (id_karyawan_pengajuan: number, karyawanData: Karyawan[]): string => {
       const karyawan = karyawanData.find((k) => k.nik === id_karyawan_pengajuan);
@@ -215,9 +216,9 @@ const PersetujuanDuaTable: React.FC = () => {
     };
 
     const getNamaKaryawanPersetujuan2 = (id_karyawan_persetujuandua: number, karyawanData: Karyawan[]): string => {
-        const karyawan = karyawanData.find((k) => k.nik === id_karyawan_persetujuandua);
-        return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
-    };
+      const karyawan = karyawanData.find((k) => k.nik === id_karyawan_persetujuandua);
+      return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
+  };
 
     // Fetch data kredit proposal
     useEffect(() => {
@@ -280,7 +281,7 @@ const PersetujuanDuaTable: React.FC = () => {
     useEffect(() => {
       if (!userProfile) return;
   
-      let filtered: Persetujuan1Kredit[] = [];
+      let filtered: Persetujuan2Kredit[] = [];
   
       if (userProfile.jabatan === "marketing") {
         filtered = kreditData.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
@@ -326,125 +327,139 @@ const PersetujuanDuaTable: React.FC = () => {
           tenor_disetujui,
         };
       
-        console.log("✅ Memanggil updatePersetujuan1 dengan payload:", payload);
+        console.log("✅ Memanggil updatePersetujuan2 dengan payload:", payload);
       
         updatePersetujuan2(payload);
     };
       
     
     const updatePersetujuan2 = async (payload: any) => {
-        if (!selectedId || !userProfile) {
-            console.error("❌ Error: selectedId atau userProfile tidak tersedia", { selectedId, userProfile });
-            return;
+      console.log("Mengupdate persetujuan dengan payload:", payload); // Debugging
+      if (!selectedId || !userProfile) {
+        console.error("❌ Error: selectedId atau userProfile tidak tersedia", { selectedId, userProfile });
+        return;
+      }
+    
+      const cleanPayload = {
+        ...payload,
+        status_persetujuandua: payload.status_persetujuandua ?? "belum_disetujui",
+        id_karyawan_persetujuandua: payload.id_karyawan_persetujuandua ?? userProfile.nik,
+      };
+    
+      try {
+        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuan?step=dua`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cleanPayload),
+        });
+    
+        const responseData = await response.json();
+        console.log("Respon API:", responseData); // Debugging
+    
+        if (!response.ok) {
+          console.error("❌ API Error:", response.status, responseData);
+          throw new Error(responseData.message || "Gagal memperbarui status persetujuan");
         }
     
-        // Pastikan payload memiliki status_persetujuansatu
-        const cleanPayload = {
-            ...payload,
-            status_persetujuansatu: payload.status_persetujuansatu ?? "belum_disetujui",
-            id_karyawan_persetujuansatu: payload.id_karyawan_persetujuansatu ?? userProfile.nik
-        };
+        setKreditData((prevData) =>
+          prevData.map((item) =>
+            item.id_kredit === selectedId ? { ...item, ...cleanPayload } : item
+          )
+        );
     
-        console.log("📤 Mengirim Payload:", JSON.stringify(cleanPayload, null, 2));
-    
-        try {
-            const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuanDua`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(cleanPayload),
-            });
-    
-            const responseData = await response.json();
-            console.log("🔄 Respon API:", responseData);
-    
-            if (!response.ok) {
-                console.error("❌ API Error:", response.status, responseData);
-                throw new Error(responseData.message || "Gagal memperbarui status persetujuan");
-            }
-    
-            setKreditData((prevData) =>
-                prevData.map((item) =>
-                    item.id_kredit === selectedId
-                        ? { ...item, ...cleanPayload }
-                        : item
-                )
-            );
-    
-            setSnackbarMessage("Status persetujuan berhasil diperbarui");
-            setSnackbarSeverity("success");
-        } catch (error) {
-            console.error("Gagal memperbarui status persetujuan:", error);
-            setSnackbarMessage("Gagal mengupdate status persetujuan");
-            setSnackbarSeverity("error");
-        } finally {
-            setOpenSnackbar(true);
-            setIsDialogOpen(false);
-            setIsPersetujuanDialogOpen(false);
-        }
+        setSnackbarMessage("Status persetujuan berhasil diperbarui");
+        setSnackbarSeverity("success");
+      } catch (error) {
+        console.error("Gagal memperbarui status persetujuan:", error);
+        setSnackbarMessage("Gagal mengupdate status persetujuan");
+        setSnackbarSeverity("error");
+      } finally {
+        setOpenSnackbar(true);
+        setIsDialogOpen(false);
+        setIsPersetujuanDialogOpen(false);
+      }
     };
-    
 
-    const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
-        const selectedKredit = kreditData.find((item) => item.id_kredit === id_kredit);
-        if (!selectedKredit) return;
-    
-        setSelectedId(id_kredit);
-        setDialogAction(action);
-    
-        if (action === "setuju") {
-            if (selectedKredit.nasabah.karyawan) {
-                const jenisKantor = selectedKredit.nasabah.karyawan.kantor?.jenis_kantor;
-    
-                if (jenisKantor === "pusat") {
-                    if (selectedKredit.nominal_pengajuan <= 50000000 && selectedKredit.nominal_pengajuan > 25000000) {
-                        setSelectedKredit(selectedKredit);
-                        setIsPersetujuanDialogOpen(true);
-                        return;
-                    }
-                } else if (jenisKantor === "cabang") {
-                    if (selectedKredit.nominal_pengajuan <= 75000000 && selectedKredit.nominal_pengajuan > 25000000) {
-                        setSelectedKredit(selectedKredit);
-                        setIsPersetujuanDialogOpen(true);
-                        return;
-                    }
-                }
-            }
-    
-            // Jika tidak memenuhi syarat, buka ConfirmationDialog
-            setIsDialogOpen(true);
-        } else {
-            // Jika action bukan "setuju", langsung buka ConfirmationDialog
-            setIsDialogOpen(true);
-        }
-    };
-    
-    
+const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
+  console.log("✅ handleAction DIPANGGIL:", action, "untuk ID:", id_kredit);// Debugging
+
+  const selectedKredit = kreditData.find((item) => item.id_kredit === id_kredit);
+  console.log("🔍 Data Kredit Ditemukan:", selectedKredit);
+
+  if (!selectedKredit) {
+    console.warn("Data kredit tidak ditemukan untuk ID:", id_kredit);
+    return;
+  }
+
+  setSelectedId(id_kredit);
+  console.log("🆔 State `setSelectedId` diubah:", id_kredit);
+  
+  setDialogAction(action);
+  console.log("🔄 State `setDialogAction` diubah:", action);
+  
+
+  if (action === "setuju") {
+    // Pastikan data karyawan pengajuan ada
+    const karyawanPengajuan = selectedKredit.nasabah.karyawan;
+    if (!karyawanPengajuan || !karyawanPengajuan.kantor) {
+      console.warn("Data karyawan atau kantor tidak ditemukan untuk kredit ID:", id_kredit);
+      setIsDialogOpen(true);
+      return;
+    }
+
+    const jenisKantor = karyawanPengajuan.kantor.jenis_kantor;
+    console.log("Jenis Kantor:", jenisKantor);
+
+    if (jenisKantor === "Pusat") {
+      if (selectedKredit.nominal_pengajuan <= 50000000 && selectedKredit.nominal_pengajuan > 25000000) {
+        setSelectedKredit(selectedKredit);
+        setIsPersetujuanDialogOpen(true);
+        return;
+      }
+    } else if (jenisKantor === "cabang") {
+      if (selectedKredit.nominal_pengajuan <= 75000000 && selectedKredit.nominal_pengajuan > 25000000) {
+        setSelectedKredit(selectedKredit);
+        setIsPersetujuanDialogOpen(true);
+        return;
+      }
+    }
+
+    // Jika tidak memenuhi syarat, buka ConfirmationDialog
+    setIsDialogOpen(true);
+  } else {
+    // Jika action bukan "setuju", langsung buka ConfirmationDialog
+    setIsDialogOpen(true);
+  }
+};
+
+
     const onConfirmAction = () => {
-        if (!selectedId || !dialogAction) return;
-      
-        const selectedKredit = kreditData.find((item) => item.id_kredit === selectedId);
-        if (!selectedKredit) return;
-      
-        const statusMap = {
-          setuju: "setuju",
-          tolak: "tolak",
-          batalkan: "belum_disetujui"
-        };
-      
-        const payload = {
-          status_persetujuansatu: statusMap[dialogAction as "setuju" | "tolak" | "batalkan"],
-          nominal_disetujui: dialogAction === "batalkan" ? selectedKredit.nominal_disetujui : 0,
-          tenor_disetujui: dialogAction === "batalkan" ? selectedKredit.tenor_disetujui : 0
-        };
-      
-        updatePersetujuan2(payload);
+      console.log("Konfirmasi aksi:", dialogAction); // Debugging
+      if (!selectedId || !dialogAction) return;
+    
+      const selectedKredit = kreditData.find((item) => item.id_kredit === selectedId);
+      if (!selectedKredit) return;
+    
+      const statusMap = {
+        setuju: "setuju",
+        tolak: "tolak",
+        batalkan: "belum_disetujui",
+      };
+    
+      const payload = {
+        status_persetujuandua: statusMap[dialogAction as "setuju" | "tolak" | "batalkan"],
+        nominal_disetujui: dialogAction === "batalkan" ? selectedKredit.nominal_disetujui : 0,
+        tenor_disetujui: dialogAction === "batalkan" ? selectedKredit.tenor_disetujui : 0,
+      };
+    
+      updatePersetujuan2(payload);
     };
       
     
     // Debugging perubahan kreditData
     useEffect(() => {
-      console.log("Kredit data updated:", kreditData);
-    }, [kreditData]);   
+      console.log("Kredit data updated:", kreditData); // Debugging
+    }, [kreditData]);
 
     // Search filter
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -504,7 +519,7 @@ const PersetujuanDuaTable: React.FC = () => {
         </div>
 
       <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
-        <thead>
+      <thead>
           <tr className="bg-blue-500 text-white">
             <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
             <th className="px-6 py-3 text-center border-l border-white">Nama Nasabah</th>
@@ -674,31 +689,47 @@ const PersetujuanDuaTable: React.FC = () => {
                   <div className="flex justify-center gap-4">
                   {item.status_persetujuandua === "belum_disetujui" ? (
                     <>
-                    <button 
-                        className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" 
-                        onClick={() => handleAction(item.id_kredit, "setuju")}
-                        disabled={!(item.tenor_disetujui > 0)}
+                    <button
+                      className={`px-4 py-2 rounded-md text-white ${
+                        item.tenor_disetujui === 0
+                          ? "bg-green-500 hover:bg-green-700"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
+                      onClick={() => {
+                        console.log("🚀 Tombol Diklik! ID:", item.id_kredit);
+                        handleAction(item.id_kredit, "setuju");
+                      }}
+                      disabled={!(item.tenor_disetujui === 0)}
                     >
-                        Setujui
+                      Setujui
                     </button>
-                    
-                    <button 
-                        className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" 
-                        onClick={() => handleAction(item.id_kredit, "tolak")}
-                        disabled={!(item.tenor_disetujui > 0)}
+                    <button
+                      className={`px-4 py-2 rounded-md text-white ${
+                        item.tenor_disetujui === 0
+                          ? "bg-red-500 hover:bg-red-700"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }`}
+                      onClick={() => {
+                        console.log("Tombol TOLAK diklik untuk ID:", item.id_kredit);
+                        handleAction(item.id_kredit, "tolak");
+                      }}
+                      disabled={!(item.tenor_disetujui === 0)}
                     >
-                        Tolak
+                      Tolak
                     </button>
                     </>
                   ) : (
-                    <button 
-                    className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" 
+                  <button
+                    className={`px-4 py-2 rounded-md text-white ${
+                      String(item.status_persetujuantiga).trim() === "belum_disetujui"
+                        ? "bg-red-500 hover:bg-red-700"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }`}
                     onClick={() => handleAction(item.id_kredit, "batalkan")}
                     disabled={String(item.status_persetujuantiga).trim() !== "belum_disetujui"}
                   >
                     Batalkan
                   </button>
-
                   )}
                   </div>
               </td>
@@ -720,8 +751,7 @@ const PersetujuanDuaTable: React.FC = () => {
         <PersetujuanKreditDialog
         open={isPersetujuanDialogOpen}
         onClose={handlePersetujuanDialogClose}
-        onsave={handlePersetujuanDialogSave}
-        nasabah={selectedKredit.nasabah}
+        onSave={handlePersetujuanDialogSave}
         kredit={{
             id_kredit: selectedKredit.id_kredit,
             nasabah: selectedKredit.nasabah,
@@ -729,17 +759,18 @@ const PersetujuanDuaTable: React.FC = () => {
             tenor_disetujui: selectedKredit.tenor_pengajuan,
         }}
         nominal_pengajuan={selectedKredit.nominal_pengajuan} // Kirim nominal_pengajuan
+        jenisPersetujuan="dua"
         />
     )}
     <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
-            {snackbarMessage}
-        </Alert>
+      open={openSnackbar}
+      autoHideDuration={6000}
+      onClose={() => setOpenSnackbar(false)}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+    >
+      <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+        {snackbarMessage}
+      </Alert>
     </Snackbar>
     </div>
   );

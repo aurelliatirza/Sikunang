@@ -101,6 +101,16 @@ export class KreditController {
     }
   }
 
+  @Get('filter/Persetujuan3Table')
+  async fetchPersetujuanTigaKredit(): Promise<Kredit[]> {
+    try {
+      return await this.kreditService.getPersetujuanTiga();
+    } catch (error) {
+      console.error("Error fetching kredit data:", error); // Tambahkan log error
+      throw new InternalServerErrorException("Terjadi kesalahan saat mengambil data kredit");
+    }
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateKreditDto: UpdateKreditDto) {
     return this.kreditService.update(Number(id), updateKreditDto);

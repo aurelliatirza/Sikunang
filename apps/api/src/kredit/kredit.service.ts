@@ -8,9 +8,7 @@ import { UpdateAnalisisSlik } from './dto/updateAnalisisSlik.dto';
 import { UpdateVisitDto } from './dto/updateVisit.dto';
 import { UpdateProposalDto } from './dto/updateProposal.dto';
 import { UpdatePersetujuan } from './dto/updatePersetujuan.dto';
-import { UpdatedPersetujuansatu } from './dto/updatePersetujuanSatu.dto';
-import { UpdatedPersetujuandua } from './dto/updatePersetujuanDua.dto';
-import { UpdatedPersetujuantiga } from './dto/updatePersetujuanTiga.dto';
+
 
 @Injectable()
 export class KreditService {
@@ -195,28 +193,22 @@ export class KreditService {
     });
   }
 
-  //Seleksi tabel persetujuan dua
   async getPersetujuanDua(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({
       where: {
-        OR: [
-          {
-            AND: [
-              { nominal_disetujui: { not: 0 } },
-              { nominal_disetujui: { not: null } },
-              { tenor_disetujui: { not: 0 } },
-              { tenor_disetujui: { not: null } }
-            ]
-          },
-          {
-            status_persetujuansatu: { notIn: ["tolak", "belum_disetujui"] }
-          }
+        AND: [
+          { nominal_pengajuan: { gt: 25000000 } },
+          { status_persetujuansatu: "setuju" }
         ]
-      },
+      },      
       include: {
         nasabah: {
           include: {
-            karyawan: true,
+            karyawan: {
+              include: {
+                kantor: true
+              }
+            },
             desa: {
               include: {
                 Kecamatan: {
@@ -228,6 +220,53 @@ export class KreditService {
             },
           },
         },
+        karyawan_pengajuan: { 
+          select: { // ✅ Menggunakan hanya `select`
+            nik: true,
+            namaKaryawan: true,
+            jabatan: true,
+            kantor: true // Tetap bisa dipilih di dalam `select`
+          }
+        }
+      },
+    });
+  }
+
+  async getPersetujuanTiga(): Promise<Kredit[]> {
+    return this.prisma.kredit.findMany({
+      where: {
+        AND: [
+          { status_persetujuansatu: "setuju"},
+          { status_persetujuandua: "setuju"},
+        ]
+      },      
+      include: {
+        nasabah: {
+          include: {
+            karyawan: {
+              include: {
+                kantor: true
+              }
+            },
+            desa: {
+              include: {
+                Kecamatan: {
+                  include: {
+                    KabupatenKota: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        karyawan_pengajuan: { 
+          select: { // ✅ Menggunakan hanya `select`
+            nik: true,
+            namaKaryawan: true,
+            jabatan: true,
+            kantor: true // Tetap bisa dipilih di dalam `select`
+          }
+        }
       },
     });
   }
