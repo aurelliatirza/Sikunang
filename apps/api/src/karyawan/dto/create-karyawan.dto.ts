@@ -26,6 +26,10 @@ export class CreateKaryawanDto {
     @IsNumber()
     nik_direkturBisnis?: number;
 
+    @IsOptional()
+    @IsNumber()
+    nik_kacab?: number;
+
     @IsNumber()
     id_kantor: number;
 }

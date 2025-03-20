@@ -21,6 +21,7 @@ const jabatanOptions = [
   { label: "Marketing", value: "marketing" },
   { label: "SPV", value: "spv" },
   { label: "Kepala Bagian", value: "kabag" },
+  { label: "Kepala Cabang", value: "kacab"},
   { label: "Direktur Bisnis", value: "direkturBisnis" },
 ];
 

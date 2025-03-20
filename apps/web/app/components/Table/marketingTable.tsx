@@ -25,6 +25,7 @@ interface Nasabah {
     nik_SPV?: number;
     nik_kabag?: number;
     nik_direkturBisnis?: number;
+    nik_kacab?: number;
   };
   desa: {
     nama: string;
@@ -48,7 +49,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "spv" | "kabag" | "direkturBisnis";
+  jabatan: "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const MarketingTable: React.FC = () => {
@@ -118,6 +119,10 @@ const MarketingTable: React.FC = () => {
       bawahanNames = kunjunganData
         .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
         .map((item) => item.nasabah.karyawan.namaKaryawan);
+    } else if (userProfile.jabatan === "kacab") {
+      bawahanNames = kunjunganData
+        .filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik)
+        .map((item) => item.nasabah.karyawan.namaKaryawan);
     } else if (userProfile.jabatan === "direkturBisnis") {
       bawahanNames = kunjunganData
         .filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik)
@@ -141,6 +146,11 @@ const MarketingTable: React.FC = () => {
     } else if (userProfile.jabatan === "kabag") {
       filteredData = kunjunganData.filter(
         (item) => item.nasabah.karyawan.nik_kabag === userProfile.nik
+      );
+    } 
+    else if (userProfile.jabatan === "kacab") {
+      filteredData = kunjunganData.filter(
+        (item) => item.nasabah.karyawan.nik_kacab === userProfile.nik
       );
     } else if (userProfile.jabatan === "direkturBisnis") {
       filteredData = kunjunganData.filter(

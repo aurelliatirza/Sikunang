@@ -476,6 +476,42 @@ export class KreditService {
       }
   }
 
+  //Fungsi yang menghitung nominal pengajuan dan nominal disetujui dari masing-masing karyawan
+  async KreditKaryawan() {
+    try {
+      const data = await this.prisma.kredit.groupBy({
+        by: ['id_karyawan_pengajuan'],
+        _sum: {
+          nominal_pengajuan: true,
+          nominal_disetujui: true
+        },
+        orderBy: {
+          _sum: { nominal_pengajuan: 'desc' } // Urutkan dari nominal pengajuan terbesar
+        }
+      });
+  
+      // Tambahkan informasi nama karyawan
+      const result = await Promise.all(data.map(async (item) => {
+        const karyawan = await this.prisma.karyawan.findUnique({
+          where: { nik: item.id_karyawan_pengajuan },
+          select: { namaKaryawan: true }
+        });
+  
+        return {
+          namaKaryawan: karyawan?.namaKaryawan || 'Unknown',
+          total_pengajuan: item._sum.nominal_pengajuan || 0,
+          total_disetujui: item._sum.nominal_disetujui || 0
+        };
+      }));
+  
+      return result;
+    } catch (error) {
+      console.error('Error fetching kredit data:', error);
+      throw new Error('Gagal mengambil data kredit karyawan.');
+    }
+  }
+  
+
   remove(id: number) {
     return `This action removes a #${id} kredit`;
   }

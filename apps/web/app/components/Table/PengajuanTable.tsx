@@ -59,7 +59,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis" | "kacab";
 }
 
 const statusPengajuanOptions = [

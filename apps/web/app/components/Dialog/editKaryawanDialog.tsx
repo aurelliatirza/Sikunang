@@ -17,6 +17,7 @@ interface Karyawan {
   kantor: { id_kantor: number; jenis_kantor: string };
   supervisor?: { nik: number; namaKaryawan: string } | null;
   kepalaBagian?: { nik: number; namaKaryawan: string } | null;
+  kepalaCabang?: { nik: number; namaKaryawan: string } | null;
   direkturBisnis?: { nik: number; namaKaryawan: string } | null;
 }
 
@@ -38,6 +39,7 @@ const jabatanOptions = [
   { label: "Marketing", value: "marketing" },
   { label: "SPV", value: "spv" },
   { label: "Kepala Bagian", value: "kabag" },
+  { label: "Kepala Cabang", value: "kacab" },
   { label: "Direktur Bisnis", value: "direkturBisnis" },
 ];
 
@@ -105,6 +107,7 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
       kantor: formData.kantor,
       supervisor: formData.supervisor ?? null,
       kepalaBagian: formData.kepalaBagian ?? null,
+      kepalaCabang: formData.kepalaCabang ?? null,
       direkturBisnis: formData.direkturBisnis ?? null,
     };
 
@@ -115,6 +118,7 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
       status: payload.status,
       nik_SPV: payload.supervisor ? payload.supervisor.nik : null,
       nik_kabag: payload.kepalaBagian ? payload.kepalaBagian.nik : null,
+      nik_kacab: payload.kepalaCabang ? payload.kepalaCabang.nik : null,
       nik_direkturBisnis: payload.direkturBisnis ? payload.direkturBisnis.nik : null,
       id_kantor: payload.kantor.id_kantor,
     };
@@ -297,6 +301,40 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
             .map((kabag) => (
               <MenuItem key={kabag.nik} value={kabag.nik.toString()}>
                 {kabag.namaKaryawan}
+              </MenuItem>
+            ))}
+        </TextField>
+
+        {/* Kepala Cabang */}
+        <TextField
+          label="Kepala Cabang"
+          fullWidth
+          sx={{ bgcolor: "white" }}
+          margin="dense"
+          select
+          value={
+            formData?.kepalaCabang?.nik
+              ? formData.kepalaCabang.nik.toString()
+              : ""
+          }
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            if (value === "Tidak ada") {
+              handleChange("kepalaCabang", null);
+            } else {
+              handleChange(
+                "kepalaCabang",
+                karyawanList.find((k) => k.nik === parseInt(value)) || null
+              );
+            }
+          }}
+        >
+          <MenuItem value="Tidak ada">Tidak Ada</MenuItem>
+          {karyawanList
+            .filter((k) => k.jabatan === "kacab")
+            .map((kacab) => (
+              <MenuItem key={kacab.nik} value={kacab.nik.toString()}>
+                {kacab.namaKaryawan}
               </MenuItem>
             ))}
         </TextField>

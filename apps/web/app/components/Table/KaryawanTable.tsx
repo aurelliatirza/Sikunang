@@ -14,6 +14,7 @@ interface Karyawan {
   kantor: { id_kantor: number; jenis_kantor: string }
   supervisor?: { nik: number; namaKaryawan: string } | null;
   kepalaBagian?: { nik: number; namaKaryawan: string } | null;
+  kepalaCabang?: {nik: number; namaKaryawan: string} | null;
   direkturBisnis?: { nik: number; namaKaryawan: string } | null;
 }
 
@@ -23,6 +24,7 @@ const jabatanOptions = [
   { label: "Marketing", value: "marketing" },
   { label: "SPV", value: "spv" },
   { label: "Kepala Bagian", value: "kabag" },
+  { label: "Kepala Cabang", value: "kacab"},
   { label: "Direktur Bisnis", value: "direkturBisnis" },
 ];
 
@@ -70,6 +72,7 @@ const KaryawanTable: React.FC = () => {
       status: updatedKaryawan.status,
       nik_SPV: updatedKaryawan.supervisor ? updatedKaryawan.supervisor.nik : null,
       nik_kabag: updatedKaryawan.kepalaBagian ? updatedKaryawan.kepalaBagian.nik : null,
+      nik_kacab: updatedKaryawan.kepalaCabang ? updatedKaryawan.kepalaCabang.nik : null,
       nik_direkturBisnis: updatedKaryawan.direkturBisnis ? updatedKaryawan.direkturBisnis.nik : null,
       id_kantor: updatedKaryawan.kantor.id_kantor,
     };
@@ -119,6 +122,7 @@ const KaryawanTable: React.FC = () => {
             <th className="px-6 py-3 text-center border-l border-white">Status</th>
             <th className="px-6 py-3 text-center border-l border-white">SPV</th>
             <th className="px-6 py-3 text-center border-l border-white">Kabag</th>
+            <th className="px-6 py-3 text-center border-l border-white">Kepala Cabang</th>
             <th className="px-6 py-3 text-center border-l border-white">Direktur Bisnis</th>
             <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
           </tr>
@@ -140,6 +144,7 @@ const KaryawanTable: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">{item.supervisor?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4">{item.kepalaBagian?.namaKaryawan || "-"}</td>
+                <td className="px-6 py-4">{item.kepalaCabang?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4">{item.direkturBisnis?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4 flex justify-center space-x-2">
                   <button

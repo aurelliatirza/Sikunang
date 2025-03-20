@@ -8,7 +8,7 @@ import PengajuanKreditDialog from "../Dialog/pengajuanKreditDialog";
 interface Karyawan {
   nik: number;
   namaKaryawan: string;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "kacab"| "marketing" | "spv" | "kabag" | "direkturBisnis";
   nik_SPV?: number;
   nik_kabag?: number;
   nik_direkturBisnis?: number;
@@ -153,7 +153,7 @@ const NasabahTable: React.FC = () => {
             onChange={(e) => setSelectedBawahan(e.target.value || null)}
             className="border px-4 py-2 rounded-lg"
           >
-            <option value="">Semua Bawahan</option>
+            <option value="">AO</option>
             {bawahanList.map((bawahan, index) => (
               <option key={index} value={bawahan}>
                 {bawahan}

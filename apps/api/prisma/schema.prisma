@@ -14,6 +14,7 @@ model Karyawan {
   status             String      @default("AKTIF")
   nik_SPV            Int?
   nik_kabag          Int?
+  nik_kacab          Int?
   nik_direkturBisnis Int?
   id_kantor          Int
   createdAt          DateTime    @default(now()) @db.Timestamptz(6)
@@ -25,6 +26,8 @@ model Karyawan {
   direkturBisnisSubs Karyawan[]  @relation("DirekturBisnis")
   kepalaBagian       Karyawan?   @relation("Kabag", fields: [nik_kabag], references: [nik])
   kepalaBagianSubs   Karyawan[]  @relation("Kabag")
+  kepalaCabang       Karyawan?   @relation("Kacab", fields: [nik_kacab], references: [nik])
+  kepalaCabangSubs   Karyawan[]  @relation("Kacab")
   nasabah            Nasabah[]   @relation("KaryawanNasabah")  // Relasi ke Nasabah
   user               User?       @relation("KaryawanUser")
 

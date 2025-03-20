@@ -31,7 +31,8 @@ export class KaryawanService {
         kantor: true,
         supervisor: { select: { namaKaryawan: true } },
         kepalaBagian: { select: { namaKaryawan: true } },
-        direkturBisnis: { select: { namaKaryawan: true } }
+        direkturBisnis: { select: { namaKaryawan: true } },
+        kepalaCabang: { select: {namaKaryawan: true }}
       },
   
     });

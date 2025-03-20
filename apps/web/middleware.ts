@@ -34,6 +34,7 @@ export async function middleware(req: NextRequest) {
             Marketing: "marketing",
             SPV: "spv",
             Kabag: "kabag",
+            Kacab: "kacab",
             DirekturBisnis: "direkturBisnis", // ✅ Pastikan ini ada!
         };
 
@@ -56,6 +57,7 @@ export async function middleware(req: NextRequest) {
             marketing: ["/dashboardMarketing", "/laporan", "/kreditMarketing", "/pdfPage", "/nasabah"],
             spv: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat","/pdfPage"],
             kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
+            kacab: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
             direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
         };
 
