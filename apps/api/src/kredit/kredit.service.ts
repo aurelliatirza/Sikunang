@@ -236,10 +236,25 @@ export class KreditService {
     return this.prisma.kredit.findMany({
       where: {
         AND: [
-          { status_persetujuansatu: "setuju"},
-          { status_persetujuandua: "setuju"},
+          { status_persetujuandua: "setuju" }, // Status harus setuju terlebih dahulu
+          {
+            OR: [
+              {
+                AND: [
+                  { karyawan_pengajuan: { kantor: { jenis_kantor: "Pusat" } } },
+                  { nominal_pengajuan: { gt: 50000000 } } // Jika pusat, nominal > 50jt
+                ]
+              },
+              {
+                AND: [
+                  { karyawan_pengajuan: { kantor: { jenis_kantor: { in: ["Cabang", "Kas"] } } } },
+                  { nominal_pengajuan: { gt: 75000000 } } // Jika cabang, nominal > 75jt
+                ]
+              }
+            ]
+          }
         ]
-      },      
+      },
       include: {
         nasabah: {
           include: {
@@ -260,11 +275,11 @@ export class KreditService {
           },
         },
         karyawan_pengajuan: { 
-          select: { // ✅ Menggunakan hanya `select`
+          select: {
             nik: true,
             namaKaryawan: true,
             jabatan: true,
-            kantor: true // Tetap bisa dipilih di dalam `select`
+            kantor: true
           }
         }
       },

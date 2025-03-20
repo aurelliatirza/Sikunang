@@ -4,6 +4,15 @@ import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import PersetujuanKreditDialog from "../Dialog/persetujuanKreditSatuDialog";
+import TablePagination from "@mui/material/TablePagination";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 interface Nasabah {
   id_nasabah: number;
@@ -129,6 +138,8 @@ const PersetujuanSatuTable: React.FC = () => {
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
     const [isPersetujuanDialogOpen, setIsPersetujuanDialogOpen] = useState(false);
     const [selectedKredit, setSelectedKredit] = useState<Persetujuan1Kredit | null>(null);
+    const [startDate, setStartDate] = useState<Dayjs | null>(null);
+    const [endDate, setEndDate] = useState<Dayjs | null>(null);
   
     const handlePersetujuanDialogClose = () => {
       setIsPersetujuanDialogOpen(false);
@@ -257,13 +268,14 @@ const PersetujuanSatuTable: React.FC = () => {
     // Filter data berdasarkan jabatan user yang login
     useEffect(() => {
       if (!userProfile) return;
-  
+
       let filtered: Persetujuan1Kredit[] = [];
-  
+
       if (userProfile.jabatan === "marketing") {
         filtered = kreditData.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
       } else {
         let bawahanNames: string[] = [];
+
         if (userProfile.jabatan === "spv") {
           bawahanNames = kreditData
             .filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik)
@@ -277,18 +289,44 @@ const PersetujuanSatuTable: React.FC = () => {
             .filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik)
             .map((item) => item.nasabah.karyawan.namaKaryawan);
         }
-  
+
         setBawahanList([...new Set(bawahanNames)]);
-  
+
         if (selectedBawahan) {
           filtered = kreditData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
         } else {
           filtered = kreditData;
         }
       }
-  
+
+      // Filter berdasarkan tanggal setelah filter jabatan dan bawahan diterapkan
+      filtered = filtered.filter((item) => {
+        const createdAtDate = dayjs(item.createdAt).startOf("day");
+
+        if (startDate && endDate) {
+          return (
+            createdAtDate.isSameOrAfter(startDate, "day") &&
+            createdAtDate.isSameOrBefore(endDate, "day")
+          );
+        } else if (startDate) {
+          return createdAtDate.isSameOrAfter(startDate, "day");
+        } else if (endDate) {
+          return createdAtDate.isSameOrBefore(endDate, "day");
+        }
+        return true;
+      });
+
       setFilteredData(filtered);
-    }, [userProfile, kreditData, selectedBawahan]);
+    }, [userProfile, kreditData, startDate, endDate, selectedBawahan]);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+      setPage(newPage);
+    };
+  
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    };
 
     //Update
     const handlePersetujuanDialogSave = (nominal_disetujui: number, tenor_disetujui: number) => {
@@ -363,27 +401,26 @@ const PersetujuanSatuTable: React.FC = () => {
             setIsPersetujuanDialogOpen(false);
         }
     };
-    
-
-      const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
-        const selectedKredit = kreditData.find((item) => item.id_kredit === id_kredit);
-        if (!selectedKredit) return;
-    
-        setSelectedId(id_kredit);
-        setDialogAction(action);
-    
-        if (action === "setuju") {
-            // Hanya buka Persetujuan Dialog jika nominal <= 25 juta
-            if (selectedKredit.nominal_pengajuan <= 25000000) {
-                setSelectedKredit(selectedKredit);
-                setIsPersetujuanDialogOpen(true);
-            } else {
-                setIsDialogOpen(true);
-            }
-        } else {
-            // Jika action bukan "setuju", langsung buka ConfirmationDialog
-            setIsDialogOpen(true);
-        }
+  
+    const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan") => {
+      const selectedKredit = kreditData.find((item) => item.id_kredit === id_kredit);
+      if (!selectedKredit) return;
+  
+      setSelectedId(id_kredit);
+      setDialogAction(action);
+  
+      if (action === "setuju") {
+          // Hanya buka Persetujuan Dialog jika nominal <= 25 juta
+          if (selectedKredit.nominal_pengajuan <= 25000000) {
+              setSelectedKredit(selectedKredit);
+              setIsPersetujuanDialogOpen(true);
+          } else {
+              setIsDialogOpen(true);
+          }
+      } else {
+          // Jika action bukan "setuju", langsung buka ConfirmationDialog
+          setIsDialogOpen(true);
+      }
     };
     
     const onConfirmAction = () => {
@@ -407,7 +444,6 @@ const PersetujuanSatuTable: React.FC = () => {
         updatePersetujuan1(payload);
     };
       
-    
     // Debugging perubahan kreditData
     useEffect(() => {
       console.log("Kredit data updated:", kreditData);
@@ -430,11 +466,48 @@ const PersetujuanSatuTable: React.FC = () => {
   
     // Pagination
     const paginatedData = searchedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  useEffect(() => {
+    setPage(0); // Reset ke halaman pertama setiap filter berubah
+  }, [searchQuery, startDate, endDate, selectedBawahan]);
   
 
   return (
     <div className="overflow-x-auto w-full">
         <div className="flex justify-between items-center w-full">
+        <TablePagination
+          component="div"
+          count={filteredData.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Rows per page"
+          labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
+          sx={{
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
+            ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
+          }}
+        />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <div className="flex gap-4">
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+                format="DD/MM/YYYY"
+                slotProps={{ textField: { size: "small", fullWidth: true } }}
+              />
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+                format="DD/MM/YYYY"
+                slotProps={{ textField: { size: "small", fullWidth: true } }}
+              />
+              </div>
+          </LocalizationProvider>
             {/* Search Box */}
             <form className="flex items-center" onSubmit={handleSearchSubmit}>
                 <div className="relative flex items-center">
@@ -445,7 +518,7 @@ const PersetujuanSatuTable: React.FC = () => {
                 </div>
                 <input
                     type="text"
-                    placeholder="Search here..."
+                    placeholder="Search nasabah"
                     className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
                     value={searchQuery}
                     onChange={handleSearch} // 🔥 Filter data saat mengetik
@@ -460,7 +533,7 @@ const PersetujuanSatuTable: React.FC = () => {
                 onChange={(e) => setSelectedBawahan(e.target.value || null)}
                 className="border px-4 py-2 rounded-lg"
                 >
-                <option value="">Semua Bawahan</option>
+                <option value="">AO</option>
                 {bawahanList.map((bawahan, index) => (
                     <option key={index} value={bawahan}>
                     {bawahan}
@@ -521,129 +594,164 @@ const PersetujuanSatuTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-        {paginatedData.map((item, index) => (
-            <tr key={item.id_kredit} className="text-center">
-              <td className="px-6 py-4">{index + 1}</td>
-              <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
-              <td className="px-6 py-4">{item.nasabah.alamat}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.namaUsaha}</td>
-              <td className="px-6 py-4">
-                {new Date(item.createdAt).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
-                  item.nominal_pengajuan
-                )}
-              </td>
-              <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
-              <td className="px-6 py-4">{item.tenor_pengajuan}</td>
-              <td className="px-6 py-4">{getNamaKaryawanPengajuan(item.id_karyawan_pengajuan, karyawanData)}</td>
-              {/* Langkah kedua */}
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtSlik).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getStatusSlikLabel(item.status_Slik)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanSlik(item.id_karyawan_slik, karyawanData)}</td>
-              {/* Langkah Ketiga */}
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtAnalisisSlik).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getStatusAnalisisLabel(item.status_analisisSlik)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanAnalisis(item.id_karyawan_analisisSlik, karyawanData)}</td>
-              {/* Langkah Keempat */}
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtVisitNasabah).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getStatusVisitLabel(item.status_visitNasabah)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanVisit(item.id_karyawan_visitNasabah, karyawanData)}</td>
-              {/* Langkah Kelima */}
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtProposalKredit).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getProposalLabel(item.status_proposalKredit)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanProposal(item.id_karyawan_proposalKredit, karyawanData)}</td>
-              {/* Langkah Keenam */}
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtPersetujuansatu).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getPersetujuan1Label(item.status_persetujuansatu)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanPersetujuan1(item.id_karyawan_persetujuansatu, karyawanData)}</td>
-              <td className="px-6 py-4">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
-                  item.nominal_disetujui
-                )}
-              </td>
-              <td className="px-6 py-4">{item.tenor_disetujui}</td>
-              {[ "spv"].includes(jabatan ?? "") && (
-                <td className="px-6 py-4 flex space-x-2">
-                  <div className="flex justify-center gap-4">
-                  {item.status_persetujuansatu === "belum_disetujui" ? (
-                    <>
-                      <button className= "bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "setuju")}>Setujui</button>
-                      <button className= "bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "tolak")}>Tolak</button>
-                    </>
-                  ) : (
-                    <button 
-                    className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" 
-                    onClick={() => handleAction(item.id_kredit, "batalkan")}
-                    disabled={String(item.status_persetujuandua).trim() !== "belum_disetujui"}
-                  >
-                    Batalkan
-                  </button>
-
+          {paginatedData.length > 0 && 
+            paginatedData
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .map((item, index) => (
+                <tr key={item.id_kredit} className="text-center">
+                  <td className="px-6 py-4">{index + 1}</td>
+                  <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
+                  <td className="px-6 py-4">{item.nasabah.alamat}</td>
+                  <td className="px-6 py-4">{item.nasabah.desa.nama}</td>
+                  <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.nama}</td>
+                  <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
+                  <td className="px-6 py-4">{item.nasabah.namaUsaha}</td>
+                  <td className="px-6 py-4">
+                    {new Date(item.createdAt).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
+                      item.nominal_pengajuan
+                    )}
+                  </td>
+                  <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
+                  <td className="px-6 py-4">{item.tenor_pengajuan}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanPengajuan(item.id_karyawan_pengajuan, karyawanData)}</td>
+                  {/* Langkah kedua */}
+                  <td className="px-6 py-4">
+                    {new Date(item.updatedAtSlik).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">{getStatusSlikLabel(item.status_Slik)}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanSlik(item.id_karyawan_slik, karyawanData)}</td>
+                  {/* Langkah Ketiga */}
+                  <td className="px-6 py-4">
+                    {new Date(item.updatedAtAnalisisSlik).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">{getStatusAnalisisLabel(item.status_analisisSlik)}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanAnalisis(item.id_karyawan_analisisSlik, karyawanData)}</td>
+                  {/* Langkah Keempat */}
+                  <td className="px-6 py-4">
+                    {new Date(item.updatedAtVisitNasabah).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">{getStatusVisitLabel(item.status_visitNasabah)}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanVisit(item.id_karyawan_visitNasabah, karyawanData)}</td>
+                  {/* Langkah Kelima */}
+                  <td className="px-6 py-4">
+                    {new Date(item.updatedAtProposalKredit).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">{getProposalLabel(item.status_proposalKredit)}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanProposal(item.id_karyawan_proposalKredit, karyawanData)}</td>
+                  {/* Langkah Keenam */}
+                  <td className="px-6 py-4">
+                    {new Date(item.updatedAtPersetujuansatu).toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4">{getPersetujuan1Label(item.status_persetujuansatu)}</td>
+                  <td className="px-6 py-4">{getNamaKaryawanPersetujuan1(item.id_karyawan_persetujuansatu, karyawanData)}</td>
+                  <td className="px-6 py-4">
+                    {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
+                      item.nominal_disetujui
+                    )}
+                  </td>
+                  <td className="px-6 py-4">{item.tenor_disetujui}</td>
+                  {["spv"].includes(jabatan ?? "") && (
+                    <td className="px-6 py-4 flex space-x-2">
+                      <div className="flex justify-center gap-4">
+                        {item.status_persetujuansatu === "belum_disetujui" ? (
+                          <>
+                            <button
+                              className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+                              onClick={() => handleAction(item.id_kredit, "setuju")}
+                            >
+                              Setujui
+                            </button>
+                            <button
+                              className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+                              onClick={() => handleAction(item.id_kredit, "tolak")}
+                            >
+                              Tolak
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            onClick={() => handleAction(item.id_kredit, "batalkan")}
+                            disabled={String(item.status_persetujuandua).trim() !== "belum_disetujui"}
+                          >
+                            Batalkan
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   )}
-                  </div>
-              </td>
-              )}
-            </tr>
-          ))}
+                </tr>
+              ))
+          }
         </tbody>
       </table>
+      <div className="flex justify-end py-2">
+        <TablePagination
+            component="div"
+            count={filteredData.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+            rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
+            labelRowsPerPage=""
+            labelDisplayedRows={({ page, count }) =>
+              `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+            }
+            sx={{
+              display: "flex", // 🔹 Pastikan flexbox aktif
+              justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+              ".MuiTablePagination-spacer": { display: "none" },
+              ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+              ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+            }}
+        />
+      </div>
       <ConfirmationDialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

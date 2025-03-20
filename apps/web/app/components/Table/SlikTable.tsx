@@ -3,7 +3,15 @@ import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import TablePagination from "@mui/material/TablePagination";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 interface Nasabah {
   namaNasabah: string;
@@ -32,7 +40,7 @@ interface Karyawan {
   namaKaryawan: string;
   kantor: {
     id_kantor: number;
-    jenis_kantor: String;
+    jenis_kantor: string;
   }
 }
 
@@ -43,6 +51,7 @@ interface KreditPengajuan {
   tenor_pengajuan: number;
   status_pengajuan: string;
   id_karyawan_pengajuan: number;
+  karyawan_pengajuan: Karyawan,
   status_Slik: string
   id_karyawan_slik: number;    
   updatedAtSlik: string;
@@ -54,7 +63,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "adminSlik" | "marketing" | "spv" | "kabag" | "direkturBisnis";
 }
 const statusSlikOptions = [
   { label: "Belum Ditinjau", value: "belum_ditinjau"},
@@ -76,7 +85,7 @@ const SlikTable: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedKantor, setSelectedKantor] = useState<number | null>(null);
+    const [selectedKantor, setSelectedKantor] = useState<string | null>(null);
     const [open, setOpen] = React.useState(false);
     const [statusSlik, setStatusSlik] = useState<string | null>(null);
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -86,6 +95,8 @@ const SlikTable: React.FC = () => {
     const [openKonfirmasiCetakDialog, setOpenKonfirmasiCetakDialog] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+    const [startDate, setStartDate] = useState<Dayjs | null>(null);
+    const [endDate, setEndDate] = useState<Dayjs | null>(null);
 
   
     const getStatusSlikLabel = (status_Slik: string) => {
@@ -153,15 +164,42 @@ const SlikTable: React.FC = () => {
       fetchUserProfile();
     }, []);
     
-    // Filter data kredit berdasarkan kantor
     const filteredKreditData = useMemo(() => {
-      if (!karyawanData.length) return kreditData; // Jika data belum ada, tampilkan semua
+      if (!kreditData.length) return []; // Jika tidak ada data kredit, kembalikan array kosong
     
-      return kreditData.filter((item) => {
-        const karyawanPengaju = karyawanData.find((k) => k.nik === item.id_karyawan_pengajuan);
-        return karyawanPengaju && (!selectedKantor || karyawanPengaju.kantor.id_kantor === selectedKantor);
+      let filtered = kreditData.filter((item) => {
+        const kantorJenis = item.karyawan_pengajuan?.kantor?.jenis_kantor || ""; // ⬅️ Default jadi string
+        return !selectedKantor || kantorJenis === selectedKantor; // ⬅️ Langsung dibandingkan tanpa `toString()`
       });
-    }, [kreditData, karyawanData, selectedKantor]);
+    
+      // Filter berdasarkan tanggal setelah filter kantor diterapkan
+      filtered = filtered.filter((item) => {
+        const createdAtDate = dayjs(item.createdAt).startOf("day");
+    
+        if (startDate && endDate) {
+          return (
+            createdAtDate.isSameOrAfter(startDate, "day") &&
+            createdAtDate.isSameOrBefore(endDate, "day")
+          );
+        } else if (startDate) {
+          return createdAtDate.isSameOrAfter(startDate, "day");
+        } else if (endDate) {
+          return createdAtDate.isSameOrBefore(endDate, "day");
+        }
+        return true;
+      });
+    
+      return filtered;
+    }, [kreditData, selectedKantor, startDate, endDate]);
+    
+    const handleChangePage = (_: unknown, newPage: number) => {
+      setPage(newPage);
+    };
+  
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    };
     
     const handleConfirm = async () => {
       if (!selectedId) return;
@@ -235,6 +273,7 @@ const SlikTable: React.FC = () => {
       setSearchQuery(event.target.value);
       setPage(0);
     };
+
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
     };
@@ -243,47 +282,87 @@ const SlikTable: React.FC = () => {
     const searchedData = filteredKreditData.filter((item) =>
       item.nasabah.namaNasabah.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
 
     // Pagination
-    const paginatedData = searchedData.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    );
+    const paginatedData = searchedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  useEffect(() => {
+    setPage(0); // Reset ke halaman pertama setiap filter berubah
+  }, [searchQuery, startDate, endDate, selectedKantor]);
 
   return (
     <div className="overflow-x-auto w-full">
-      {/* Search Box */}
-      <form className="flex items-center" onSubmit={handleSearchSubmit}>
-        <div className="relative flex items-center">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 text-sm sm:text-base md:text-lg">
-              <FaSearch />
-            </span>
-          </div>
-          <input
-            type="text"
-            placeholder="Search here..."
-            className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
-            value={searchQuery}
-            onChange={handleSearch} // 🔥 Filter data saat mengetik
-          />
-        </div>
-      </form>
-      {/* Select Kantor */}
-      <select
-        className="border px-3 py-2 rounded shadow outline-none focus:ring"
-        value={selectedKantor || ""}
-        onChange={(e) => setSelectedKantor(e.target.value ? Number(e.target.value) : null)}
-      >
-        <option value="">Semua Kantor</option>
-        {Array.from(new Set(karyawanData.map(k => k.kantor.id_kantor))).map(id_kantor => (
-          <option key={id_kantor} value={id_kantor}>
-            Kantor {id_kantor}
-          </option>
-        ))}
-      </select>
+      {/* Wrapper untuk Pagination dan Filter */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 w-full">
+        {/* Pagination */}
+        <TablePagination
+          component="div"
+          count={filteredData.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Rows per page"
+          labelDisplayedRows={() => ""}
+          sx={{
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-displayedRows": { display: "none" },
+            ".MuiTablePagination-actions": { display: "none" },
+          }}
+        />
 
+        {/* Filter Tanggal */}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <div className="flex gap-2 sm:gap-4 items-center">
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+              format="DD/MM/YYYY"
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+              format="DD/MM/YYYY"
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+          </div>
+        </LocalizationProvider>
+
+        {/* Search Box */}
+        <form className="flex items-center" onSubmit={handleSearchSubmit}>
+            <div className="relative flex items-center">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+                <FaSearch />
+                </span>
+            </div>
+            <input
+                type="text"
+                placeholder="Search nasabah"
+                className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+                value={searchQuery}
+                onChange={handleSearch} // 🔥 Filter data saat mengetik
+            />
+            </div>
+        </form>
+
+        {/* Select Kantor */}
+        <select
+          className="border px-3 py-2 rounded shadow outline-none focus:ring"
+          value={selectedKantor || ""}
+          onChange={(e) => setSelectedKantor(e.target.value || null)} // ⬅️ Tidak perlu `Number()`
+        >
+          <option value="">Semua Kantor</option>
+          {Array.from(new Set(karyawanData.map(k => k.kantor.jenis_kantor))).map(jenis_kantor => (
+            <option key={jenis_kantor} value={jenis_kantor}>
+              {jenis_kantor}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
         <thead>
@@ -314,7 +393,10 @@ const SlikTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((item, index) => (
+          {paginatedData.length > 0 && 
+            paginatedData
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .map((item, index) => (
             <tr key={item.id_kredit} className="text-center">
               <td className="px-6 py-4">{index + 1}</td>
               <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
@@ -386,6 +468,28 @@ const SlikTable: React.FC = () => {
         </tbody>
 
       </table>
+      <div className="flex justify-end py-2">
+        <TablePagination
+            component="div"
+            count={filteredData.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+            rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
+            labelRowsPerPage=""
+            labelDisplayedRows={({ page, count }) =>
+              `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+            }
+            sx={{
+              display: "flex", // 🔹 Pastikan flexbox aktif
+              justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+              ".MuiTablePagination-spacer": { display: "none" },
+              ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+              ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+            }}
+        />
+      </div>
         {/* Reusable Dialog */}
         <ConfirmationDialog
           open={openDialog}

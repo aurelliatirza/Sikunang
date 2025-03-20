@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from "react";
-import TablePagination from "@mui/material/TablePagination";
 import { FaSearch } from "react-icons/fa";
 import ConfirmationDialog from "../Dialog/alertKonfirmasiKreditDialog";
 import Snackbar from "@mui/material/Snackbar";
 import { useRouter } from "next/navigation";
 import { Alert } from "@mui/material";
 import EditPengajuanDialog from "../Dialog/editPengajuanDialog";
+import TablePagination from "@mui/material/TablePagination";
+import dayjs, { Dayjs } from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 interface Nasabah {
   namaNasabah: string;
@@ -77,6 +84,8 @@ const PengajuanTable: React.FC = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
   //untuk Edit
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedKreditPengajuan, setSelectedKreditPengajuan] = useState<KreditPengajuan | null>(null);
@@ -149,48 +158,68 @@ const PengajuanTable: React.FC = () => {
     fetchKaryawan();
   }, []);
 
-  // Filter data berdasarkan jabatan user yang login
-  useEffect(() => {
-    if (!userProfile) return;
+    // Filter data berdasarkan jabatan user yang login
+    useEffect(() => {
+      if (!userProfile) return;
 
-    let filtered: KreditPengajuan[] = [];
+      let filtered: KreditPengajuan[] = [];
 
-    if (userProfile.jabatan === "marketing") {
-      filtered = kreditData.filter(
-        (item) => item.nasabah.karyawan.nik === userProfile.nik
-      );
-    } else {
-      let bawahanNames: string[] = [];
-      if (userProfile.jabatan === "spv") {
-        bawahanNames = kreditData
-          .filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik)
-          .map((item) => item.nasabah.karyawan.namaKaryawan);
-      } else if (userProfile.jabatan === "kabag") {
-        bawahanNames = kreditData
-          .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
-          .map((item) => item.nasabah.karyawan.namaKaryawan);
-      } else if (userProfile.jabatan === "direkturBisnis") {
-        bawahanNames = kreditData
-          .filter(
-            (item) =>
-              item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik
-          )
-          .map((item) => item.nasabah.karyawan.namaKaryawan);
-      }
-
-      setBawahanList([...new Set(bawahanNames)]);
-
-      if (selectedBawahan) {
-        filtered = kreditData.filter(
-          (item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan
-        );
+      if (userProfile.jabatan === "marketing") {
+        filtered = kreditData.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
       } else {
-        filtered = kreditData;
-      }
-    }
+        let bawahanNames: string[] = [];
 
-    setFilteredData(filtered);
-  }, [userProfile, kreditData, selectedBawahan]);
+        if (userProfile.jabatan === "spv") {
+          bawahanNames = kreditData
+            .filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik)
+            .map((item) => item.nasabah.karyawan.namaKaryawan);
+        } else if (userProfile.jabatan === "kabag") {
+          bawahanNames = kreditData
+            .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
+            .map((item) => item.nasabah.karyawan.namaKaryawan);
+        } else if (userProfile.jabatan === "direkturBisnis") {
+          bawahanNames = kreditData
+            .filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik)
+            .map((item) => item.nasabah.karyawan.namaKaryawan);
+        }
+
+        setBawahanList([...new Set(bawahanNames)]);
+
+        if (selectedBawahan) {
+          filtered = kreditData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+        } else {
+          filtered = kreditData;
+        }
+      }
+
+      // Filter berdasarkan tanggal setelah filter jabatan dan bawahan diterapkan
+      filtered = filtered.filter((item) => {
+        const createdAtDate = dayjs(item.createdAt).startOf("day");
+
+        if (startDate && endDate) {
+          return (
+            createdAtDate.isSameOrAfter(startDate, "day") &&
+            createdAtDate.isSameOrBefore(endDate, "day")
+          );
+        } else if (startDate) {
+          return createdAtDate.isSameOrAfter(startDate, "day");
+        } else if (endDate) {
+          return createdAtDate.isSameOrBefore(endDate, "day");
+        }
+        return true;
+      });
+
+      setFilteredData(filtered);
+    }, [userProfile, kreditData, startDate, endDate, selectedBawahan]);
+
+    const handleChangePage = (_: unknown, newPage: number) => {
+      setPage(newPage);
+    };
+  
+    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    };
 
   const handleCancel = async () => {
     if (!selectedId) return;
@@ -261,40 +290,74 @@ const PengajuanTable: React.FC = () => {
 
   return (
     <div className="w-full p-4">
-      {/* Search Box */}
-      <form className="flex items-center" onSubmit={handleSearchSubmit}>
-        <div className="relative flex items-center">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 text-sm sm:text-base md:text-lg">
-              <FaSearch />
-            </span>
-          </div>
-          <input
-            type="text"
-            placeholder="Search here..."
-            className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
-            value={searchQuery}
-            onChange={handleSearch} // 🔥 Filter data saat mengetik
-          />
+        <div className="flex justify-between items-center w-full">
+        <TablePagination
+          component="div"
+          count={filteredData.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Rows per page"
+          labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
+          sx={{
+            ".MuiTablePagination-spacer": { display: "none" },
+            ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
+            ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
+          }}
+        />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <div className="flex gap-4">
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+                format="DD/MM/YYYY"
+                slotProps={{ textField: { size: "small", fullWidth: true } }}
+              />
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+                format="DD/MM/YYYY"
+                slotProps={{ textField: { size: "small", fullWidth: true } }}
+              />
+              </div>
+          </LocalizationProvider>
+            {/* Search Box */}
+            <form className="flex items-center" onSubmit={handleSearchSubmit}>
+                <div className="relative flex items-center">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+                    <FaSearch />
+                    </span>
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search nasabah"
+                    className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+                    value={searchQuery}
+                    onChange={handleSearch} // 🔥 Filter data saat mengetik
+                />
+                </div>
+            </form>
+
+            {/* Filter Bawahan (Posisi di kanan) */}
+            {userProfile && userProfile.jabatan !== "marketing" && (
+                <select
+                value={selectedBawahan || ""}
+                onChange={(e) => setSelectedBawahan(e.target.value || null)}
+                className="border px-4 py-2 rounded-lg"
+                >
+                <option value="">AO</option>
+                {bawahanList.map((bawahan, index) => (
+                    <option key={index} value={bawahan}>
+                    {bawahan}
+                    </option>
+                ))}
+                </select>
+            )}
         </div>
-      </form>
-
-        {/* Filter Bawahan */}
-        {userProfile && userProfile.jabatan !== "marketing" && (
-          <select
-            value={selectedBawahan || ""}
-            onChange={(e) => setSelectedBawahan(e.target.value || null)}
-            className="border px-4 py-2 rounded-lg"
-          >
-            <option value="">Semua Bawahan</option>
-            {bawahanList.map((bawahan, index) => (
-              <option key={index} value={bawahan}>
-                {bawahan}
-              </option>
-            ))}
-          </select>
-        )}
-
       {/* Tabel */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm border border-gray-300">
@@ -322,8 +385,11 @@ const PengajuanTable: React.FC = () => {
           </tr>
         </thead>
           <tbody>
-            {paginatedData.map((item, index) => (
-              <tr key={index} className="border-t">
+          {paginatedData.length > 0 && 
+            paginatedData
+              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              .map((item, index) => (
+              <tr key={item.id_kredit} className="text-center">
                 <td className="px-6 py-4">{index + 1}</td>
                 <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
                 <td className="px-6 py-4">{item.nasabah.alamat}</td>
@@ -383,6 +449,28 @@ const PengajuanTable: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-end py-2">
+        <TablePagination
+            component="div"
+            count={filteredData.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+            rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
+            labelRowsPerPage=""
+            labelDisplayedRows={({ page, count }) =>
+              `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
+            }
+            sx={{
+              display: "flex", // 🔹 Pastikan flexbox aktif
+              justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
+              ".MuiTablePagination-spacer": { display: "none" },
+              ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
+              ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
+            }}
+        />
+      </div>
           <ConfirmationDialog
             open={isCancelDialogOpen}
             onClose={() => setIsCancelDialogOpen(false)}
