@@ -10,6 +10,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Chip } from "@mui/material";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -347,232 +348,245 @@ const AnalisisSlikTable: React.FC = () => {
   }, [searchQuery, startDate, endDate, selectedBawahan]);
 
   return (
-    <div className="overflow-x-auto w-full">
-        <div className="flex justify-between items-center w-full">
-        <TablePagination
-          component="div"
-          count={filteredData.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Rows per page"
-          labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
-          sx={{
-            ".MuiTablePagination-spacer": { display: "none" },
-            ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
-            ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
-          }}
-        />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <div className="flex gap-4">
-              <DatePicker
-                label="Start Date"
-                value={startDate}
-                onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
-                format="DD/MM/YYYY"
-                slotProps={{ textField: { size: "small", fullWidth: true } }}
-              />
-              <DatePicker
-                label="End Date"
-                value={endDate}
-                onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
-                format="DD/MM/YYYY"
-                slotProps={{ textField: { size: "small", fullWidth: true } }}
-              />
-              </div>
-          </LocalizationProvider>
-            {/* Search Box */}
-            <form className="flex items-center" onSubmit={handleSearchSubmit}>
-                <div className="relative flex items-center">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <span className="text-gray-500 text-sm sm:text-base md:text-lg">
-                    <FaSearch />
-                    </span>
-                </div>
-                <input
-                    type="text"
-                    placeholder="Search nasabah"
-                    className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
-                    value={searchQuery}
-                    onChange={handleSearch} // 🔥 Filter data saat mengetik
-                />
-                </div>
-            </form>
-
-            {/* Filter Bawahan (Posisi di kanan) */}
-            {userProfile && userProfile.jabatan !== "marketing" && (
-                <select
-                value={selectedBawahan || ""}
-                onChange={(e) => setSelectedBawahan(e.target.value || null)}
-                className="border px-4 py-2 rounded-lg"
-                >
-                <option value="">AO</option>
-                {bawahanList.map((bawahan, index) => (
-                    <option key={index} value={bawahan}>
-                    {bawahan}
-                    </option>
-                ))}
-                </select>
-            )}
+    <>
+    <div className="flex justify-between items-center w-full">
+      <TablePagination
+        component="div"
+        count={filteredData.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Rows per page"
+        labelDisplayedRows={() => ""} // 🔹 Hilangkan informasi halaman di sini
+        sx={{
+          ".MuiTablePagination-spacer": { display: "none" },
+          ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
+          ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
+        }} />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <div className="flex gap-4">
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+            format="DD/MM/YYYY"
+            slotProps={{ textField: { size: "small", fullWidth: true } }} />
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+            format="DD/MM/YYYY"
+            slotProps={{ textField: { size: "small", fullWidth: true } }} />
         </div>
+      </LocalizationProvider>
+      {/* Search Box */}
+      <form className="flex items-center" onSubmit={handleSearchSubmit}>
+        <div className="relative flex items-center">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+              <FaSearch />
+            </span>
+          </div>
+          <input
+            type="text"
+            placeholder="Search nasabah"
+            className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+            value={searchQuery}
+            onChange={handleSearch} // 🔥 Filter data saat mengetik
+          />
+        </div>
+      </form>
 
-      {/* Tabel */}
-      <table className="min-w-[1200px] text-sm border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-blue-500 text-white">
-            <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama Nasabah</th>
-            <th className="px-6 py-3 text-center border-l border-white">Alamat</th>
-            <th className="px-6 py-3 text-center border-l border-white">Kelurahan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Kecamatan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Kota</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama Usaha</th>
-            <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nominal Pengajuan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
-            <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama Pengaju</th>
-            {/* Langkah Kedua */}
-            <th className="px-6 py-3 text-center border-l border-white">Waktu Slik</th>
-            <th className="px-6 py-3 text-center border-l border-white">Status Slik</th>
-            <th className="px-6 py-3 text-center border-l border-white">Nama Admin Slik</th>
-            {/* Langkah Ketiga */}
-            <th className="px-6 py-3 text-center border-l border-white">Waktu Analisis</th>
-            <th className="px-6 py-3 text-center border-l border-white">Status Analisis</th>
-            {jabatan === "spv" ? (
-              <>
-                <th className="px-6 py-3 text-center border-l border-white">Nama Analis</th>
-                <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
-              </>
-            ) : (
-              <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Analis</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-        {paginatedData.length > 0 && 
-            paginatedData
-              .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-              .map((item, index) => (
-                <tr key={item.id_kredit} className="text-center">
-                  <td className="px-6 py-4">{index + 1}</td>
-              <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
-              <td className="px-6 py-4">{item.nasabah.alamat}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
-              <td className="px-6 py-4">{item.nasabah.namaUsaha}</td>
-              <td className="px-6 py-4">
-                {new Date(item.createdAt).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">
-                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
-                  item.nominal_pengajuan
-                )}
-              </td>
-              <td className="px-6 py-4">{getStatusPengajuanLabel(item.status_pengajuan)}</td>
-              <td className="px-6 py-4">{item.tenor_pengajuan}</td>
-              <td className="px-6 py-4">{getNamaKaryawanPengajuan(item.id_karyawan_pengajuan, karyawanData)}</td>
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtSlik).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getStatusSlikLabel(item.status_Slik)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanSlik(item.id_karyawan_slik, karyawanData)}</td>
-              <td className="px-6 py-4">
-                {new Date(item.updatedAtAnalisisSlik).toLocaleString("id-ID", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </td>
-              <td className="px-6 py-4">{getStatusAnalisisLabel(item.status_analisisSlik)}</td>
-              <td className="px-6 py-4">{getNamaKaryawanAnalisis(item.id_karyawan_analisisSlik, karyawanData)}</td>
-              {[ "spv"].includes(jabatan ?? "") && (
-                <td className="px-6 py-4 flex space-x-2">
-                  <div className="flex justify-center gap-4">
-                  {item.status_analisisSlik === "belum_dianalisis" ? (
-                    <>
-                      <button className= "bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "setuju")}>Setujui</button>
-                      <button className= "bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "tolak")}>Tolak</button>
-                    </>
-                  ) : (
-                    <button 
-                    className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed" 
-                    onClick={() => handleAction(item.id_kredit, "batalkan")}
-                    disabled={String(item.status_visitNasabah).trim() !== "belum_dilakukan"}
-                  >
-                    Batalkan
-                  </button>
-
-                  )}
-                  </div>
-              </td>
+      {/* Filter Bawahan (Posisi di kanan) */}
+      {userProfile && userProfile.jabatan !== "marketing" && (
+        <select
+          value={selectedBawahan || ""}
+          onChange={(e) => setSelectedBawahan(e.target.value || null)}
+          className="border px-4 py-2 rounded-lg"
+        >
+          <option value="">AO</option>
+          {bawahanList.map((bawahan, index) => (
+            <option key={index} value={bawahan}>
+              {bawahan}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+    <div className="overflow-x-auto w-full">
+        {/* Tabel */}
+        <table className="min-w-[1200px] text-sm border-collapse border border-gray-300 mt-2">
+          <thead>
+            <tr className="bg-blue-500 text-white">
+              <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
+              <th className="px-6 py-3 text-center border-l border-white">Nama Nasabah</th>
+              <th className="px-6 py-3 text-center border-l border-white">Alamat</th>
+              <th className="px-6 py-3 text-center border-l border-white">Kelurahan</th>
+              <th className="px-6 py-3 text-center border-l border-white">Kecamatan</th>
+              <th className="px-6 py-3 text-center border-l border-white">Kota</th>
+              <th className="px-6 py-3 text-center border-l border-white">Nama Usaha</th>
+              <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
+              <th className="px-6 py-3 text-center border-l border-white">Nominal Pengajuan</th>
+              <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
+              <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
+              <th className="px-6 py-3 text-center border-l border-white">Nama Pengaju</th>
+              {/* Langkah Kedua */}
+              <th className="px-6 py-3 text-center border-l border-white">Waktu Slik</th>
+              <th className="px-6 py-3 text-center border-l border-white">Status Slik</th>
+              <th className="px-6 py-3 text-center border-l border-white">Nama Admin Slik</th>
+              {/* Langkah Ketiga */}
+              <th className="px-6 py-3 text-center border-l border-white">Waktu Analisis</th>
+              <th className="px-6 py-3 text-center border-l border-white">Status Analisis</th>
+              {jabatan === "spv" ? (
+                <>
+                  <th className="px-6 py-3 text-center border-l border-white">Nama Analis</th>
+                  <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
+                </>
+              ) : (
+                <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Nama Analis</th>
               )}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-end py-2">
-        <TablePagination
+          </thead>
+          <tbody>
+            {paginatedData.length > 0 &&
+              paginatedData
+                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                .map((item, index) => (
+                  <tr key={item.id_kredit} className="text-center">
+                    <td className="px-6 py-4">{index + 1}</td>
+                    <td className="px-6 py-4">{item.nasabah.namaNasabah}</td>
+                    <td className="px-6 py-4">{item.nasabah.alamat}</td>
+                    <td className="px-6 py-4">{item.nasabah.desa.nama}</td>
+                    <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.nama}</td>
+                    <td className="px-6 py-4">{item.nasabah.desa.Kecamatan.KabupatenKota.nama}</td>
+                    <td className="px-6 py-4">{item.nasabah.namaUsaha}</td>
+                    <td className="px-6 py-4">
+                      {new Date(item.createdAt).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
+                        item.nominal_pengajuan
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Chip
+                        label={getStatusPengajuanLabel(item.status_pengajuan)}
+                        color={item.status_pengajuan == "sedang_diajukan" ? "primary" : "error"}
+                        variant="filled" />
+                    </td>
+                    <td className="px-6 py-4">{item.tenor_pengajuan}</td>
+                    <td className="px-6 py-4">{getNamaKaryawanPengajuan(item.id_karyawan_pengajuan, karyawanData)}</td>
+                    <td className="px-6 py-4">
+                      {new Date(item.updatedAtSlik).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Chip
+                        label={getStatusSlikLabel(item.status_Slik)}
+                        color={item.status_Slik == "belum_ditinjau" ? "primary" : "success"}
+                        variant="filled" />
+                    </td>
+                    <td className="px-6 py-4">{getNamaKaryawanSlik(item.id_karyawan_slik, karyawanData)}</td>
+                    <td className="px-6 py-4">
+                      {new Date(item.updatedAtAnalisisSlik).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Chip
+                        label={getStatusAnalisisLabel(item.status_analisisSlik)}
+                        color={item.status_analisisSlik === "belum_dianalisis"
+                          ? "primary"
+                          : item.status_analisisSlik === "setuju"
+                            ? "success"
+                            : "error"}
+                        variant="filled" // Bisa diganti "outlined" jika ingin tanpa background
+                      />
+                    </td>
+                    <td className="px-6 py-4">{getNamaKaryawanAnalisis(item.id_karyawan_analisisSlik, karyawanData)}</td>
+                    {["spv"].includes(jabatan ?? "") && (
+                      <td className="px-6 py-4 flex space-x-2">
+                        <div className="flex justify-center gap-4">
+                          {item.status_analisisSlik === "belum_dianalisis" ? (
+                            <>
+                              <button className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "setuju")}>Setujui</button>
+                              <button className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md" onClick={() => handleAction(item.id_kredit, "tolak")}>Tolak</button>
+                            </>
+                          ) : (
+                            <button
+                              className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                              onClick={() => handleAction(item.id_kredit, "batalkan")}
+                              disabled={String(item.status_visitNasabah).trim() !== "belum_dilakukan"}
+                            >
+                              Batalkan
+                            </button>
+
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+          </tbody>
+        </table>
+        <div className="flex justify-end py-2">
+          <TablePagination
             component="div"
             count={filteredData.length}
             page={page}
             onPageChange={handleChangePage}
             rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={() => {}} // 🔹 Dinonaktifkan agar tidak muncul lagi
+            onRowsPerPageChange={() => { } } // 🔹 Dinonaktifkan agar tidak muncul lagi
             rowsPerPageOptions={[]} // 🔹 Hilangkan dropdown "Rows per page" di bawah
             labelRowsPerPage=""
-            labelDisplayedRows={({ page, count }) =>
-              `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`
-            }
+            labelDisplayedRows={({ page, count }) => `Halaman ${page + 1} dari ${Math.ceil(count / rowsPerPage)}`}
             sx={{
               display: "flex", // 🔹 Pastikan flexbox aktif
               justifyContent: "flex-end", // 🔹 Pindahkan ke kanan
               ".MuiTablePagination-spacer": { display: "none" },
               ".MuiTablePagination-selectLabel": { display: "none" }, // 🔹 Hilangkan "Rows per page" bawah
               ".MuiTablePagination-input": { display: "none" }, // 🔹 Hilangkan dropdown bawah
-            }}
-        />
-      </div>
-      <ConfirmationDialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        onConfirm={onConfirmAction}
-        title={dialogAction === "batalkan" ? "Batalkan Pengajuan Kredit" : "Konfirmasi Aksi"}
-        message={`Apakah Anda yakin ingin ${dialogAction} kredit ini?`}
-        confirmText={dialogAction === "batalkan" ? "Ya, Batalkan" : "Ya"}
-        cancelText="Batal"
-      />
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+            }} />
+        </div>
+        <ConfirmationDialog
+          open={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          onConfirm={onConfirmAction}
+          title={dialogAction === "batalkan" ? "Batalkan Pengajuan Kredit" : "Konfirmasi Aksi"}
+          message={`Apakah Anda yakin ingin ${dialogAction} kredit ini?`}
+          confirmText={dialogAction === "batalkan" ? "Ya, Batalkan" : "Ya"}
+          cancelText="Batal" />
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={() => setOpenSnackbar(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert onClose={() => setOpenSnackbar(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
 
-    </div>
+      </div></>
   );
 };
 
