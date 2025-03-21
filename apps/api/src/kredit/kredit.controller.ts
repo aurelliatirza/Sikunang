@@ -26,10 +26,13 @@ export class KreditController {
   }
 
   @Get('kreditKaryawan')
-  async KreditKaryawan() {
-    return this.kreditService.KreditKaryawan();
+  async KreditKaryawan(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.kreditService.KreditKaryawan(startDate, endDate);
   }
-
+  
   @Get(':id_kredit')
   findOne(@Param('id_kredit') id_kredit: string) {
     console.log("ID dari parameter:", id_kredit); // Debugging parameter dari request

@@ -194,6 +194,7 @@ export class KreditService {
             },
           },
         },
+        karyawan_pengajuan: true,
       },
     });
   }
@@ -481,42 +482,72 @@ export class KreditService {
       }
   }
 
-  //Fungsi yang menghitung nominal pengajuan dan nominal disetujui dari masing-masing karyawan
-  async KreditKaryawan() {
+
+
+  async KreditKaryawan(startDate?: string, endDate?: string) {
     try {
-      const data = await this.prisma.kredit.groupBy({
-        by: ['id_karyawan_pengajuan'],
-        _sum: {
-          nominal_pengajuan: true,
-          nominal_disetujui: true
+      const whereCondition: any = {};
+  
+      if (startDate || endDate) {
+        whereCondition.createdAt = {};
+        if (startDate) whereCondition.createdAt.gte = new Date(startDate);
+        if (endDate) whereCondition.createdAt.lte = new Date(endDate);
+      }
+  
+      console.log("Fetching data with conditions:", whereCondition); // Debugging kondisi filter
+  
+      const data = await this.prisma.kredit.findMany({
+        where: whereCondition,
+        include: {
+          karyawan_pengajuan: {
+            select: {
+              nik: true,
+              namaKaryawan: true,
+              kantor: {
+                select: {
+                  id_kantor: true,
+                  jenis_kantor: true,
+                },
+              },
+              nik_SPV: true,
+              nik_kabag: true,
+              nik_kacab: true,
+              nik_direkturBisnis: true,
+            },
+          },
         },
-        orderBy: {
-          _sum: { nominal_pengajuan: 'desc' } // Urutkan dari nominal pengajuan terbesar
-        }
       });
   
-      // Tambahkan informasi nama karyawan
-      const result = await Promise.all(data.map(async (item) => {
-        const karyawan = await this.prisma.karyawan.findUnique({
-          where: { nik: item.id_karyawan_pengajuan },
-          select: { namaKaryawan: true }
-        });
+      console.log("Fetched kredit data from DB:", data); // Debugging hasil query Prisma
   
-        return {
-          namaKaryawan: karyawan?.namaKaryawan || 'Unknown',
-          total_pengajuan: item._sum.nominal_pengajuan || 0,
-          total_disetujui: item._sum.nominal_disetujui || 0
-        };
-      }));
+      const groupedData = data.reduce((acc, item) => {
+        if (!item.karyawan_pengajuan) return acc;
   
-      return result;
+        const nik = item.karyawan_pengajuan.nik;
+        if (!acc[nik]) {
+          acc[nik] = {
+            namaKaryawan: item.karyawan_pengajuan.namaKaryawan,
+            total_pengajuan: 0,
+            total_disetujui: 0,
+          };
+        }
+  
+        acc[nik].total_pengajuan += item.nominal_pengajuan ?? 0;
+        acc[nik].total_disetujui += item.nominal_disetujui ?? 0;
+  
+        return acc;
+      }, {} as Record<string, { namaKaryawan: string; total_pengajuan: number; total_disetujui: number }>);
+  
+      console.log("Grouped kredit data:", Object.values(groupedData)); // Debugging hasil pengelompokan
+  
+      return Object.values(groupedData);
     } catch (error) {
-      console.error('Error fetching kredit data:', error);
-      throw new Error('Gagal mengambil data kredit karyawan.');
+      console.error("Error fetching kredit data:", error);
+      throw new Error("Gagal mengambil data kredit karyawan.");
     }
   }
   
-
+  
   remove(id: number) {
     return `This action removes a #${id} kredit`;
   }

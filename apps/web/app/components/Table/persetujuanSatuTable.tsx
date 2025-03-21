@@ -11,6 +11,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Chip } from "@mui/material";
+import NominalCard from "../Cards/NominalAjuSetuju";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -56,6 +57,7 @@ interface Persetujuan1Kredit {
   tenor_pengajuan: number;
   status_pengajuan: string;
   id_karyawan_pengajuan: number;
+  karyawan_pengajuan: Karyawan;
   status_Slik: string;
   id_karyawan_slik: number;
   updatedAtSlik: string;
@@ -350,6 +352,7 @@ const PersetujuanSatuTable: React.FC = () => {
       setFilteredData(filtered);
     }, [userProfile, kreditData, startDate, endDate, selectedBawahan]);
 
+
     const handleChangePage = (_: unknown, newPage: number) => {
       setPage(newPage);
     };
@@ -553,7 +556,6 @@ const PersetujuanSatuTable: React.FC = () => {
           />
         </div>
       </form>
-
       {/* Filter Bawahan (Posisi di kanan) */}
       {userProfile && userProfile.jabatan !== "marketing" && (
         <select

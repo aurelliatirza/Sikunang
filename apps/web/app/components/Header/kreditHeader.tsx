@@ -20,7 +20,7 @@ const KreditHeader = ({ onSidebarToggle, setActiveTable, activeTable }: KreditHe
     return (
         <>
             <KreditNavbar onSidebarToggle={onSidebarToggle} />
-            <div className="bg-blue-400 grid grid-cols-3 gap-4 p-4">
+            <div className="bg-blue-400 grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
                 {menuItems.map((item) => (
                     <button
                         key={item.table}

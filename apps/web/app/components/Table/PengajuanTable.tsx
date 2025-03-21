@@ -420,7 +420,7 @@ const PengajuanTable: React.FC = () => {
                 <th className="px-6 py-3 text-center border-l border-white">Nama Usaha</th>
                 <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
                 <th className="px-6 py-3 text-center border-l border-white">Status Pengajuan</th>
-                <th className="px-6 py-3 text-center border-l border-white">Waktu Pengajuan</th>
+                <th className="px-6 py-3 text-center border-l border-white">Nominal Pengajuan</th>
                 <th className="px-6 py-3 text-center border-l border-white">Tenor Pengajuan (bln)</th>
                 {["marketing", "spv"].includes(userProfile?.jabatan ?? "") ? (
                   <>
