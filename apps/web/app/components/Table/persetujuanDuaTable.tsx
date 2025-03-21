@@ -26,6 +26,7 @@ interface Nasabah {
     nik: number;
     nik_SPV?: number;
     nik_kabag?: number;
+    nik_kacab?: number;
     nik_direkturBisnis?: number;
     kantor?: {
       id_kantor: number;
@@ -88,7 +89,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "marketing" | "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const Alert = (props: AlertProps) => {
@@ -238,17 +239,46 @@ const PersetujuanDuaTable: React.FC = () => {
         try {
           const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan2Table");
           if (!response.ok) throw new Error("Gagal mengambil Data");
-          const data = await response.json();
-          setKreditData(data);
+          const data: Persetujuan2Kredit[] = await response.json();
+          let filteredData: Persetujuan2Kredit[] = [];
+          let bawahanNames: string[] = [];
+    
+          if (userProfile?.jabatan === "marketing") {
+            // Jika user adalah marketing, hanya melihat pengajuan dirinya sendiri
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
+          } else {
+            // Jika user adalah atasan, ambil data dari bawahannya
+            if (userProfile?.jabatan === "spv") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik);
+            } else if (userProfile?.jabatan === "kabag") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik);
+            } else if (userProfile?.jabatan === "kacab") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
+            } else if (userProfile?.jabatan === "direkturBisnis") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+            }
+    
+            // Kumpulkan nama bawahan dari hasil filter
+            bawahanNames = [...new Set(filteredData.map((item) => item.nasabah.karyawan.namaKaryawan))];
+            setBawahanList(bawahanNames);
+          }
+    
+          // Jika ada AO (bawahan) dipilih, filter lagi berdasarkan nama AO
+          if (selectedBawahan) {
+            filteredData = filteredData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+          }
+    
+          setKreditData(filteredData);
         } catch (error) {
           console.error("Error fetching kredit data: ", error);
         }
       };
+    
       fetchKreditPersetujuan();
-      const interval = setInterval(fetchKreditPersetujuan, 3000); // Update setiap 5 detik
-  
-      return () => clearInterval(interval); // Bersihkan interval saat unmount
-    }, []);
+      const interval = setInterval(fetchKreditPersetujuan, 5000); // Update setiap 5 detik
+    
+      return () => clearInterval(interval);
+    }, [userProfile, selectedBawahan]); // Fetch ulang jika jabatan atau pilihan AO berubah
   
     // Fetch data user profile
     useEffect(() => {
@@ -455,7 +485,7 @@ const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan"
         setIsPersetujuanDialogOpen(true);
         return;
       }
-    } else if (jenisKantor === "cabang") {
+    } else if (jenisKantor === "Cabang") {
       if (selectedKredit.nominal_pengajuan <= 75000000 && selectedKredit.nominal_pengajuan > 25000000) {
         setSelectedKredit(selectedKredit);
         setIsPersetujuanDialogOpen(true);
@@ -521,7 +551,7 @@ const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan"
 
   return (
     <>
-    <div className="flex justify-between items-center w-full">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
       <TablePagination
         component="div"
         count={filteredData.length}
@@ -625,7 +655,7 @@ const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan"
               {/* Langkah Ketujuh */}
               <th className="px-6 py-3 text-center border-l border-white">Waktu Persetujuan Dua</th>
               <th className="px-6 py-3 text-center border-l border-white">Status Persetujuan Dua</th>
-              {["kabag"].includes(jabatan ?? "") ? (
+              {["kabag", "kacab"].includes(jabatan ?? "") ? (
                 <>
                   <th className="px-6 py-3 text-center border-l border-white">Approvers 2</th>
                   <th className="px-6 py-3 text-center border-l border-white">Nominal Disetujui</th>
@@ -755,11 +785,7 @@ const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan"
                     <td className="px-6 py-4">
                       <Chip
                         label={getProposalLabel(item.status_proposalKredit)}
-                        color={item.status_proposalKredit === "belum_diajukan"
-                          ? "primary"
-                          : item.status_proposalKredit === "setuju"
-                            ? "success"
-                            : "error"}
+                        color={item.status_proposalKredit === "belum_diajukan" ? "primary": "success"}
                         variant="filled" // Bisa diganti "outlined" jika ingin tanpa background
                       />
                     </td>
@@ -816,7 +842,7 @@ const handleAction = (id_kredit: number, action: "setuju" | "tolak" | "batalkan"
                       )}
                     </td>
                     <td className="px-6 py-4">{item.tenor_disetujui}</td>
-                    {["kabag"].includes(jabatan ?? "") && (
+                    {["kabag", "kacab"].includes(jabatan ?? "") && (
                       <td className="px-6 py-4 flex space-x-2">
                         <div className="flex justify-center gap-4">
                           {item.status_persetujuandua === "belum_disetujui" ? (

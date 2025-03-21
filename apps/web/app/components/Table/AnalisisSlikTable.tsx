@@ -10,7 +10,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Chip } from "@mui/material";
+import { Chip, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -25,6 +25,7 @@ interface Nasabah {
     nik: number;
     nik_SPV?: number;
     nik_kabag?: number;
+    nik_kacab?: number;
     nik_direkturBisnis?: number;
   };
   desa: {
@@ -68,7 +69,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "marketing" | "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const Alert = (props: AlertProps) => {
@@ -151,17 +152,46 @@ const AnalisisSlikTable: React.FC = () => {
       try {
         const response = await fetch("http://localhost:8000/kredit/filter/analisisSlikTable");
         if (!response.ok) throw new Error("Gagal mengambil Data");
-        const data = await response.json();
-        setKreditData(data);
+        const data: AnalisisKredit[] = await response.json();
+        let filteredData: AnalisisKredit[] = [];
+        let bawahanNames: string[] = [];
+  
+        if (userProfile?.jabatan === "marketing") {
+          // Jika user adalah marketing, hanya melihat pengajuan dirinya sendiri
+          filteredData = data.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
+        } else {
+          // Jika user adalah atasan, ambil data dari bawahannya
+          if (userProfile?.jabatan === "spv") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik);
+          } else if (userProfile?.jabatan === "kabag") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik);
+          } else if (userProfile?.jabatan === "kacab") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
+          } else if (userProfile?.jabatan === "direkturBisnis") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+          }
+  
+          // Kumpulkan nama bawahan dari hasil filter
+          bawahanNames = [...new Set(filteredData.map((item) => item.nasabah.karyawan.namaKaryawan))];
+          setBawahanList(bawahanNames);
+        }
+  
+        // Jika ada AO (bawahan) dipilih, filter lagi berdasarkan nama AO
+        if (selectedBawahan) {
+          filteredData = filteredData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+        }
+  
+        setKreditData(filteredData);
       } catch (error) {
         console.error("Error fetching kredit data: ", error);
       }
     };
+  
     fetchKreditPengajuan();
-    const interval = setInterval(fetchKreditPengajuan, 3000); // Update setiap 5 detik
-
-    return () => clearInterval(interval); // Bersihkan interval saat unmount
-  }, []);
+    const interval = setInterval(fetchKreditPengajuan, 5000); // Update setiap 5 detik
+  
+    return () => clearInterval(interval);
+  }, [userProfile, selectedBawahan]); // Fetch ulang jika jabatan atau pilihan AO berubah
 
   // Fetch data user profile
   useEffect(() => {
@@ -349,7 +379,7 @@ const AnalisisSlikTable: React.FC = () => {
 
   return (
     <>
-    <div className="flex justify-between items-center w-full">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
       <TablePagination
         component="div"
         count={filteredData.length}
@@ -400,19 +430,25 @@ const AnalisisSlikTable: React.FC = () => {
 
       {/* Filter Bawahan (Posisi di kanan) */}
       {userProfile && userProfile.jabatan !== "marketing" && (
-        <select
+      <FormControl
+        className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+      >
+        <InputLabel id="bawahan-select-label">AO</InputLabel>
+        <Select
+          labelId="bawahan-select-label"
+          id="bawahan-select"
           value={selectedBawahan || ""}
           onChange={(e) => setSelectedBawahan(e.target.value || null)}
-          className="border px-4 py-2 rounded-lg"
         >
-          <option value="">AO</option>
+          <MenuItem value="">AO</MenuItem>
           {bawahanList.map((bawahan, index) => (
-            <option key={index} value={bawahan}>
+            <MenuItem key={index} value={bawahan}>
               {bawahan}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-      )}
+        </Select>
+      </FormControl>
+    )}
     </div>
     <div className="overflow-x-auto w-full">
         {/* Tabel */}

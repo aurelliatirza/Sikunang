@@ -100,7 +100,8 @@ export class NasabahService {
             namaKaryawan: true,
             nik_SPV: true,
             nik_kabag: true,
-            nik_direkturBisnis: true
+            nik_direkturBisnis: true,
+            nik_kacab: true,
            } },
           kunjungan: {
             select: {

@@ -505,10 +505,12 @@ const AddLaporanCard: React.FC = () => {
           onChange={handleChange} 
           placeholder="Masukkan Hasil Kunjungan" />
 
-          <UploadComponent
-            onUpload={(filePath) => setFormData({ ...formData, foto_kunjungan: filePath })}
-          />
-          
+          <div className="mt-5">
+            <UploadComponent
+              onUpload={(filePath) => setFormData({ ...formData, foto_kunjungan: filePath })}
+            />
+          </div>
+
           <div className="flex justify-between mt-4">
             <Link href="/laporan">
               <button

@@ -68,9 +68,14 @@ export class KreditService {
   async getSlikKredit(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({
       where: {
-        status_pengajuan: { not: "dibatalkan" }, // Filter data yang tidak dibatalkan
+        status_pengajuan: { not: "dibatalkan" }, // Hanya ambil yang tidak dibatalkan
       },
       include: {
+        karyawan_pengajuan: { // ⬅️ Tambahkan ini
+          include: {
+            kantor: true, // ⬅️ Tambahkan kantor
+          },
+        },
         nasabah: {
           include: {
             karyawan: true,
@@ -88,7 +93,7 @@ export class KreditService {
       },
     });
   }
-
+  
   //Seleksi tabel analisis
   async getAnalisisSlikKredit(): Promise<Kredit[]> {
     return this.prisma.kredit.findMany({

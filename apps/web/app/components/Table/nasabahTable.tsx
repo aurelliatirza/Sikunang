@@ -11,6 +11,7 @@ interface Karyawan {
   jabatan: "kacab"| "marketing" | "spv" | "kabag" | "direkturBisnis";
   nik_SPV?: number;
   nik_kabag?: number;
+  nik_kacab?: number;
   nik_direkturBisnis?: number;
 }
 
@@ -111,6 +112,8 @@ const NasabahTable: React.FC = () => {
           return item.karyawan.nik_SPV === userProfile.nik;
         } else if (userProfile.jabatan === "kabag") {
           return item.karyawan.nik_kabag === userProfile.nik;
+        } else if (userProfile.jabatan === "kacab") {
+          return item.karyawan.nik_kacab === userProfile.nik;
         } else if (userProfile.jabatan === "direkturBisnis") {
           return item.karyawan.nik_direkturBisnis === userProfile.nik;
         }

@@ -11,7 +11,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Chip } from "@mui/material";
+import { Chip, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -26,6 +26,7 @@ interface Nasabah {
     nik: number;
     nik_SPV?: number;
     nik_kabag?: number;
+    nik_kacab?: number;
     nik_direkturBisnis?: number;
   };
   desa: {
@@ -108,17 +109,48 @@ const PengajuanTable: React.FC = () => {
       try {
         const response = await fetch("http://localhost:8000/kredit");
         if (!response.ok) throw new Error("Gagal mengambil Data");
-        const data = await response.json();
-        setKreditData(data);
+  
+        const data: KreditPengajuan[] = await response.json();
+        let filteredData: KreditPengajuan[] = [];
+        let bawahanNames: string[] = [];
+  
+        if (userProfile?.jabatan === "marketing") {
+          // Jika user adalah marketing, hanya melihat pengajuan dirinya sendiri
+          filteredData = data.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
+        } else {
+          // Jika user adalah atasan, ambil data dari bawahannya
+          if (userProfile?.jabatan === "spv") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik);
+          } else if (userProfile?.jabatan === "kabag") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik);
+          } else if (userProfile?.jabatan === "kacab") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
+          } else if (userProfile?.jabatan === "direkturBisnis") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+          }
+  
+          // Kumpulkan nama bawahan dari hasil filter
+          bawahanNames = [...new Set(filteredData.map((item) => item.nasabah.karyawan.namaKaryawan))];
+          setBawahanList(bawahanNames);
+        }
+  
+        // Jika ada AO (bawahan) dipilih, filter lagi berdasarkan nama AO
+        if (selectedBawahan) {
+          filteredData = filteredData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+        }
+  
+        setKreditData(filteredData);
       } catch (error) {
         console.error("Error fetching kredit data: ", error);
       }
     };
+  
     fetchKreditPengajuan();
-    const interval = setInterval(fetchKreditPengajuan, 3000); // Update setiap 5 detik
-
-    return () => clearInterval(interval); // Bersihkan interval saat unmount
-  }, []);
+    const interval = setInterval(fetchKreditPengajuan, 5000); // Update setiap 5 detik
+  
+    return () => clearInterval(interval);
+  }, [userProfile, selectedBawahan]); // Fetch ulang jika jabatan atau pilihan AO berubah
+  
 
     // Fetch data user profile
     useEffect(() => {
@@ -177,6 +209,10 @@ const PengajuanTable: React.FC = () => {
         } else if (userProfile.jabatan === "kabag") {
           bawahanNames = kreditData
             .filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik)
+            .map((item) => item.nasabah.karyawan.namaKaryawan);
+        } else if (userProfile.jabatan === "kacab") {
+          bawahanNames = kreditData
+            .filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik)
             .map((item) => item.nasabah.karyawan.namaKaryawan);
         } else if (userProfile.jabatan === "direkturBisnis") {
           bawahanNames = kreditData
@@ -291,7 +327,9 @@ const PengajuanTable: React.FC = () => {
 
   return (
     <>
-    <div className="flex justify-between items-center w-full">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
+    {/* Pagination (Selalu di atas) */}
+    <div className="w-full md:w-auto">
       <TablePagination
         component="div"
         count={filteredData.length}
@@ -305,57 +343,68 @@ const PengajuanTable: React.FC = () => {
           ".MuiTablePagination-spacer": { display: "none" },
           ".MuiTablePagination-displayedRows": { display: "none" }, // 🔹 Hilangkan info halaman
           ".MuiTablePagination-actions": { display: "none" }, // 🔹 Hilangkan navigasi halaman
-        }} />
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="flex gap-4">
-          <DatePicker
-            label="Start Date"
-            value={startDate}
-            onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
-            format="DD/MM/YYYY"
-            slotProps={{ textField: { size: "small", fullWidth: true } }} />
-          <DatePicker
-            label="End Date"
-            value={endDate}
-            onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
-            format="DD/MM/YYYY"
-            slotProps={{ textField: { size: "small", fullWidth: true } }} />
-        </div>
-      </LocalizationProvider>
-      {/* Search Box */}
-      <form className="flex items-center" onSubmit={handleSearchSubmit}>
-        <div className="relative flex items-center">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-gray-500 text-sm sm:text-base md:text-lg">
-              <FaSearch />
-            </span>
-          </div>
-          <input
-            type="text"
-            placeholder="Search nasabah"
-            className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
-            value={searchQuery}
-            onChange={handleSearch} // 🔥 Filter data saat mengetik
-          />
-        </div>
-      </form>
+        }}
+      />
+    </div>
 
-      {/* Filter Bawahan (Posisi di kanan) */}
-      {userProfile && userProfile.jabatan !== "marketing" && (
-        <select
+    {/* Date Filters (Responsive) */}
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full md:w-auto">
+        <DatePicker
+          label="Start Date"
+          value={startDate}
+          onChange={(newValue: Dayjs | null) => setStartDate(newValue)}
+          format="DD/MM/YYYY"
+          slotProps={{ textField: { size: "small", fullWidth: true } }}
+        />
+        <DatePicker
+          label="End Date"
+          value={endDate}
+          onChange={(newValue: Dayjs | null) => setEndDate(newValue)}
+          format="DD/MM/YYYY"
+          slotProps={{ textField: { size: "small", fullWidth: true } }}
+        />
+      </div>
+    </LocalizationProvider>
+
+    {/* Search Box */}
+    <form className="flex items-center w-full md:w-auto" onSubmit={handleSearchSubmit}>
+      <div className="relative flex items-center w-full">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+          <span className="text-gray-500 text-sm sm:text-base md:text-lg">
+            <FaSearch />
+          </span>
+        </div>
+        <input
+          type="text"
+          placeholder="Search nasabah"
+          className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-full sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </div>
+    </form>
+
+    {/* Filter Bawahan (AO) */}
+    {userProfile && userProfile.jabatan !== "marketing" && (
+      <FormControl className="w-full sm:w-40 md:w-48">
+        <InputLabel id="bawahan-select-label">AO</InputLabel>
+        <Select
+          labelId="bawahan-select-label"
+          id="bawahan-select"
           value={selectedBawahan || ""}
           onChange={(e) => setSelectedBawahan(e.target.value || null)}
-          className="border px-4 py-2 rounded-lg"
         >
-          <option value="">AO</option>
+          <MenuItem value="">AO</MenuItem>
           {bawahanList.map((bawahan, index) => (
-            <option key={index} value={bawahan}>
+            <MenuItem key={index} value={bawahan}>
               {bawahan}
-            </option>
+            </MenuItem>
           ))}
-        </select>
-      )}
-    </div>
+        </Select>
+      </FormControl>
+    )}
+  </div>
     <div className="w-full p-4">
         {/* Tabel */}
         <div className="overflow-x-auto">

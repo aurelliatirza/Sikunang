@@ -25,6 +25,7 @@ interface Nasabah {
     nik: number;
     nik_SPV?: number;
     nik_kabag?: number;
+    nik_kacab?: number;
     nik_direkturBisnis?: number;
   };
   desa: {
@@ -71,7 +72,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "marketing" | "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const Alert = (props: AlertProps) => {
@@ -169,17 +170,46 @@ const VisitTable: React.FC = () => {
       try {
         const response = await fetch("http://localhost:8000/kredit/filter/visitTable");
         if (!response.ok) throw new Error("Gagal mengambil Data");
-        const data = await response.json();
-        setKreditData(data);
+        const data: VisitKredit[] = await response.json();
+        let filteredData: VisitKredit[] = [];
+        let bawahanNames: string[] = [];
+  
+        if (userProfile?.jabatan === "marketing") {
+          // Jika user adalah marketing, hanya melihat pengajuan dirinya sendiri
+          filteredData = data.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
+        } else {
+          // Jika user adalah atasan, ambil data dari bawahannya
+          if (userProfile?.jabatan === "spv") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik);
+          } else if (userProfile?.jabatan === "kabag") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik);
+          } else if (userProfile?.jabatan === "kacab") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
+          } else if (userProfile?.jabatan === "direkturBisnis") {
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+          }
+  
+          // Kumpulkan nama bawahan dari hasil filter
+          bawahanNames = [...new Set(filteredData.map((item) => item.nasabah.karyawan.namaKaryawan))];
+          setBawahanList(bawahanNames);
+        }
+  
+        // Jika ada AO (bawahan) dipilih, filter lagi berdasarkan nama AO
+        if (selectedBawahan) {
+          filteredData = filteredData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+        }
+  
+        setKreditData(filteredData);
       } catch (error) {
         console.error("Error fetching kredit data: ", error);
       }
     };
+  
     fetchKreditPengajuan();
-    const interval = setInterval(fetchKreditPengajuan, 3000); // Update setiap 5 detik
-
-    return () => clearInterval(interval); // Bersihkan interval saat unmount
-  }, []);
+    const interval = setInterval(fetchKreditPengajuan, 5000); // Update setiap 5 detik
+  
+    return () => clearInterval(interval);
+  }, [userProfile, selectedBawahan]); // Fetch ulang jika jabatan atau pilihan AO berubah
 
     // Fetch data user profile
     useEffect(() => {
@@ -288,16 +318,19 @@ const VisitTable: React.FC = () => {
   const berhakACCVisit = (id_kredit: number, nominal_pengajuan: number, jenis_kantor: string, nasabah: any) => {
     console.log("🔍 Memeriksa Hak ACC untuk Kredit ID:", id_kredit);
 
-    const limitKabag = jenis_kantor === "Pusat" ? 50000000 : 75000000;
+    const limitKabag = 50000000; // Untuk kantor Pusat
+    const limitKacab = 75000000; // Untuk kantor Cabang
 
-    const { nik_SPV, nik_kabag, nik_direkturBisnis } = nasabah.karyawan;
+    const { nik_SPV, nik_kabag, nik_kacab, nik_direkturBisnis } = nasabah.karyawan;
 
     let accUser = null;
 
     if (nominal_pengajuan <= 25000000) {
         accUser = { level: "SPV", nik: nik_SPV };
-    } else if (nominal_pengajuan <= limitKabag) {
+    } else if (jenis_kantor === "Pusat" && nominal_pengajuan <= limitKabag) {
         accUser = { level: "Kabag", nik: nik_kabag };
+    } else if (jenis_kantor === "Cabang" && nominal_pengajuan <= limitKacab) {
+        accUser = { level: "Kacab", nik: nik_kacab };
     } else {
         accUser = { level: "Direktur", nik: nik_direkturBisnis };
     }
@@ -441,7 +474,7 @@ useEffect(() => {
 
   return (
     <>
-    <div className="flex justify-between items-center w-full">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
       <TablePagination
         component="div"
         count={filteredData.length}
@@ -534,7 +567,7 @@ useEffect(() => {
               <th className="px-6 py-3 text-center border-l border-white">Waktu Visit</th>
               <th className="px-6 py-3 text-center border-l border-white">Status Visit</th>
               {/* Hanya tampilkan kolom "Aksi" jika jabatan adalah spv, kabag, atau direkturBisnis */}
-              {["spv", "kabag", "direkturBisnis"].includes(jabatan ?? "") ? (
+              {["spv", "kacab" ,"kabag", "direkturBisnis"].includes(jabatan ?? "") ? (
                 <>
                   <th className="px-6 py-3 text-center border-l border-white">Visitor</th>
                   <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
@@ -653,7 +686,7 @@ useEffect(() => {
                         />
                       </td>
                       <td className="px-6 py-4">{getNamaKaryawanVisit(item.id_karyawan_visitNasabah, karyawanData)}</td>
-                      {["spv", "kabag", "direkturBisnis"].includes(jabatan ?? "") && (
+                      {["spv", "kabag", "kacab", "direkturBisnis"].includes(jabatan ?? "") && (
                         <td className="px-6 py-4 flex space-x-2">
                           <div className="flex justify-center gap-4">
                             {item.status_visitNasabah === "belum_dilakukan" ? (
@@ -677,7 +710,7 @@ useEffect(() => {
                               <button
                                 className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 onClick={() => handleAction(item.id_kredit, "batalkan")}
-                                disabled={!isBerhakACC || item.status_proposalKredit !== "belum_dibuat"}
+                                disabled={!isBerhakACC || item.status_proposalKredit !== "belum_diajukan"}
                               >
                                 Batalkan
                               </button>

@@ -26,6 +26,7 @@ interface Nasabah {
     nik: number;
     nik_SPV?: number;
     nik_kabag?: number;
+    nik_kacab?: number;
     nik_direkturBisnis?: number;
     kantor?: {
       id_kantor: number;
@@ -90,7 +91,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "marketing" | "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const Alert = (props: AlertProps) => {
@@ -249,23 +250,52 @@ const PersetujuanTigaTable: React.FC = () => {
       return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
     };
 
-    // Fetch data kredit proposal
+    // Fetch data kredit persetujuan3
     useEffect(() => {
       const fetchKreditPersetujuan = async () => {
         try {
           const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan3Table");
           if (!response.ok) throw new Error("Gagal mengambil Data");
-          const data = await response.json();
-          setKreditData(data);
+          const data: Persetujuan3Kredit[] = await response.json();
+          let filteredData: Persetujuan3Kredit[] = [];
+          let bawahanNames: string[] = [];
+    
+          if (userProfile?.jabatan === "marketing") {
+            // Jika user adalah marketing, hanya melihat pengajuan dirinya sendiri
+            filteredData = data.filter((item) => item.nasabah.karyawan.nik === userProfile.nik);
+          } else {
+            // Jika user adalah atasan, ambil data dari bawahannya
+            if (userProfile?.jabatan === "spv") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_SPV === userProfile.nik);
+            } else if (userProfile?.jabatan === "kabag") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_kabag === userProfile.nik);
+            } else if (userProfile?.jabatan === "kacab") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
+            } else if (userProfile?.jabatan === "direkturBisnis") {
+              filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+            }
+    
+            // Kumpulkan nama bawahan dari hasil filter
+            bawahanNames = [...new Set(filteredData.map((item) => item.nasabah.karyawan.namaKaryawan))];
+            setBawahanList(bawahanNames);
+          }
+    
+          // Jika ada AO (bawahan) dipilih, filter lagi berdasarkan nama AO
+          if (selectedBawahan) {
+            filteredData = filteredData.filter((item) => item.nasabah.karyawan.namaKaryawan === selectedBawahan);
+          }
+    
+          setKreditData(filteredData);
         } catch (error) {
           console.error("Error fetching kredit data: ", error);
         }
       };
+    
       fetchKreditPersetujuan();
-      const interval = setInterval(fetchKreditPersetujuan, 3000); // Update setiap 5 detik
-  
-      return () => clearInterval(interval); // Bersihkan interval saat unmount
-    }, []);
+      const interval = setInterval(fetchKreditPersetujuan, 5000); // Update setiap 5 detik
+    
+      return () => clearInterval(interval);
+    }, [userProfile, selectedBawahan]); // Fetch ulang jika jabatan atau pilihan AO berubah
   
     // Fetch data user profile
     useEffect(() => {
@@ -500,7 +530,8 @@ const PersetujuanTigaTable: React.FC = () => {
   
 
   return (
-    <><div className="flex justify-between items-center w-full">
+    <>
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
       <TablePagination
         component="div"
         count={filteredData.length}
@@ -564,7 +595,8 @@ const PersetujuanTigaTable: React.FC = () => {
           ))}
         </select>
       )}
-    </div><div className="overflow-x-auto w-full">
+    </div>
+    <div className="overflow-x-auto w-full">
         <table className="min-w-[1200px] text-sm border-collapse border border-gray-300 mt-2">
           <thead>
             <tr className="bg-blue-500 text-white">
@@ -735,11 +767,7 @@ const PersetujuanTigaTable: React.FC = () => {
                     <td className="px-6 py-4">
                       <Chip
                         label={getProposalLabel(item.status_proposalKredit)}
-                        color={item.status_proposalKredit === "belum_diajukan"
-                          ? "primary"
-                          : item.status_visitNasabah === "setuju"
-                            ? "success"
-                            : "error"}
+                        color={item.status_proposalKredit === "belum_diajukan" ? "primary": "success"}
                         variant="filled" // Bisa diganti "outlined" jika ingin tanpa background
                       />
                     </td>

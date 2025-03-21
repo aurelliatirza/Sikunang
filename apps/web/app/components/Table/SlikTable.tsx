@@ -10,6 +10,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Chip } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -119,7 +120,7 @@ const SlikTable: React.FC = () => {
       return karyawan ? karyawan.namaKaryawan : "Tidak Diketahui";
     };
 
-    // Fetch data kredit pengajuan
+    // Fetch data kredit slik
     useEffect(() => {
       const fetchData = async () => {
         try {
@@ -293,7 +294,7 @@ const SlikTable: React.FC = () => {
 
   return (
     <>
-    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 w-full">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center w-full gap-4">
       {/* Pagination */}
       <TablePagination
         component="div"
@@ -347,18 +348,25 @@ const SlikTable: React.FC = () => {
       </form>
 
       {/* Select Kantor */}
-      <select
-        className="border px-3 py-2 rounded shadow outline-none focus:ring"
-        value={selectedKantor || ""}
-        onChange={(e) => setSelectedKantor(e.target.value || null)} // ⬅️ Tidak perlu `Number()`
+      <FormControl
+        className="border px-3 py-2 pl-10 rounded shadow outline-none focus:ring w-32 sm:w-40 md:w-48 text-sm sm:text-base md:text-lg"
       >
-        <option value="">Semua Kantor</option>
-        {Array.from(new Set(karyawanData.map(k => k.kantor.jenis_kantor))).map(jenis_kantor => (
-          <option key={jenis_kantor} value={jenis_kantor}>
-            {jenis_kantor}
-          </option>
-        ))}
-      </select>
+        <InputLabel id="kantor-select-label">Kantor</InputLabel>
+        <Select
+          labelId="kantor-select-label"
+          id="kantor-select"
+          value={selectedKantor || ""}
+          onChange={(e) => setSelectedKantor(e.target.value || null)}
+        >
+          <MenuItem value="">Semua Kantor</MenuItem>
+          {Array.from(new Set(kreditData.map(k => k.karyawan_pengajuan.kantor.jenis_kantor)))
+            .map(jenis_kantor => (
+              <MenuItem key={jenis_kantor} value={jenis_kantor}>
+                {jenis_kantor}
+              </MenuItem>
+            ))}
+        </Select>
+      </FormControl>
     </div>
     <div className="overflow-x-auto w-full">
         <table className="min-w-[1200px] text-sm border-collapse border border-gray-300 mt-2">
