@@ -54,8 +54,6 @@ const PersetujuanTable = ({ userProfile }: { userProfile: any }) => {
 
     useEffect(() => {
         fetchKreditPersetujuan();
-        const interval = setInterval(fetchKreditPersetujuan, 5000);
-        return () => clearInterval(interval);
     }, [fetchKreditPersetujuan]);
 
     return (

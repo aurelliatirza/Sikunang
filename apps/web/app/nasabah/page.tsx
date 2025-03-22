@@ -10,7 +10,7 @@ interface UserProfile {
     id: number;
     namaKaryawan: string;
     nik: number;
-    jabatan:"marketing" | "spv" | "kabag" | "direkturBisnis";
+    jabatan:"marketing" | "spv" | "kabag" | "kacab" | "direkturBisnis";
 }
 
 const NasabahPage = () => {

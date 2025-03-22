@@ -19,7 +19,7 @@ const SidebarMarketing = ({ isSidebarOpen }: SidebarProps) => {
     ];
 
     const bottomLinks = [
-        { href: "/profile", label: "Profile", icon: <FaUserCircle /> },
+        { href: "/profil", label: "Profil", icon: <FaUserCircle /> },
         { href: "/logout", label: "Logout", icon: <FaSignOutAlt />, isLogout: true },
     ];
 

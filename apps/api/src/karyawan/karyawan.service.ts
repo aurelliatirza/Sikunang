@@ -38,6 +38,19 @@ export class KaryawanService {
     });
   }
 
+  async findProfile() {
+    return this.prisma.karyawan.findMany({
+      include: {
+        kantor: true,
+        supervisor: { select: { namaKaryawan: true } },
+        kepalaBagian: { select: { namaKaryawan: true } },
+        direkturBisnis: { select: { namaKaryawan: true } },
+        kepalaCabang: { select: {namaKaryawan: true }},
+        user: { select: { username: true } },
+      }
+    });
+  }
+
   async findOne(id: number) {
     return this.prisma.karyawan.findUnique({
       where: { nik: id },

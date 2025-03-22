@@ -17,6 +17,11 @@ export class KaryawanController {
   findAll() {
     return this.karyawanService.findAll();
   }
+
+  @Get('profile')
+  async getProfile() {
+    return this.karyawanService.findProfile();
+  }
   
   @Get('search')
   async getKaryawan(@Query('nik') nik?: string) {

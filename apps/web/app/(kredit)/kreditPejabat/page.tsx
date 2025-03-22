@@ -12,6 +12,7 @@ import Footer from "../../components/Footers";
 
 const KreditMarketingPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const userProfile = {}; // Replace with actual user profile data or fetch it dynamically
     const [activeTable, setActiveTable] = useState("pengajuan"); // Default: Pengajuan
 
     const handleSidebarToggle = () => {
@@ -46,7 +47,7 @@ const KreditMarketingPage = () => {
                         {activeTable === "analisisSlik" && <AnalisisSlikTable />}
                         {activeTable === "visit" && <VisitTable />}
                         {activeTable === "proposal" && <ProposalTable />}
-                        {activeTable === "persetujuan" && <PersetujuanTable />}
+                        {activeTable === "persetujuan" && <PersetujuanTable userProfile={userProfile} />}
                     </div>
                 </div>
 

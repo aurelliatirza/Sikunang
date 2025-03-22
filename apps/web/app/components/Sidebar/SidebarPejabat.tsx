@@ -23,7 +23,7 @@ const SidebarPejabat = ({ isSidebarOpen }: SidebarProps) => {
   const isNasabahPage = pathname.startsWith("/nasabah");
 
   const bottomLinks = [
-    { href: "/profile", label: "Profile", icon: <FaUserCircle /> },
+    { href: "/profil", label: "Profil", icon: <FaUserCircle /> },
     { href: "/logout", label: "Logout", icon: <FaSignOutAlt />, isLogout: true },
   ];
 

@@ -490,11 +490,28 @@ export class KreditService {
   
       if (startDate || endDate) {
         whereCondition.createdAt = {};
-        if (startDate) whereCondition.createdAt.gte = new Date(startDate);
-        if (endDate) whereCondition.createdAt.lte = new Date(endDate);
+  
+        if (startDate && endDate) {
+          if (startDate === endDate) {
+            // Jika startDate dan endDate sama, gunakan equals
+            whereCondition.createdAt.equals = new Date(startDate);
+          } else {
+            // Jika berbeda, gunakan gte dan lte
+            whereCondition.createdAt.gte = new Date(startDate);
+            const endDateObj = new Date(endDate);
+            endDateObj.setHours(23, 59, 59, 999); // Akhir hari agar inklusif
+            whereCondition.createdAt.lte = endDateObj;
+          }
+        } else if (startDate) {
+          whereCondition.createdAt.gte = new Date(startDate);
+        } else if (endDate) {
+          const endDateObj = new Date(endDate);
+          endDateObj.setHours(23, 59, 59, 999);
+          whereCondition.createdAt.lte = endDateObj;
+        }
       }
   
-      console.log("Fetching data with conditions:", whereCondition); // Debugging kondisi filter
+      console.log("Fetching data with conditions:", whereCondition);
   
       const data = await this.prisma.kredit.findMany({
         where: whereCondition,
@@ -518,7 +535,7 @@ export class KreditService {
         },
       });
   
-      console.log("Fetched kredit data from DB:", data); // Debugging hasil query Prisma
+      console.log("Fetched kredit data from DB:", data);
   
       const groupedData = data.reduce((acc, item) => {
         if (!item.karyawan_pengajuan) return acc;
@@ -538,7 +555,7 @@ export class KreditService {
         return acc;
       }, {} as Record<string, { namaKaryawan: string; total_pengajuan: number; total_disetujui: number }>);
   
-      console.log("Grouped kredit data:", Object.values(groupedData)); // Debugging hasil pengelompokan
+      console.log("Grouped kredit data:", Object.values(groupedData));
   
       return Object.values(groupedData);
     } catch (error) {
