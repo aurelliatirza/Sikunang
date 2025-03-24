@@ -98,22 +98,21 @@ export async function login(state: FormState, formData: FormData): Promise<FormS
     }
 }
 
-// const fetchUserProfile = async () => {
+// export const refreshToken = async (oldRefrechToken: string) => {
 //     try {
-//       const response = await fetch("http://localhost:3000/auth/profile", {
-//         method: "GET",
-//         credentials: "include", // Kirim cookie HTTP-only
-//       });
-  
-//       if (!response.ok) {
-//         throw new Error("Gagal mengambil data user");
-//       }
-  
-//       const data = await response.json();
-//       return data; // { id, nik, name, jabatan }
-//     } catch (error) {
-//       console.error("Error fetching user profile:", error);
-//       return null;
+//         const response = await fetch(`${BACKEND_URL}/auth/refresh-token`, {
+//             method: "POST",
+//         body: JSON.stringify({ refreshToken: oldRefrechToken }),
+//     })
+
+//     if (!response.ok) {
+//         throw new Error("Failed to refresh token");
+//     } 
+
+//     const {accessToken, refreshToken} = await response.json();
+    
+//     catch (error) {
+        
 //     }
-//   };
+// }
   

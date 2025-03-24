@@ -31,7 +31,10 @@ export async function createSession(payload: Session) {
 
 export async function getSession(): Promise<Session | null> {
     const cookie = (await cookies()).get("session")?.value;
-    if (!cookie) return null;
+    if (!cookie) {
+        redirect("/auth/login");
+        return null;
+    }
 
     try {
         const { payload } = await jwtVerify(cookie, encodedKey, {
@@ -42,12 +45,22 @@ export async function getSession(): Promise<Session | null> {
             return payload as unknown as Session;
         } else {
             console.error("Payload tidak sesuai dengan tipe Session:", payload);
+            redirect("/auth/login");
             return null;
         }
     } catch (err) {
-        console.error("Gagal menjaga session", err);
+        console.error("Session expired atau tidak valid:", err);
         redirect("/auth/login");
         return null;
     }
 }
 
+export async function updateSession(payload: Session) {
+    await createSession(payload);
+}   
+
+
+export async function logout() {
+    (await cookies()).delete("session"); // Hapus session dari cookie
+    redirect("/auth/login"); // Redirect ke halaman login
+}
