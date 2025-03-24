@@ -132,6 +132,62 @@ export class KunjunganService {
         });
     }
 
+    //Fungsi untuk menghitung jumlah kunjungan yang dilakukan oleh seorang karyawan bulanan
+    async totalKunjunganKaryawanBulanan() {
+        try {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Awal bulan ini
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Akhir bulan ini
+    
+            const data = await this.prisma.kunjungan.findMany({
+                where: {
+                    createdAt: {
+                        gte: startOfMonth,
+                        lte: endOfMonth,
+                    },
+                },
+                include: {
+                    nasabah: {
+                        select: {
+                            karyawan: {
+                                select: {
+                                    nik: true,
+                                    namaKaryawan: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+    
+            // Menghitung jumlah kunjungan per karyawan
+            const result = data.reduce((acc, item) => {
+                // Pastikan `nasabah` dan `karyawan` tidak null
+                if (!item.nasabah || !item.nasabah.karyawan) return acc;
+    
+                const nik = item.nasabah.karyawan.nik;
+                const namaKaryawan = item.nasabah.karyawan.namaKaryawan;
+    
+                if (!acc[nik]) {
+                    acc[nik] = {
+                        nik,
+                        namaKaryawan,
+                        totalKunjungan: 0,
+                    };
+                }
+                acc[nik].totalKunjungan++;
+                return acc;
+            }, {});
+    
+            // Ubah dari objek ke array dan kembalikan hasilnya
+            return Object.values(result);
+        } catch (error) {
+            console.error("Error fetching total kunjungan:", error);
+            return [];
+        }
+    }
+    
+
     // Method untuk mendapatkan path foto kunjungan
     async getFotoPath(filename: string): Promise<string> {
         const folderPath = '/Users/tirzaaurellia/Documents/Foto Test Sikunang';

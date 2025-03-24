@@ -291,6 +291,104 @@ export class KreditService {
       },
     });
   }
+
+  //Fungsi menghitung total nominal disetujui di bulan tertentu oleh karyawan tertentu
+  async totalPersetujuanKaryawanBulanan() {
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Tanggal 1 bulan ini
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Tanggal terakhir bulan ini
+  
+      const data = await this.prisma.kredit.findMany({
+        where: {
+          createdAt: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        include: {
+          karyawan_pengajuan: {
+            select: {
+              nik: true,
+              namaKaryawan: true,
+            },
+          },
+        },
+      });
+  
+      // Menghitung total pengajuan per karyawan
+      const result = data.reduce((acc, kredit) => {
+        const nik = kredit.karyawan_pengajuan.nik;
+        const namaKaryawan = kredit.karyawan_pengajuan.namaKaryawan;
+        
+        if (!acc[nik]) {
+          acc[nik] = {
+            nik,
+            namaKaryawan,
+            total_pengajuan: 0,
+          };
+        }
+        acc[nik].total_pengajuan += kredit.nominal_disetujui ?? 0;
+        return acc;
+      }, {});
+  
+      // Ubah dari objek ke array
+      return Object.values(result);
+    } catch (error) {
+      console.error("Error fetching total pengajuan:", error);
+      return [];
+    }
+  }
+
+  //Fungsi menghitung jumlah aplikasi pengajuan yang masuk perbulan
+  async totalPengajuanKaryawanBulanan() {
+    try {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Awal bulan ini
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Akhir bulan ini
+  
+      const data = await this.prisma.kredit.findMany({
+        where: {
+          createdAt: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        include: {
+          karyawan_pengajuan: {
+            select: {
+              nik: true,
+              namaKaryawan: true,
+            },
+          },
+        },
+      });
+  
+      // Menghitung jumlah pengajuan per karyawan (pakai length)
+      const result = data.reduce((acc, kredit) => {
+        const nik = kredit.karyawan_pengajuan.nik;
+        const namaKaryawan = kredit.karyawan_pengajuan.namaKaryawan;
+  
+        if (!acc[nik]) {
+          acc[nik] = {
+            nik,
+            namaKaryawan,
+            jumlah_pengajuan: 0, // Hitung jumlah pengajuan
+          };
+        }
+        acc[nik].jumlah_pengajuan += 1; // Tambah 1 untuk setiap pengajuan
+        return acc;
+      }, {});
+  
+      // Ubah dari objek ke array
+      return Object.values(result);
+    } catch (error) {
+      console.error("Error fetching total pengajuan:", error);
+      return [];
+    }
+  }
+  
+  
   
   async findOne(id_kredit: number) {
     console.log("Fetching kredit dengan id_kredit:", id_kredit); // Debugging

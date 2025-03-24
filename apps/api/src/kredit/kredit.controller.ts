@@ -32,7 +32,17 @@ export class KreditController {
   ) {
     return this.kreditService.KreditKaryawan(startDate, endDate);
   }
-  
+
+  @Get('kreditSetujuBulanan')
+  async KreditKaryawanBulanan() {
+    return this.kreditService.totalPersetujuanKaryawanBulanan();
+  }
+
+  @Get('aplikasiKreditBulanan')
+  async AplikasiKreditBulanan() {
+    return this.kreditService.totalPengajuanKaryawanBulanan();
+  }
+
   @Get(':id_kredit')
   findOne(@Param('id_kredit') id_kredit: string) {
     console.log("ID dari parameter:", id_kredit); // Debugging parameter dari request

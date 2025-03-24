@@ -92,6 +92,11 @@ export class KunjunganController {
     return this.laporanKunjunganService.getAllKunjungan();
   }
 
+  @Get('kunjunganBulanan')
+  async KunjunganBulanan() {
+    return this.laporanKunjunganService.totalKunjunganKaryawanBulanan();
+  }
+
   @Get(':id_kunjungan')
   findOne(@Param('id_kunjungan') id_kunjungan: string) {
       return this.laporanKunjunganService.findOne(Number(id_kunjungan));
