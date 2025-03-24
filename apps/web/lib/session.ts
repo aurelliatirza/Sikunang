@@ -32,7 +32,7 @@ export async function createSession(payload: Session) {
 export async function getSession(): Promise<Session | null> {
     const cookie = (await cookies()).get("session")?.value;
     if (!cookie) {
-        redirect("/auth/login");
+        redirect("/login");
         return null;
     }
 
@@ -45,12 +45,12 @@ export async function getSession(): Promise<Session | null> {
             return payload as unknown as Session;
         } else {
             console.error("Payload tidak sesuai dengan tipe Session:", payload);
-            redirect("/auth/login");
+            redirect("/login");
             return null;
         }
     } catch (err) {
         console.error("Session expired atau tidak valid:", err);
-        redirect("/auth/login");
+        redirect("/login");
         return null;
     }
 }

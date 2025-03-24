@@ -5,6 +5,7 @@ import MarketingHeader from "../components/Header/HeaderPejabat/MarketingHeader"
 import Sidebar from "../components/Sidebar/SidebarPejabat";
 import MarketingTable from "../components/Table/marketingTable";
 import Footer from "../components/Footers";
+import withAuth from "../../lib/withAuth";
 
 
 const MarketingPage = () => {
@@ -46,4 +47,4 @@ const MarketingPage = () => {
   );
 };
 
-export default MarketingPage;
+export default withAuth(MarketingPage);

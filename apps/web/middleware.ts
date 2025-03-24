@@ -9,7 +9,7 @@ export async function middleware(req: NextRequest) {
     // Jika tidak ada token, redirect ke login
     if (!token) {
         console.log("Token tidak ditemukan. Redirect ke login.");
-        return NextResponse.redirect(new URL("/auth/login", req.url));
+        return NextResponse.redirect(new URL("/login", req.url));
     }
 
     try {

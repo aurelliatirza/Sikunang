@@ -9,9 +9,11 @@ import VisitTable from "../../components/Table/VisitTable";
 import ProposalTable from "../../components/Table/ProposalTable";
 import PersetujuanTable from "../../components/Table/PersetujuanTable";
 import Footer from "../../components/Footers";
+import withAuth from "../../../lib/withAuth";
 
 const KreditMarketingPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const userProfile = {}; // Replace with actual user profile data
     const [activeTable, setActiveTable] = useState("pengajuan"); // Default: Pengajuan
 
     const handleSidebarToggle = () => {
@@ -46,7 +48,7 @@ const KreditMarketingPage = () => {
                         {activeTable === "analisisSlik" && <AnalisisSlikTable />}
                         {activeTable === "visit" && <VisitTable />}
                         {activeTable === "proposal" && <ProposalTable />}
-                        {activeTable === "persetujuan" && <PersetujuanTable />}
+                        {activeTable === "persetujuan" && <PersetujuanTable userProfile={userProfile} />}
                     </div>
                 </div>
 
@@ -59,4 +61,4 @@ const KreditMarketingPage = () => {
     );
 };
 
-export default KreditMarketingPage;
+export default withAuth(KreditMarketingPage);

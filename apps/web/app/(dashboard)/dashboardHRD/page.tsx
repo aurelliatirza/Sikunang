@@ -2,6 +2,7 @@ import React from 'react';
 import DashboardWrapper from '../../components/DashboardWrapper/dashboardWrapperHRD';
 import CardLineChart from '../../components/Cards/CardLineChart';
 import Footer from '../../components/Footers/index';
+import withAuth from '../../../lib/withAuth';
 
 const DashboardPage = () => {
     return (
@@ -16,4 +17,4 @@ const DashboardPage = () => {
     );
 };
 
-export default DashboardPage;
+export default withAuth(DashboardPage);

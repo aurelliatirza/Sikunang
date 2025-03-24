@@ -9,6 +9,7 @@ import VisitTable from "../../components/Table/VisitTable";
 import ProposalTable from "../../components/Table/ProposalTable";
 import PersetujuanTable from "../../components/Table/PersetujuanTable";
 import Footer from "../../components/Footers";
+import withAuth from "../../../lib/withAuth";
 
 const KreditMarketingPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -60,4 +61,4 @@ const KreditMarketingPage = () => {
     );
 };
 
-export default KreditMarketingPage;
+export default withAuth(KreditMarketingPage);

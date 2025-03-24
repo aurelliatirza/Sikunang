@@ -5,6 +5,7 @@ import SidebarPejabat from "../components/Sidebar/SidebarPejabat";
 import SidebarMarketing from "../components/Sidebar/SidebarMarketing";
 import Footer from "../components/Footers";
 import NasabahNavbar from "../components/Navbar/nasabahNavbar";
+import withAuth from "../../lib/withAuth";
 
 interface UserProfile {
     id: number;
@@ -82,4 +83,4 @@ const NasabahPage = () => {
   );
 };
 
-export default NasabahPage;
+export default withAuth(NasabahPage);

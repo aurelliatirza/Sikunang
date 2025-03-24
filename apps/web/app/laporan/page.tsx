@@ -4,6 +4,7 @@ import LaporanHeader from "../components/Header/HeaderMarketing/LaporanHeader";
 import Sidebar from "../components/Sidebar/SidebarMarketing";
 import LaporanTable from "../components/Table/laporanTable";
 import Footer from "../components/Footers";
+import withAuth from "../../lib/withAuth";
 
 
 const LaporanPage = () => {
@@ -45,4 +46,4 @@ const LaporanPage = () => {
   );
 };
 
-export default LaporanPage;
+export default withAuth(LaporanPage);

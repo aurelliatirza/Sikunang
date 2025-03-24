@@ -6,6 +6,7 @@ import SidebarHRD from "../components/Sidebar/SidebarHRD";
 import Footer from "../components/Footers";
 import KaryawanTable from "../components/Table/KaryawanTable";
 import AddKaryawanButton from "../components/Buttons/addKaryawanButton";
+import withAuth from "../../lib/withAuth";
 
 const KaryawanPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -51,4 +52,4 @@ const KaryawanPage = () => {
     );
 };
 
-export default KaryawanPage;
+export default withAuth(KaryawanPage);

@@ -5,6 +5,7 @@ import SidebarMarketing from "../components/Sidebar/SidebarMarketing";
 import ProfileNavbar from "../components/Navbar/profileNavbar";
 import ProfileCard from "../components/Cards/profileCard";
 import Footer from "../components/Footers";
+import withAuth from "../../lib/withAuth";
 
 interface UserProfile {
     id: number;
@@ -80,4 +81,4 @@ const ProfilePage = () => {
     );
 };
 
-export default ProfilePage;
+export default withAuth(ProfilePage);
