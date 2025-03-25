@@ -2,7 +2,7 @@ import React from "react";
 
 interface CardStatsProps {
     statTitle: string;
-    statAngka: number;
+    statAngka: number | string;
     statDesc: string;
   }
   

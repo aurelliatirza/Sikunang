@@ -153,6 +153,10 @@ export class KunjunganService {
                                 select: {
                                     nik: true,
                                     namaKaryawan: true,
+                                    nik_SPV: true,
+                                    nik_kabag: true,
+                                    nik_kacab: true,
+                                    nik_direkturBisnis: true,
                                 },
                             },
                         },
@@ -171,6 +175,10 @@ export class KunjunganService {
                 if (!acc[nik]) {
                     acc[nik] = {
                         nik,
+                        nik_SPV: item.nasabah.karyawan.nik_SPV,
+                        nik_kabag: item.nasabah.karyawan.nik_kabag,
+                        nik_kacab: item.nasabah.karyawan.nik_kacab,
+                        nik_direkturBisnis: item.nasabah.karyawan.nik_direkturBisnis,
                         namaKaryawan,
                         totalKunjungan: 0,
                     };

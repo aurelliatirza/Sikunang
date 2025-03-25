@@ -6,6 +6,7 @@ import Footer from '../../components/Footers/index';
 import withAuth from '../../../lib/withAuth';
 
 const DashboardPage = () => {
+
     return (
         <div>
             <DashboardWrapper>

@@ -296,8 +296,8 @@ export class KreditService {
   async totalPersetujuanKaryawanBulanan() {
     try {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1); // Tanggal 1 bulan ini
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Tanggal terakhir bulan ini
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   
       const data = await this.prisma.kredit.findMany({
         where: {
@@ -311,12 +311,16 @@ export class KreditService {
             select: {
               nik: true,
               namaKaryawan: true,
+              nik_SPV: true,
+              nik_kabag: true,
+              nik_kacab: true,
+              nik_direkturBisnis: true,
             },
           },
         },
       });
   
-      // Menghitung total pengajuan per karyawan
+      // Menghitung total nominal disetujui per karyawan
       const result = data.reduce((acc, kredit) => {
         const nik = kredit.karyawan_pengajuan.nik;
         const namaKaryawan = kredit.karyawan_pengajuan.namaKaryawan;
@@ -324,21 +328,25 @@ export class KreditService {
         if (!acc[nik]) {
           acc[nik] = {
             nik,
+            nik_SPV: kredit.karyawan_pengajuan.nik_SPV,
+            nik_kabag: kredit.karyawan_pengajuan.nik_kabag,
+            nik_kacab: kredit.karyawan_pengajuan.nik_kacab,
+            nik_direkturBisnis: kredit.karyawan_pengajuan.nik_direkturBisnis,
             namaKaryawan,
-            total_pengajuan: 0,
+            total_nominal_disetujui: 0,  // ✅ Ganti nama variabel
           };
         }
-        acc[nik].total_pengajuan += kredit.nominal_disetujui ?? 0;
+        acc[nik].total_nominal_disetujui += kredit.nominal_disetujui ?? 0; // ✅ Gunakan nominal_disetujui
         return acc;
       }, {});
   
-      // Ubah dari objek ke array
       return Object.values(result);
     } catch (error) {
-      console.error("Error fetching total pengajuan:", error);
+      console.error("Error fetching total persetujuan:", error);
       return [];
     }
   }
+  
 
   //Fungsi menghitung jumlah aplikasi pengajuan yang masuk perbulan
   async totalPengajuanKaryawanBulanan() {
@@ -359,6 +367,10 @@ export class KreditService {
             select: {
               nik: true,
               namaKaryawan: true,
+              nik_SPV: true,
+              nik_kabag: true,
+              nik_kacab: true,
+              nik_direkturBisnis: true,
             },
           },
         },
@@ -372,6 +384,10 @@ export class KreditService {
         if (!acc[nik]) {
           acc[nik] = {
             nik,
+            nik_SPV: kredit.karyawan_pengajuan.nik_SPV,
+            nik_kabag: kredit.karyawan_pengajuan.nik_kabag,
+            nik_kacab: kredit.karyawan_pengajuan.nik_kacab,
+            nik_direkturBisnis: kredit.karyawan_pengajuan.nik_direkturBisnis,
             namaKaryawan,
             jumlah_pengajuan: 0, // Hitung jumlah pengajuan
           };
