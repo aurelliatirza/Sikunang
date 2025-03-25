@@ -194,6 +194,62 @@ export class KunjunganService {
             return [];
         }
     }
+
+    //Fungsi menghitung jumlah kunjungan tiap karyawan dan tiap bulan
+    async totalKunjunganKaryawanSemuaBulan() {
+        try {
+            const data = await this.prisma.kunjungan.findMany({
+                include: {
+                    nasabah: {
+                        select: {
+                            karyawan: {
+                                select: {
+                                    nik: true,
+                                    namaKaryawan: true,
+                                    nik_SPV: true,
+                                    nik_kabag: true,
+                                    nik_kacab: true,
+                                    nik_direkturBisnis: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+    
+            // Mengelompokkan data berdasarkan bulan dan karyawan
+            const result = data.reduce((acc, item) => {
+                if (!item.nasabah || !item.nasabah.karyawan) return acc;
+    
+                const nik = item.nasabah.karyawan.nik;
+                const namaKaryawan = item.nasabah.karyawan.namaKaryawan;
+                const monthYear = new Date(item.createdAt).toISOString().slice(0, 7); // Format "YYYY-MM"
+    
+                const key = `${nik}-${monthYear}`;
+                if (!acc[key]) {
+                    acc[key] = {
+                        nik,
+                        nik_SPV: item.nasabah.karyawan.nik_SPV,
+                        nik_kabag: item.nasabah.karyawan.nik_kabag,
+                        nik_kacab: item.nasabah.karyawan.nik_kacab,
+                        nik_direkturBisnis: item.nasabah.karyawan.nik_direkturBisnis,
+                        namaKaryawan,
+                        monthYear,
+                        totalKunjungan: 0,
+                    };
+                }
+                acc[key].totalKunjungan++;
+                return acc;
+            }, {});
+    
+            // Ubah dari objek ke array dan kembalikan hasilnya
+            return Object.values(result);
+        } catch (error) {
+            console.error("Error fetching total kunjungan per bulan:", error);
+            return [];
+        }
+    }
+    
     
 
     // Method untuk mendapatkan path foto kunjungan
