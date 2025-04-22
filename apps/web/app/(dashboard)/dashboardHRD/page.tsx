@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import DashboardWrapper from '../../components/DashboardWrapper/dashboardWrapperHRD';
 import CardLineChart from '../../components/Cards/CardLineChart';
@@ -10,7 +11,6 @@ const DashboardPage = () => {
             <DashboardWrapper>
                 {/* Konten utama Dashboard */}
                 <div></div>
-                <CardLineChart />
             </DashboardWrapper>
             <Footer />
         </div>

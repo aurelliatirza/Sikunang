@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import withAuth from '../../../lib/withAuth';
 import DashboardWrapper from '../../components/DashboardWrapper/dashboardWrapperAdminSlik';
@@ -10,7 +11,6 @@ const DashboardPage = () => {
             <DashboardWrapper>
                 {/* Konten utama Dashboard */}
                 <div></div>
-                <CardLineChart />
             </DashboardWrapper>
             <Footer />
         </div>
