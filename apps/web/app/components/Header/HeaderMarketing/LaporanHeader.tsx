@@ -31,7 +31,7 @@ const LaporanHeader = ({ onSidebarToggle }: LaporanHeaderProps) => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -59,7 +59,7 @@ const LaporanHeader = ({ onSidebarToggle }: LaporanHeaderProps) => {
       const fetchTotalPengajuan = async () => {
         try {
           console.log("Fetching total pengajuan untuk NIK:", userProfile.nik);
-          const response = await fetch(`http://localhost:8000/kredit/aplikasiKreditBulanan`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/aplikasiKreditBulanan`, {
             method: "GET",
             credentials: "include",
           });
@@ -98,7 +98,7 @@ const LaporanHeader = ({ onSidebarToggle }: LaporanHeaderProps) => {
       const fetchTotalKunjungan = async () => {
         try {
           console.log("Fetching total kunjungan untuk NIK:", userProfile.nik);
-          const response = await fetch(`http://localhost:8000/kunjungan/kunjunganBulanan`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/kunjunganBulanan`, {
             method: "GET",
             credentials: "include",
           });
@@ -135,7 +135,7 @@ const LaporanHeader = ({ onSidebarToggle }: LaporanHeaderProps) => {
       const fetchTotalNominalPersetujuan = async () => {
         try {
           console.log("Fetching total nominal disetujui untuk NIK:", userProfile.nik);
-          const response = await fetch(`http://localhost:8000/kredit/kreditSetujuBulanan`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/kreditSetujuBulanan`, {
             method: "GET",
             credentials: "include",
           });

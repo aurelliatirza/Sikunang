@@ -40,7 +40,7 @@ const DetailKunjunganCard = () => {
         const fetchDetailKunjungan = async () => {
             if (!id) return; // Jika id belum ada, hentikan proses fetch
             try {
-                const response = await fetch(`http://localhost:8000/kunjungan/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/${id}`);
                 if (!response.ok) throw new Error("Gagal mengambil data");
                 const data = await response.json();
                 console.log("Data kunjungan:", data);
@@ -55,7 +55,7 @@ const DetailKunjunganCard = () => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await fetch("http://localhost:8000/auth/profile", {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
                     method: "GET",
                     credentials: "include",
                 });
@@ -106,7 +106,7 @@ const DetailKunjunganCard = () => {
                     <p className="font-semibold">Foto Kunjungan:</p>
                     <div className="mt-2 w-full flex justify-center">
                         <img 
-                            src={`http://localhost:8000/kunjungan/foto/${kunjunganData.foto_kunjungan}`} 
+                            src={`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/foto/${kunjunganData.foto_kunjungan}`} 
                             alt="Foto Kunjungan" 
                             className="rounded-lg shadow-md w-full max-w-[500px] h-auto object-cover"
                         />

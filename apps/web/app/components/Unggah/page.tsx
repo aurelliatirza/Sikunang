@@ -11,7 +11,7 @@ const UploadComponent: React.FC<UploadComponentProps> = ({ onUpload }) => {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/kunjungan/upload", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/upload`, {
         method: "POST",
         body: formData,
       });

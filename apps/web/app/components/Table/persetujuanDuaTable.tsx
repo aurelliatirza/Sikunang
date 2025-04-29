@@ -237,7 +237,7 @@ const PersetujuanDuaTable: React.FC = () => {
     useEffect(() => {
       const fetchKreditPersetujuan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan2Table");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/Persetujuan2Table`);
           if (!response.ok) throw new Error("Gagal mengambil Data");
           const data: Persetujuan2Kredit[] = await response.json();
           let filteredData: Persetujuan2Kredit[] = [];
@@ -284,7 +284,7 @@ const PersetujuanDuaTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -306,7 +306,7 @@ const PersetujuanDuaTable: React.FC = () => {
     useEffect(() => {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
           if (!response.ok) throw new Error("Gagal mengambil data");
   
           const data = await response.json();
@@ -416,7 +416,7 @@ const PersetujuanDuaTable: React.FC = () => {
       };
     
       try {
-        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuan?step=dua`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/persetujuan?step=dua`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(cleanPayload),

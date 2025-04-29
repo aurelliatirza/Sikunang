@@ -46,7 +46,7 @@ const AddKaryawanCard: React.FC = () => {
   useEffect(() => {
     const fetchKantor = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kantor");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kantor`);
         const data = await response.json();
         setKantorList(data);
       } catch (error) {
@@ -56,7 +56,7 @@ const AddKaryawanCard: React.FC = () => {
 
     const fetchKaryawan = async () => {
       try {
-        const response = await fetch("http://localhost:8000/karyawan");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
         const data = await response.json();
         setKaryawanList(data);
       } catch (error) {
@@ -86,7 +86,7 @@ const AddKaryawanCard: React.FC = () => {
 
     try {
       // Check for duplicate NIK
-      const checkResponse = await fetch(`http://localhost:8000//karyawan/search?nik=${formData.nik}`);
+      const checkResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan/search?nik=${formData.nik}`);
       const checkData = await checkResponse.json();
 
       if (checkData.length > 0) {
@@ -95,7 +95,7 @@ const AddKaryawanCard: React.FC = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/karyawan", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

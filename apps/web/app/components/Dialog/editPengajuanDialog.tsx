@@ -57,7 +57,7 @@ const EditPengajuanDialog: React.FC<EditPengajuanModalProps> = ({
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/kredit/${formData.id_kredit}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${formData.id_kredit}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

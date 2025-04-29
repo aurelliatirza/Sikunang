@@ -74,8 +74,8 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resKaryawan = await fetch("http://localhost:8000/karyawan");
-        const resKantor = await fetch("http://localhost:8000/kantor");
+        const resKaryawan = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
+        const resKantor = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kantor`);
 
         if (!resKaryawan.ok || !resKantor.ok) {
           throw new Error("Gagal mengambil data");
@@ -126,7 +126,7 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
     console.log("Data yang dikirim saat simpan:", updatePayload);
     try {
       const response = await fetch(
-        `http://localhost:8000/karyawan/${payload.nik}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/karyawan/${payload.nik}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

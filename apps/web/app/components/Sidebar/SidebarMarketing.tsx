@@ -86,8 +86,9 @@ const SidebarMarketing = ({ isSidebarOpen }: SidebarProps) => {
                 Logout
             </button>
             </div>
-                  {/* Logout Dialog */}
-      <LogoutDialog open={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} />
+            
+            {/* Logout Dialog */}
+            <LogoutDialog open={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} />
         </div>
     );
 };

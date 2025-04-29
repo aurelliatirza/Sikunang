@@ -34,7 +34,7 @@ const PersetujuanTable = ({ userProfile }: { userProfile: any }) => {
         setError(null);
 
         try {
-            const url = `http://localhost:8000/kredit/kreditKaryawan?startDate=${startDate ? startDate.format("YYYY-MM-DD") : ""}&endDate=${endDate ? endDate.format("YYYY-MM-DD") : ""}`;
+            const url = `${process.env.NEXT_PUBLIC_API_URL}/kredit/kreditKaryawan?startDate=${startDate ? startDate.format("YYYY-MM-DD") : ""}&endDate=${endDate ? endDate.format("YYYY-MM-DD") : ""}`;
             const response = await fetch(url);
             if (!response.ok) throw new Error("Gagal mengambil data kredit");
 

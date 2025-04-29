@@ -57,7 +57,7 @@ const PersetujuanKreditDialog: React.FC<PersetujuanKreditDialogProps> = ({
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -108,7 +108,7 @@ const PersetujuanKreditDialog: React.FC<PersetujuanKreditDialogProps> = ({
   
     try {
       const response = await fetch(
-        `http://localhost:8000/kredit/${kredit.id_kredit}/persetujuan?step=${jenisPersetujuan}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/kredit/${kredit.id_kredit}/persetujuan?step=${jenisPersetujuan}`,
         {
           method: "PATCH",
           headers: {

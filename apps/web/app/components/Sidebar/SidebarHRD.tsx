@@ -3,6 +3,8 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { FaDesktop, FaSignOutAlt, FaUserCircle } from "react-icons/fa";
+import { useState } from "react";
+import LogoutDialog from "../Dialog/logoutDialog";
 import { MdGroups2 } from "react-icons/md";
 
 interface SidebarProps{
@@ -11,6 +13,7 @@ interface SidebarProps{
 
 const SidebarHRD = ({isSidebarOpen}: SidebarProps)=> {
     const pathname = usePathname();
+    const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
     const links = [
         { href: "/dashboardHRD", label: "Dashboard", icon: <FaDesktop /> },
@@ -19,7 +22,7 @@ const SidebarHRD = ({isSidebarOpen}: SidebarProps)=> {
 
     const bottomLinks = [
         { href: "/profile", label: "Profile", icon: <FaUserCircle /> },
-        { href: "/logout", label: "Logout", icon: <FaSignOutAlt/> }
+        // { href: "/logout", label: "Logout", icon: <FaSignOutAlt/> }
     ];
 
     //periksa apakah berada di jalur karyawan atau turunanannya
@@ -59,21 +62,31 @@ const SidebarHRD = ({isSidebarOpen}: SidebarProps)=> {
 
             {/* Bottom Menu */}
             <div className="flex flex-col mt-4">
-                {bottomLinks.map((link) => (
-                    <Link key={link.href} href={link.href}>
-                        <div
-                            className={`${
-                                pathname === link.href
-                                    ? "text-blue-600 bg-gray-100"
-                                    : "text-gray-500 hover:text-blue-600"
-                            } flex items-center px-4 py-3 rounded-md cursor-pointer transition-all`}
-                        >
-                            <span className="mr-4">{link.icon}</span>
-                            {link.label}
-                        </div>
-                    </Link>
-                ))}
+                <Link href="/profil">
+                <div
+                className={`${
+                    pathname === "/profil"
+                    ? "text-blue-600 bg-gray-100"
+                    : "text-gray-500 hover:text-blue-600"
+                } flex items-center px-4 py-3 rounded-md cursor-pointer transition-all`}
+                >
+                <span className="mr-4"><FaUserCircle /></span>
+                Profil
+                </div>
+            </Link>
+
+            {/* Logout Button (Memunculkan Dialog) */}
+            <button
+                onClick={() => setIsLogoutDialogOpen(true)}
+                className="flex items-center px-4 py-3 rounded-md text-gray-500 hover:text-blue-600 transition-all cursor-pointer w-full text-left"
+            >
+                <span className="mr-4"><FaSignOutAlt /></span>
+                Logout
+            </button>
             </div>
+            
+            {/* Logout Dialog */}
+            <LogoutDialog open={isLogoutDialogOpen} onClose={() => setIsLogoutDialogOpen(false)} />
         </div>
     );
 };

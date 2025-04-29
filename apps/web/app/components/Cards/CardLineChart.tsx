@@ -38,7 +38,7 @@ const KunjunganChart = ({ initialUserProfile, initialKunjunganData }: { initialU
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", { method: "GET", credentials: "include" });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, { method: "GET", credentials: "include" });
 
         if (!response.ok) throw new Error("Gagal mengambil data user");
 
@@ -58,7 +58,7 @@ const KunjunganChart = ({ initialUserProfile, initialKunjunganData }: { initialU
 
     const fetchKunjunganData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kunjungan/kunjunganSemuaBulananKaryawan", { method: "GET", credentials: "include" });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/kunjunganSemuaBulananKaryawan`, { method: "GET", credentials: "include" });
 
         if (!response.ok) throw new Error("Gagal mengambil data kunjungan");
 

@@ -88,7 +88,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
 
   const fetchKabupatenKota = async () => {
     try {
-      const response = await fetch("http://localhost:8000/kabupaten-kota");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kabupaten-kota`);
       const data = await response.json();
       setKabupatenKotaList(data);
     } catch (error) {
@@ -98,7 +98,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
 
   const fetchKecamatan = async (id_kota: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/kecamatan/filter/${id_kota}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kecamatan/filter/${id_kota}`);
       const data = await response.json();
       setKecamatanList(data);
     } catch (error) {
@@ -108,7 +108,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
 
   const fetchDesaKelurahan = async (id_kecamatan: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/desa-kelurahan/filter/${id_kecamatan}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/desa-kelurahan/filter/${id_kecamatan}`);
       const data = await response.json();
       setDesaKelurahanList(data);
     } catch (error) {
@@ -223,7 +223,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
 
   const fetchNasabah = async () => {
     try {
-      const response = await fetch("http://localhost:8000/nasabah");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah`);
       if (!response.ok) throw new Error("Gagal mengambil data nasabah");
       const data = await response.json();
       console.log("Data nasabah:", data);
@@ -248,7 +248,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
       };
 
       const kunjunganResponse = await fetch(
-        `http://localhost:8000/kunjungan/${kunjungan.id_kunjungan}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/kunjungan/${kunjungan.id_kunjungan}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -272,7 +272,7 @@ const EditKunjunganDialog: React.FC<EditKunjunganDialogProps> = ({
       };
 
       const nasabahResponse = await fetch(
-        `http://localhost:8000/nasabah/${nasabah.id_nasabah}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/nasabah/${nasabah.id_nasabah}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

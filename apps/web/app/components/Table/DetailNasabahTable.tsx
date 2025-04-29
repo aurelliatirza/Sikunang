@@ -16,7 +16,7 @@ const DetailNasabahTable: React.FC = () => {
         const fetchDetailNasabah = async () => {
             if (!id) return;
             try {
-                const response = await fetch(`http://localhost:8000/nasabah/kunjungan/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah/kunjungan/${id}`);
                 if (!response.ok) throw new Error("Gagal mengambil data");
                 const data = await response.json();
                 console.log("Data kunjungan:", data);
@@ -57,7 +57,7 @@ const DetailNasabahTable: React.FC = () => {
                                     <td className="border border-gray-300 px-4 py-2 text-center">
                                         <div className="w-full h-96 overflow-hidden">
                                             <img
-                                                src={`http://localhost:8000/nasabah/kunjungan/foto/${item.foto_kunjungan}`}
+                                                src={`${process.env.NEXT_PUBLIC_API_URL}/nasabah/kunjungan/foto/${item.foto_kunjungan}`}
                                                 alt="Foto Kunjungan"
                                                 className="w-full h-full object-contain"
                                             />

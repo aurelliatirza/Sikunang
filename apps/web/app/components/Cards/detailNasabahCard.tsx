@@ -36,7 +36,7 @@ const DetailNasabahCard: React.FC = () => {
     const fetchDetailNasabah = async () => {
       if (!id) return;
       try {
-        const response = await fetch(`http://localhost:8000/nasabah/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah/${id}`);
         if (!response.ok) throw new Error("Gagal mengambil data");
         const data = await response.json();
         console.log("Data nasabah:", data);

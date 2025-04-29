@@ -85,7 +85,7 @@ const AddLaporanCard: React.FC = () => {
   useEffect(() => {
     const fetchNasabah = async () => {
       try {
-        const response = await fetch("http://localhost:8000/nasabah");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah`);
         const data = await response.json();
         setNasabahList(data);
       } catch (error) {
@@ -98,7 +98,7 @@ const AddLaporanCard: React.FC = () => {
   useEffect(() => {
     const fetchKabupatenKota = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kabupaten-kota");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kabupaten-kota`);
         const data = await response.json();
         setKabupatenKotaList(data);
       } catch (error) {
@@ -115,7 +115,7 @@ const AddLaporanCard: React.FC = () => {
         setDesaKelurahanList([]); // Reset kelurahan juga
   
         try {
-          const response = await fetch(`http://localhost:8000/kecamatan/filter/${formData.id_kota}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kecamatan/filter/${formData.id_kota}`);
           const data = await response.json();
           setKecamatanList(data);
         } catch (error) {
@@ -135,7 +135,7 @@ const AddLaporanCard: React.FC = () => {
         setDesaKelurahanList([]); // Reset kelurahan saat ID kecamatan berubah
   
         try {
-          const response = await fetch(`http://localhost:8000/desa-kelurahan/filter/${formData.id_kecamatan}`);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/desa-kelurahan/filter/${formData.id_kecamatan}`);
           const data = await response.json();
           setDesaKelurahanList(data);
         } catch (error) {
@@ -151,7 +151,7 @@ const AddLaporanCard: React.FC = () => {
   useEffect(() => {
     const fetchMarketing = async () => {
       try {
-        const response = await fetch("http://localhost:8000/karyawan/marketing");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan/marketing`);
         const data: Karyawan[] = await response.json();  // Menyesuaikan tipe data
         setAoList(data);
       } catch (error) {
@@ -208,7 +208,7 @@ const AddLaporanCard: React.FC = () => {
       });
   
       try {
-        const response = await fetch(`http://localhost:8000/desa-kelurahan/detail/${value.desaKelurahanId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/desa-kelurahan/detail/${value.desaKelurahanId}`);
         const data = await response.json();
         
         if (data) {
@@ -275,7 +275,7 @@ const AddLaporanCard: React.FC = () => {
       if (!idNasabah) {
         console.log("Nasabah belum ada, cek apakah sudah ada di database...");
   
-        const checkNasabah = await fetch("http://localhost:8000/nasabah/find", {
+        const checkNasabah = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah/find`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -305,7 +305,7 @@ const AddLaporanCard: React.FC = () => {
   
           console.log("Data yang dikirim ke backend untuk membuat nasabah:", nasabahBaru);
   
-          const responseNasabah = await fetch("http://localhost:8000/nasabah", {
+          const responseNasabah = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(nasabahBaru),
@@ -343,7 +343,7 @@ const AddLaporanCard: React.FC = () => {
       
       console.log("Data yang dikirim ke backend untuk kunjungan:", kunjunganData);
       
-      const responseKunjungan = await fetch("http://localhost:8000/kunjungan", {
+      const responseKunjungan = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(kunjunganData),

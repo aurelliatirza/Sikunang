@@ -125,8 +125,8 @@ const SlikTable: React.FC = () => {
       const fetchData = async () => {
         try {
           const [kreditRes, karyawanRes] = await Promise.all([
-            fetch("http://localhost:8000/kredit/filter/slikTable"),
-            fetch("http://localhost:8000/karyawan"),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/slikTable`),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`),
           ]);
     
           if (!kreditRes.ok || !karyawanRes.ok) throw new Error("Gagal mengambil data");
@@ -148,7 +148,7 @@ const SlikTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -206,7 +206,7 @@ const SlikTable: React.FC = () => {
     const handleConfirm = async () => {
       if (!selectedId) return;
       try {
-        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/slik-check`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/slik-check`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status_Slik: "lanjut", id_karyawan_slik: userProfile?.nik }),

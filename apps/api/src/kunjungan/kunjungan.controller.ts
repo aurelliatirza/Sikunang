@@ -31,7 +31,7 @@ export class KunjunganController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: '/Users/tirzaaurellia/Documents/Foto Test Sikunang',
+        destination: 'D:\Foto Test Sikunang',
         filename: (req, file, callback) => {
           const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const filename = file.fieldname + '-' + uniqueSuffix + extname(file.originalname);
@@ -47,7 +47,7 @@ export class KunjunganController {
 
     const inputPath = file.path;
     const compressedFilename = `compressed-${file.filename}`;
-    const outputPath = `/Users/tirzaaurellia/Documents/Foto Test Sikunang/${compressedFilename}`;
+    const outputPath = `D:\Foto Test Sikunang/${compressedFilename}`;
 
     try {
       // Ambil ukuran file sebelum dikompresi

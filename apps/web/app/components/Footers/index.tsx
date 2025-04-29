@@ -5,7 +5,10 @@ const Footer = () => {
   return (
     <footer className="bg-transparent text-gray flex items-center justify-end p-4">
       <p className="flex items-center">
-        Made with love <GiCrownedHeart className="text-red-500 ml-2" />
+        Made with love{" "}
+        <span className="text-red-500 ml-2">
+          <GiCrownedHeart />
+        </span>
       </p>
     </footer>
   );

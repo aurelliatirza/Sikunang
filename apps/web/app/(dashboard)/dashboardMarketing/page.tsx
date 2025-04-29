@@ -24,7 +24,7 @@ const DashboardPage = () => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await fetch("http://localhost:8000/auth/profile", {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
                     method: "GET",
                     credentials: "include",
                 });

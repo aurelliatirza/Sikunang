@@ -187,7 +187,7 @@ const ProposalTable: React.FC = () => {
     useEffect(() => {
       const fetchKreditPengajuan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/kredit/filter/proposalTable");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/proposalTable`);
           if (!response.ok) throw new Error("Gagal mengambil Data");
           const data: ProposalKredit[] = await response.json();
           let filteredData: ProposalKredit[] = [];
@@ -234,7 +234,7 @@ const ProposalTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -256,7 +256,7 @@ const ProposalTable: React.FC = () => {
     useEffect(() => {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
           if (!response.ok) throw new Error("Gagal mengambil data");
   
           const data = await response.json();
@@ -336,7 +336,7 @@ const ProposalTable: React.FC = () => {
     const updateStatusProposal = async (status: string) => {
       if (!selectedId || !userProfile) return;
       try {
-        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/proposal`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/proposal`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status_proposalKredit: status, id_karyawan_proposalKredit: userProfile.nik }),

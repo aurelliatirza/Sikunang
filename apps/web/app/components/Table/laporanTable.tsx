@@ -63,7 +63,7 @@ const LaporanTable: React.FC = () => {
   useEffect(() => {
     const fetchKunjungan = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kunjungan");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan`);
         if (!response.ok) throw new Error("Gagal mengambil data");
         const data = await response.json();
         console.log("Data kunjungan:", data);
@@ -79,7 +79,7 @@ const LaporanTable: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -133,7 +133,7 @@ const LaporanTable: React.FC = () => {
       // Update tabel Kunjungan
       if (updatedKunjungan.id_kunjungan) {
         const responseKunjungan = await fetch(
-          `http://localhost:8000/kunjungan/${updatedKunjungan.id_kunjungan}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/kunjungan/${updatedKunjungan.id_kunjungan}`,
           {
             method: "PUT",
             headers: {
@@ -154,7 +154,7 @@ const LaporanTable: React.FC = () => {
       // Update tabel Nasabah
       if (updatedKunjungan.nasabah?.id_nasabah) {
         const responseNasabah = await fetch(
-          `http://localhost:8000/nasabah/${updatedKunjungan.nasabah.id_nasabah}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/nasabah/${updatedKunjungan.nasabah.id_nasabah}`,
           {
             method: "PUT",
             headers: {
@@ -175,7 +175,7 @@ const LaporanTable: React.FC = () => {
       }
 
       // 🔹 Ambil data terbaru dari API untuk memperbarui state setelah update Nasabah
-      const responseUpdated = await fetch("http://localhost:8000/kunjungan");
+      const responseUpdated = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan`);
       if (!responseUpdated.ok) throw new Error("Gagal mengambil data terbaru");
 
       const updatedData = await responseUpdated.json();
@@ -199,7 +199,7 @@ const LaporanTable: React.FC = () => {
     if (!selectedId) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/kunjungan/${selectedId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/${selectedId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

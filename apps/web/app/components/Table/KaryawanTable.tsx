@@ -41,7 +41,7 @@ const KaryawanTable: React.FC = () => {
   useEffect(() => {
     const fetchKaryawan = async () => {
       try {
-        const response = await fetch("http://localhost:8000/karyawan");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
         if (!response.ok) throw new Error("Gagal mengambil data");
         const data = await response.json();
         setKaryawan(data);
@@ -79,7 +79,7 @@ const KaryawanTable: React.FC = () => {
     
 
     try {
-      const response = await fetch(`http://localhost:8000/karyawan/${updatedKaryawan.nik}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan/${updatedKaryawan.nik}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -152,9 +152,6 @@ const KaryawanTable: React.FC = () => {
                     onClick={() => handleEditClick(item)}
                   >
                     <MdEditSquare size={20} /> Edit
-                  </button>
-                  <button className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center">
-                    <RiDeleteBin6Fill /> Hapus
                   </button>
                 </td>
               </tr>

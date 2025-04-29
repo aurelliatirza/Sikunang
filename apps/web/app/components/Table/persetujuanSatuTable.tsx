@@ -216,7 +216,7 @@ const PersetujuanSatuTable: React.FC = () => {
     useEffect(() => {
       const fetchKreditPersetujuan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan1Table");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/Persetujuan1Table`);
           if (!response.ok) throw new Error("Gagal mengambil Data");
           const data: Persetujuan1Kredit[] = await response.json();
           let filteredData: Persetujuan1Kredit[] = [];
@@ -263,7 +263,7 @@ const PersetujuanSatuTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -285,7 +285,7 @@ const PersetujuanSatuTable: React.FC = () => {
     useEffect(() => {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
           if (!response.ok) throw new Error("Gagal mengambil data");
   
           const data = await response.json();
@@ -398,7 +398,7 @@ const PersetujuanSatuTable: React.FC = () => {
         console.log("📤 Mengirim Payload:", JSON.stringify(cleanPayload, null, 2));
     
         try {
-            const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuan?step=satu`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/persetujuan?step=satu`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(cleanPayload),
@@ -407,7 +407,7 @@ const PersetujuanSatuTable: React.FC = () => {
             const responseData = await response.json();
             console.log("🔄 Respon API:", responseData);
             console.log("🔍 Memanggil API dengan ID:", selectedId);
-            console.log("🔍 URL yang dipanggil:", `http://localhost:8000/kredit/${selectedId}/persetujuan?step=satu`);
+            console.log("🔍 URL yang dipanggil:", `${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/persetujuan?step=satu`);
 
     
             if (!response.ok) {

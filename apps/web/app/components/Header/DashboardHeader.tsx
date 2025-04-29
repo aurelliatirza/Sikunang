@@ -28,7 +28,7 @@ const DashboardHeader = ({ onSidebarToggle }: DashboardHeaderProps) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -49,7 +49,7 @@ const DashboardHeader = ({ onSidebarToggle }: DashboardHeaderProps) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -73,9 +73,9 @@ const DashboardHeader = ({ onSidebarToggle }: DashboardHeaderProps) => {
     const fetchData = async () => {
       try {
         const [kunjunganRes, pengajuanRes, persetujuanRes] = await Promise.all([
-          fetch("http://localhost:8000/kunjungan/kunjunganBulanan", { credentials: "include" }),
-          fetch("http://localhost:8000/kredit/aplikasiKreditBulanan", { credentials: "include" }),
-          fetch("http://localhost:8000/kredit/kreditSetujuBulanan", { credentials: "include" }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/kunjungan/kunjunganBulanan`, { credentials: "include" }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/aplikasiKreditBulanan`, { credentials: "include" }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/kreditSetujuBulanan`, { credentials: "include" }),
         ]);
   
         if (!kunjunganRes.ok || !pengajuanRes.ok || !persetujuanRes.ok) {

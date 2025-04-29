@@ -63,7 +63,7 @@ const NasabahTable: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("http://localhost:8000/nasabah/kunjungan");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nasabah/kunjungan`);
       const result = await response.json();
       setData(result);
     };
@@ -74,7 +74,7 @@ const NasabahTable: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });

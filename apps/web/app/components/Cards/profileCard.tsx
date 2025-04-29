@@ -44,7 +44,7 @@ const ProfileCard: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/auth/profile", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -62,7 +62,7 @@ const ProfileCard: React.FC = () => {
     if (userProfile) {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan/profile`, {
             method: "GET",
             credentials: "include",
           });

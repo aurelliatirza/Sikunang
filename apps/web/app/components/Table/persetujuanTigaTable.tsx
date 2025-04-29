@@ -254,7 +254,7 @@ const PersetujuanTigaTable: React.FC = () => {
     useEffect(() => {
       const fetchKreditPersetujuan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/kredit/filter/Persetujuan3Table");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/Persetujuan3Table`);
           if (!response.ok) throw new Error("Gagal mengambil Data");
           const data: Persetujuan3Kredit[] = await response.json();
           let filteredData: Persetujuan3Kredit[] = [];
@@ -301,7 +301,7 @@ const PersetujuanTigaTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -323,7 +323,7 @@ const PersetujuanTigaTable: React.FC = () => {
     useEffect(() => {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
           if (!response.ok) throw new Error("Gagal mengambil data");
   
           const data = await response.json();
@@ -433,7 +433,7 @@ const PersetujuanTigaTable: React.FC = () => {
       };
     
       try {
-        const response = await fetch(`http://localhost:8000/kredit/${selectedId}/persetujuan?step=tiga`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/persetujuan?step=tiga`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(cleanPayload),
@@ -587,7 +587,7 @@ const PersetujuanTigaTable: React.FC = () => {
           onChange={(e) => setSelectedBawahan(e.target.value || null)}
           className="border px-4 py-2 rounded-lg"
         >
-          <option value="">Semua Bawahan</option>
+          <option value="">AO</option>
           {bawahanList.map((bawahan, index) => (
             <option key={index} value={bawahan}>
               {bawahan}

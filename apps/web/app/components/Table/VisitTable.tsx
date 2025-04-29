@@ -168,7 +168,7 @@ const VisitTable: React.FC = () => {
   useEffect(() => {
     const fetchKreditPengajuan = async () => {
       try {
-        const response = await fetch("http://localhost:8000/kredit/filter/visitTable");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/filter/visitTable`);
         if (!response.ok) throw new Error("Gagal mengambil Data");
         const data: VisitKredit[] = await response.json();
         let filteredData: VisitKredit[] = [];
@@ -215,7 +215,7 @@ const VisitTable: React.FC = () => {
     useEffect(() => {
       const fetchUserProfile = async () => {
         try {
-          const response = await fetch("http://localhost:8000/auth/profile", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
             method: "GET",
             credentials: "include",
           });
@@ -237,7 +237,7 @@ const VisitTable: React.FC = () => {
     useEffect(() => {
       const fetchKaryawan = async () => {
         try {
-          const response = await fetch("http://localhost:8000/karyawan");
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/karyawan`);
           if (!response.ok) throw new Error("Gagal mengambil data");
   
           const data = await response.json();
@@ -441,7 +441,7 @@ useEffect(() => {
     console.log(`Mengirim request ke API: status=${status}, id_kredit=${selectedId}`);
   
     try {
-      const response = await fetch(`http://localhost:8000/kredit/${selectedId}/visit`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/kredit/${selectedId}/visit`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status_visitNasabah: status, id_karyawan_visitNasabah: userProfile.nik }),
