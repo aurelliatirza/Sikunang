@@ -187,6 +187,8 @@ const VisitTable: React.FC = () => {
             filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
           } else if (userProfile?.jabatan === "direkturBisnis") {
             filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+          } else {
+            filteredData = data;
           }
   
           // Kumpulkan nama bawahan dari hasil filter
@@ -326,13 +328,13 @@ const VisitTable: React.FC = () => {
     let accUser = null;
 
     if (nominal_pengajuan <= 25000000) {
-        accUser = { level: "SPV", nik: nik_SPV };
+        accUser = { level: "spv", nik: nik_SPV };
     } else if (jenis_kantor === "Pusat" && nominal_pengajuan <= limitKabag) {
-        accUser = { level: "Kabag", nik: nik_kabag };
+        accUser = { level: "kabag", nik: nik_kabag };
     } else if (jenis_kantor === "Cabang" && nominal_pengajuan <= limitKacab) {
-        accUser = { level: "Kacab", nik: nik_kacab };
+        accUser = { level: "kacab", nik: nik_kacab };
     } else {
-        accUser = { level: "Direktur", nik: nik_direkturBisnis };
+        accUser = { level: "direkturBisnis", nik: nik_direkturBisnis };
     }
 
     if (accUser?.nik) {
@@ -359,20 +361,23 @@ useEffect(() => {
 
 // Mapping hak akses berdasarkan user login
 const hakACCMap = useMemo(() => {
-    if (!userProfile) return {};
+  if (!userProfile) return {};
 
-    return kreditData.reduce((acc, item) => {
-        const hakACC = hakACCList.find(hak => hak.id_kredit === item.id_kredit);
+  return kreditData.reduce((acc, item) => {
+      const hakACC = hakACCList.find(hak => hak.id_kredit === item.id_kredit);
 
-        const userLevel = userProfile.jabatan?.toLowerCase();
-        const userNik = userProfile.nik;
+      const userLevel = userProfile.jabatan; // NO lowercase
+      const userNik = userProfile.nik;
 
-        const hasPermission = hakACC?.nik === userNik && hakACC?.level?.toLowerCase() === userLevel;
+      const hasPermission = hakACC && 
+                            String(hakACC.nik) === String(userNik) && 
+                            hakACC.level === userLevel;
 
-        acc[item.id_kredit] = hasPermission;
-        return acc;
-    }, {} as Record<number, boolean>);
+      acc[item.id_kredit] = hasPermission ?? false;
+      return acc;
+  }, {} as Record<number, boolean>);
 }, [hakACCList, userProfile?.nik, userProfile?.jabatan]);
+
 
 useEffect(() => {
     console.log("🔍 hakACCMap (Siapa yang berhak per kredit):", hakACCMap);

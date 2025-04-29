@@ -169,6 +169,8 @@ const AnalisisSlikTable: React.FC = () => {
             filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
           } else if (userProfile?.jabatan === "direkturBisnis") {
             filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+          } else {
+            filteredData = data;
           }
   
           // Kumpulkan nama bawahan dari hasil filter

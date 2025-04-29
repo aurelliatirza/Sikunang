@@ -235,6 +235,8 @@ const PersetujuanSatuTable: React.FC = () => {
               filteredData = data.filter((item) => item.nasabah.karyawan.nik_kacab === userProfile.nik);
             } else if (userProfile?.jabatan === "direkturBisnis") {
               filteredData = data.filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik);
+            } else {
+              filteredData = data;
             }
     
             // Kumpulkan nama bawahan dari hasil filter
@@ -573,7 +575,7 @@ const PersetujuanSatuTable: React.FC = () => {
       )}
     </div>
     <div className="overflow-x-auto w-full">
-        <table className="min-w-[1200px] text-sm border-collapse border border-gray-300 mt-2">
+        <table className="min-w-[1200px] w-full text-sm border-collapse border border-gray-300 mt-2">
           <thead>
             <tr className="bg-blue-500 text-white">
               <th className="px-6 py-3 text-center rounded-tl-2xl">No</th>
@@ -856,7 +858,8 @@ const PersetujuanSatuTable: React.FC = () => {
             {snackbarMessage}
           </Alert>
         </Snackbar>
-      </div></>
+    </div>
+    </>
   );
 };
 

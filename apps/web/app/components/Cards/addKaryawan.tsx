@@ -33,6 +33,7 @@ const AddKaryawanCard: React.FC = () => {
     jabatan: "",
     nik_SPV: "",
     nik_kabag: "",
+    nik_kacab: "",
     nik_direkturBisnis: "",
     status: "AKTIF",
     id_kantor: "",
@@ -103,6 +104,7 @@ const AddKaryawanCard: React.FC = () => {
           nik: Number(formData.nik),
           nik_SPV: formData.nik_SPV ? Number(formData.nik_SPV) : null,
           nik_kabag: formData.nik_kabag ? Number(formData.nik_kabag) : null,
+          nik_kacab: formData.nik_kacab ? Number(formData.nik_kacab) : null,
           nik_direkturBisnis: formData.nik_direkturBisnis ? Number(formData.nik_direkturBisnis) : null,
           id_kantor: Number(formData.id_kantor),
         }),
@@ -196,7 +198,7 @@ const AddKaryawanCard: React.FC = () => {
           </select>
 
           {/* Dropdown Kabag */}
-          <label className="block text-sm font-medium mt-3">Nama Kabag</label>
+          <label className="block text-sm font-medium mt-3">Nama Kepala Bagian</label>
           <select
             name="nik_kabag"
             value={formData.nik_kabag}
@@ -205,6 +207,22 @@ const AddKaryawanCard: React.FC = () => {
           >
             <option value="">Pilih Kabag</option>
             {filterKaryawanByJabatan("kabag").map((karyawan) => (
+              <option key={karyawan.nik} value={karyawan.nik}>
+                {karyawan.namaKaryawan}
+              </option>
+            ))}
+          </select>
+
+          {/* Dropdown Kacab */}
+          <label className="block text-sm font-medium mt-3">Nama Kepala Cabang</label>
+          <select
+            name="nik_kacab"
+            value={formData.nik_kacab}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+          >
+            <option value="">Pilih Kepala Cabang</option>
+            {filterKaryawanByJabatan("kacab").map((karyawan) => (
               <option key={karyawan.nik} value={karyawan.nik}>
                 {karyawan.namaKaryawan}
               </option>

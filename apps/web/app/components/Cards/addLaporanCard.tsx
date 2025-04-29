@@ -392,10 +392,11 @@ const AddLaporanCard: React.FC = () => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Nama Nasabah"
-                variant="outlined"
+                placeholder={formData.namaNasabah ? "" : "Nama Nasabah"}
+                sx={{ backgroundColor: "white" }}
                 name="namaNasabah"
                 onChange={handleChange} // Untuk menangkap input manual juga
+                InputLabelProps={{ shrink: false }}
               />
             )}
           />
@@ -505,6 +506,8 @@ const AddLaporanCard: React.FC = () => {
           onChange={handleChange} 
           placeholder="Masukkan Hasil Kunjungan" />
 
+          {/* Bukti Kunjungan (Upload Foto) */}
+          <label className="block text-lg font-bold mt-3">Bukti Kunjungan</label>
           <div className="mt-5">
             <UploadComponent
               onUpload={(filePath) => setFormData({ ...formData, foto_kunjungan: filePath })}

@@ -254,7 +254,7 @@ export class KunjunganService {
 
     // Method untuk mendapatkan path foto kunjungan
     async getFotoPath(filename: string): Promise<string> {
-        const folderPath = '/Users/tirzaaurellia/Documents/Foto Test Sikunang';
+        const folderPath = 'C:/Foto Test Sikunang'; // pastikan path benar
         return path.join(folderPath, filename);
     }
 
@@ -307,7 +307,7 @@ export class KunjunganService {
     
         // Hapus file foto dari sistem
         if (kunjungan.foto_kunjungan) {
-            const filePath = path.join('/Users/tirzaaurellia/Documents/Foto Test Sikunang', kunjungan.foto_kunjungan);
+            const filePath = path.join('C:\Foto Test Sikunang', kunjungan.foto_kunjungan);
             console.log('🧹 Mencoba menghapus file foto:', filePath);
     
             try {

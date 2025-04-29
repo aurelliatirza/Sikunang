@@ -113,7 +113,7 @@ const RegisterCard = () => {
 
             <div className="text-center mt-4">
                 <span className="text-gray-600">Sudah punya akun? </span>
-                <Link href="/auth/login">
+                <Link href="/login">
                     <span className="text-blue-500 hover:text-blue-700 font-semibold">Login</span>
                 </Link>
             </div>

@@ -23,7 +23,7 @@ async function bootstrap() {
   }));
 
   // **Menyajikan folder sebagai static file**
-  app.use('/uploads', express.static('/Users/tirzaaurellia/Documents/Foto Test Sikunang'));
+  app.use('/uploads', express.static('C:\Foto Test Sikunang'));
 
   await app.listen(process.env.PORT ?? 8000);
 }
