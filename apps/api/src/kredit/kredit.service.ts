@@ -315,6 +315,7 @@ export class KreditService {
               nik_kabag: true,
               nik_kacab: true,
               nik_direkturBisnis: true,
+              nik_direkturUtama: true,
             },
           },
         },
@@ -332,6 +333,7 @@ export class KreditService {
             nik_kabag: kredit.karyawan_pengajuan.nik_kabag,
             nik_kacab: kredit.karyawan_pengajuan.nik_kacab,
             nik_direkturBisnis: kredit.karyawan_pengajuan.nik_direkturBisnis,
+            nik_direkturUtama: kredit.karyawan_pengajuan.nik_direkturUtama,
             namaKaryawan,
             total_nominal_disetujui: 0,  // ✅ Ganti nama variabel
           };
@@ -371,6 +373,7 @@ export class KreditService {
               nik_kabag: true,
               nik_kacab: true,
               nik_direkturBisnis: true,
+              nik_direkturUtama: true,
             },
           },
         },
@@ -388,6 +391,7 @@ export class KreditService {
             nik_kabag: kredit.karyawan_pengajuan.nik_kabag,
             nik_kacab: kredit.karyawan_pengajuan.nik_kacab,
             nik_direkturBisnis: kredit.karyawan_pengajuan.nik_direkturBisnis,
+            nik_direkturUtama: kredit.karyawan_pengajuan.nik_direkturUtama,
             namaKaryawan,
             jumlah_pengajuan: 0, // Hitung jumlah pengajuan
           };
@@ -644,6 +648,7 @@ export class KreditService {
               nik_kabag: true,
               nik_kacab: true,
               nik_direkturBisnis: true,
+              nik_direkturUtama: true,
             },
           },
         },

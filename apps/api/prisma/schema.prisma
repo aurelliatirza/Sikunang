@@ -16,6 +16,7 @@ model Karyawan {
   nik_kabag          Int?
   nik_kacab          Int?
   nik_direkturBisnis Int?
+  nik_direkturUtama  Int?
   id_kantor          Int
   createdAt          DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime?   @updatedAt @db.Timestamptz(6)
@@ -28,6 +29,8 @@ model Karyawan {
   kepalaBagianSubs   Karyawan[]  @relation("Kabag")
   kepalaCabang       Karyawan?   @relation("Kacab", fields: [nik_kacab], references: [nik])
   kepalaCabangSubs   Karyawan[]  @relation("Kacab")
+  direkturUtama     Karyawan?   @relation("DirekturUtama", fields: [nik_direkturUtama], references: [nik])
+  direkturUtamaSubs Karyawan[]  @relation("DirekturUtama")
   nasabah            Nasabah[]   @relation("KaryawanNasabah")  // Relasi ke Nasabah
   user               User?       @relation("KaryawanUser")
 

@@ -16,6 +16,7 @@ interface Karyawan {
   kepalaBagian?: { nik: number; namaKaryawan: string } | null;
   kepalaCabang?: {nik: number; namaKaryawan: string} | null;
   direkturBisnis?: { nik: number; namaKaryawan: string } | null;
+  direkturUtama?: { nik: number; namaKaryawan: string } | null;
 }
 
 const jabatanOptions = [
@@ -26,6 +27,7 @@ const jabatanOptions = [
   { label: "Kepala Bagian", value: "kabag" },
   { label: "Kepala Cabang", value: "kacab"},
   { label: "Direktur Bisnis", value: "direkturBisnis" },
+  { label: "Direktur Utama", value: "direkturUtama" },
 ];
 
 const statusOption = [
@@ -74,6 +76,7 @@ const KaryawanTable: React.FC = () => {
       nik_kabag: updatedKaryawan.kepalaBagian ? updatedKaryawan.kepalaBagian.nik : null,
       nik_kacab: updatedKaryawan.kepalaCabang ? updatedKaryawan.kepalaCabang.nik : null,
       nik_direkturBisnis: updatedKaryawan.direkturBisnis ? updatedKaryawan.direkturBisnis.nik : null,
+      nik_direkturUtama: updatedKaryawan.direkturUtama ? updatedKaryawan.direkturUtama.nik : null,
       id_kantor: updatedKaryawan.kantor.id_kantor,
     };
     
@@ -124,6 +127,7 @@ const KaryawanTable: React.FC = () => {
             <th className="px-6 py-3 text-center border-l border-white">Kabag</th>
             <th className="px-6 py-3 text-center border-l border-white">Kepala Cabang</th>
             <th className="px-6 py-3 text-center border-l border-white">Direktur Bisnis</th>
+            <th className="px-6 py-3 text-center border-l border-white">Direktur Utama</th>
             <th className="px-6 py-3 text-center border-l border-white rounded-tr-2xl">Aksi</th>
           </tr>
         </thead>
@@ -146,6 +150,7 @@ const KaryawanTable: React.FC = () => {
                 <td className="px-6 py-4">{item.kepalaBagian?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4">{item.kepalaCabang?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4">{item.direkturBisnis?.namaKaryawan || "-"}</td>
+                <td className="px-6 py-4">{item.direkturUtama?.namaKaryawan || "-"}</td>
                 <td className="px-6 py-4 flex justify-center space-x-2">
                   <button
                     className="bg-yellow-500 hover:bg-yellow-700 text-white px-4 py-2 rounded-md flex items-center"

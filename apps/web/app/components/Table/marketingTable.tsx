@@ -26,6 +26,7 @@ interface Nasabah {
     nik_kabag?: number;
     nik_direkturBisnis?: number;
     nik_kacab?: number;
+    nik_direkturUtama?: number;
   };
   desa: {
     nama: string;
@@ -49,7 +50,7 @@ interface UserProfile {
   id: number;
   namaKaryawan: string;
   nik: number;
-  jabatan: "spv" | "kabag" | "kacab" | "direkturBisnis";
+  jabatan: "spv" | "kabag" | "kacab" | "direkturBisnis" | "direkturUtama" | "marketing";
 }
 
 const MarketingTable: React.FC = () => {
@@ -107,7 +108,14 @@ const MarketingTable: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!kunjunganData || kunjunganData.length === 0) return;
+  
+    console.log("Contoh item.nasabah.karyawan:", kunjunganData[0]?.nasabah?.karyawan);
+  }, [kunjunganData]);
+  
+  useEffect(() => {
     if (!userProfile) return;
+    console.log("User Profile:", userProfile);
 
     let bawahanNames: string[] = [];
 
@@ -127,7 +135,12 @@ const MarketingTable: React.FC = () => {
       bawahanNames = kunjunganData
         .filter((item) => item.nasabah.karyawan.nik_direkturBisnis === userProfile.nik)
         .map((item) => item.nasabah.karyawan.namaKaryawan);
+    } else if (userProfile.jabatan === "direkturUtama") {
+      bawahanNames = kunjunganData
+        .filter((item) => item.nasabah.karyawan.nik_direkturUtama === userProfile.nik)
+        .map((item) => item.nasabah.karyawan.namaKaryawan);
     }
+  
 
     // Hilangkan nama yang duplikat
     setBawahanList([...new Set(bawahanNames)]);

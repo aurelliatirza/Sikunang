@@ -32,7 +32,8 @@ export class KaryawanService {
         supervisor: { select: { namaKaryawan: true } },
         kepalaBagian: { select: { namaKaryawan: true } },
         direkturBisnis: { select: { namaKaryawan: true } },
-        kepalaCabang: { select: {namaKaryawan: true }}
+        kepalaCabang: { select: {namaKaryawan: true }},
+        direkturUtama: { select: {namaKaryawan: true }}, // Removed as it does not exist in the schema
       },
   
     });
@@ -46,6 +47,7 @@ export class KaryawanService {
         kepalaBagian: { select: { namaKaryawan: true } },
         direkturBisnis: { select: { namaKaryawan: true } },
         kepalaCabang: { select: {namaKaryawan: true }},
+        direkturUtama: { select: {namaKaryawan: true }}, // Removed as it does not exist in the schema
         user: { select: { username: true } },
       }
     });

@@ -23,6 +23,7 @@ const jabatanOptions = [
   { label: "Kepala Bagian", value: "kabag" },
   { label: "Kepala Cabang", value: "kacab"},
   { label: "Direktur Bisnis", value: "direkturBisnis" },
+  { label: "Direktur Utama", value: "direkturUtama" },
 ];
 
 const AddKaryawanCard: React.FC = () => {
@@ -35,6 +36,7 @@ const AddKaryawanCard: React.FC = () => {
     nik_kabag: "",
     nik_kacab: "",
     nik_direkturBisnis: "",
+    nik_direkturUtama: "",
     status: "AKTIF",
     id_kantor: "",
   });
@@ -106,6 +108,7 @@ const AddKaryawanCard: React.FC = () => {
           nik_kabag: formData.nik_kabag ? Number(formData.nik_kabag) : null,
           nik_kacab: formData.nik_kacab ? Number(formData.nik_kacab) : null,
           nik_direkturBisnis: formData.nik_direkturBisnis ? Number(formData.nik_direkturBisnis) : null,
+          nik_direkturUtama: formData.nik_direkturUtama ? Number(formData.nik_direkturUtama) : null,
           id_kantor: Number(formData.id_kantor),
         }),
       });
@@ -239,6 +242,22 @@ const AddKaryawanCard: React.FC = () => {
           >
             <option value="">Pilih Direktur Bisnis</option>
             {filterKaryawanByJabatan("direkturBisnis").map((karyawan) => (
+              <option key={karyawan.nik} value={karyawan.nik}>
+                {karyawan.namaKaryawan}
+              </option>
+            ))}
+          </select>
+
+          {/* Dropdown Direktur Utama */}
+          <label className="block text-sm font-medium mt-3">Nama Direktur Utama</label>
+          <select
+            name="nik_direkturUtama"
+            value={formData.nik_direkturUtama}
+            onChange={handleChange}
+            className="w-full p-2 border rounded-md mt-1"
+          >
+            <option value="">Pilih Direktur Utama</option>
+            {filterKaryawanByJabatan("direkturUtama").map((karyawan) => (
               <option key={karyawan.nik} value={karyawan.nik}>
                 {karyawan.namaKaryawan}
               </option>

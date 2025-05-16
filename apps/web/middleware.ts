@@ -36,6 +36,7 @@ export async function middleware(req: NextRequest) {
             Kabag: "kabag",
             Kacab: "kacab",
             DirekturBisnis: "direkturBisnis", // ✅ Pastikan ini ada!
+            DirekturUtama: "direkturUtama", // ✅ Pastikan ini ada!
         };
 
         const normalizedJabatan = jabatanMapping[jabatan] ?? jabatan;
@@ -59,6 +60,7 @@ export async function middleware(req: NextRequest) {
             kabag: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
             kacab: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
             direkturBisnis: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
+            direkturUtama: ["/dashboardPejabat", "/marketing", "/nasabah", "/kreditPejabat", "/pdfPage"],
         };
 
         // Periksa apakah jabatan memiliki akses ke URL yang diakses

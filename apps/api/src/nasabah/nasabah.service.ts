@@ -102,6 +102,7 @@ export class NasabahService {
             nik_kabag: true,
             nik_direkturBisnis: true,
             nik_kacab: true,
+            nik_direkturUtama: true,
            } },
           kunjungan: {
             select: {

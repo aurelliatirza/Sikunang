@@ -10,4 +10,5 @@ export class UpdateKaryawanDto extends PartialType(CreateKaryawanDto) {
   nik_kabag?: number | null;
   nik_kacab?: number | null;
   nik_direkturBisnis?: number | null;
+  nik_direkturUtama?: number | null;  
 }

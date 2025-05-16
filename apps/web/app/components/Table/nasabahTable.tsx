@@ -8,11 +8,12 @@ import PengajuanKreditDialog from "../Dialog/pengajuanKreditDialog";
 interface Karyawan {
   nik: number;
   namaKaryawan: string;
-  jabatan: "kacab"| "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "kacab"| "marketing" | "spv" | "kabag" | "direkturUtama" | "direkturBisnis";
   nik_SPV?: number;
   nik_kabag?: number;
   nik_kacab?: number;
   nik_direkturBisnis?: number;
+  nik_direkturUtama?: number;
 }
 
 interface NasabahWithCount {
@@ -116,6 +117,8 @@ const NasabahTable: React.FC = () => {
           return item.karyawan.nik_kacab === userProfile.nik;
         } else if (userProfile.jabatan === "direkturBisnis") {
           return item.karyawan.nik_direkturBisnis === userProfile.nik;
+        } else if (userProfile.jabatan === "direkturUtama") {
+          return item.karyawan.nik_direkturUtama === userProfile.nik;
         }
         return false;
       });

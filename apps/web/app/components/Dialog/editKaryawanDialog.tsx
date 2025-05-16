@@ -19,6 +19,7 @@ interface Karyawan {
   kepalaBagian?: { nik: number; namaKaryawan: string } | null;
   kepalaCabang?: { nik: number; namaKaryawan: string } | null;
   direkturBisnis?: { nik: number; namaKaryawan: string } | null;
+  direkturUtama?: { nik: number; namaKaryawan: string } | null;
 }
 
 interface Kantor {
@@ -41,6 +42,7 @@ const jabatanOptions = [
   { label: "Kepala Bagian", value: "kabag" },
   { label: "Kepala Cabang", value: "kacab" },
   { label: "Direktur Bisnis", value: "direkturBisnis" },
+  { label: "Direktur Utama", value: "direkturUtama" },
 ];
 
 const statusOption = [
@@ -67,6 +69,8 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
         supervisor: karyawan.supervisor ?? null,
         kepalaBagian: karyawan.kepalaBagian ?? null,
         direkturBisnis: karyawan.direkturBisnis ?? null,
+        kepalaCabang: karyawan.kepalaCabang ?? null,
+        direkturUtama: karyawan.direkturUtama ?? null,
       });
     }
   }, [karyawan]);
@@ -109,6 +113,7 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
       kepalaBagian: formData.kepalaBagian ?? null,
       kepalaCabang: formData.kepalaCabang ?? null,
       direkturBisnis: formData.direkturBisnis ?? null,
+      direkturUtama: formData.direkturUtama ?? null,
     };
 
     // Jika field relasi null, gunakan null untuk key update
@@ -120,6 +125,7 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
       nik_kabag: payload.kepalaBagian ? payload.kepalaBagian.nik : null,
       nik_kacab: payload.kepalaCabang ? payload.kepalaCabang.nik : null,
       nik_direkturBisnis: payload.direkturBisnis ? payload.direkturBisnis.nik : null,
+      nik_direkturUtama: payload.direkturUtama ? payload.direkturUtama.nik : null,
       id_kantor: payload.kantor.id_kantor,
     };
 
@@ -366,6 +372,40 @@ const EditKaryawanDialog: React.FC<EditKaryawanModalProps> = ({
           <MenuItem value="Tidak ada">Tidak Ada</MenuItem>
           {karyawanList
             .filter((k) => k.jabatan === "direkturBisnis")
+            .map((direktur) => (
+              <MenuItem key={direktur.nik} value={direktur.nik.toString()}>
+                {direktur.namaKaryawan}
+              </MenuItem>
+            ))}
+        </TextField>
+
+        {/* Direktur Bisnis */}
+        <TextField
+          label="Direktur Utama"
+          fullWidth
+          sx={{ bgcolor: "white" }}
+          margin="dense"
+          select
+          value={
+            formData?.direkturUtama?.nik
+              ? formData.direkturUtama.nik.toString()
+              : ""
+          }
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            if (value === "Tidak ada") {
+              handleChange("direkturUtama", null);
+            } else {
+              handleChange(
+                "direkturUtama",
+                karyawanList.find((k) => k.nik === parseInt(value)) || null
+              );
+            }
+          }}
+        >
+          <MenuItem value="Tidak ada">Tidak Ada</MenuItem>
+          {karyawanList
+            .filter((k) => k.jabatan === "direkturUtama")
             .map((direktur) => (
               <MenuItem key={direktur.nik} value={direktur.nik.toString()}>
                 {direktur.namaKaryawan}

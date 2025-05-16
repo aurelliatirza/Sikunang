@@ -8,11 +8,12 @@ import Footer from "../../components/Footers/index";
 interface Karyawan {
     nik: number;
     namaKaryawan: string;
-    jabatan: "kacab" | "marketing" | "spv" | "kabag" | "direkturBisnis";
+    jabatan: "kacab" | "marketing" | "spv" | "kabag" | "direkturBisnis" | "direkturUtama";
     nik_SPV?: number;
     nik_kabag?: number;
     nik_kacab?: number;
     nik_direkturBisnis?: number;
+    nik_direkturUtama?: number;
 }
 
 interface UserProfile extends Karyawan {}

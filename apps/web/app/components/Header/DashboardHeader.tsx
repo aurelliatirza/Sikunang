@@ -9,11 +9,12 @@ interface DashboardHeaderProps {
 interface Karyawan {
   nik: number;
   namaKaryawan: string;
-  jabatan: "kacab" | "marketing" | "spv" | "kabag" | "direkturBisnis";
+  jabatan: "kacab" | "marketing" | "spv" | "kabag" | "direkturBisnis" | "direkturUtama";
   nik_SPV?: number;
   nik_kabag?: number;
   nik_kacab?: number;
   nik_direkturBisnis?: number;
+  nik_direkturUtama?: number;
 }
 
 interface UserProfile extends Karyawan {}
@@ -108,7 +109,8 @@ const DashboardHeader = ({ onSidebarToggle }: DashboardHeaderProps) => {
               item.nik_SPV === userProfile.nik ||
               item.nik_kabag === userProfile.nik ||
               item.nik_kacab === userProfile.nik ||
-              item.nik_direkturBisnis === userProfile.nik
+              item.nik_direkturBisnis === userProfile.nik ||
+              item.nik_direkturUtama === userProfile.nik
             );
           };
   
